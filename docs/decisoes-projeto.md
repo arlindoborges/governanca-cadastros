@@ -98,3 +98,5 @@
 - **DP-092** — Operações de realização derivadas de uma decisão humana serão protegidas contra duplicação transacional; uma mesma decisão de criação não poderá originar múltiplos Produtos Mestres.
 - **DP-093** — A validação transversal do Modelo Físico v0.1 é considerada concluída após os nove cenários de teste; o próximo estágio será sua consolidação técnica final, seguida do congelamento do baseline antes da implementação no PostgreSQL/FastAPI.
 - **DP-094** — A documentação técnica consolidada será tratada como especificação de implementação do MVP 0.1; alterações posteriores que afetem arquitetura, modelo de dados ou escopo deverão ser registradas antes de serem incorporadas ao código.
+- **DP-095** — O Modelo Físico v0.1 consolidado será composto pelas 26 entidades oficiais definidas na especificação; qualquer nova entidade proposta após o congelamento deverá ser justificada por lacuna funcional concreta e registrada antes de implementação.
+- **DP-096** — O documento `docs/modelo-dados-v0.1.md` é homologado como especificação consolidada do Modelo Físico v0.1, contendo as 26 entidades oficiais e as regras estruturais aprovadas até a DP-095.
