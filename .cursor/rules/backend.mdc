@@ -1,0 +1,16 @@
+---
+description: Padrões do backend FastAPI e Python
+globs: "backend/**/*.py"
+alwaysApply: false
+---
+
+# Backend
+
+- Organize por módulo funcional em `backend/src/app/`.
+- Fluxo preferencial: router → service → repository/model.
+- Router trata HTTP; service trata caso de uso/transação; repository trata consulta.
+- Use Pydantic nos contratos e não exponha modelos SQLAlchemy diretamente.
+- Repositories tenant-owned recebem `organization_id` explicitamente.
+- Grave auditoria funcional na mesma transação da realização de negócio.
+- Diferencie retry técnico de reprocessamento funcional.
+- Use Ruff e Pytest nas validações aplicáveis.

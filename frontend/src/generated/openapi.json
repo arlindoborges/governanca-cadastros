@@ -1,0 +1,164 @@
+{
+  "openapi": "3.1.0",
+  "info": {
+    "title": "Governan\u00e7a de Cadastros",
+    "version": "0.1.0"
+  },
+  "paths": {
+    "/health/live": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Live",
+        "operationId": "live_health_live_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "additionalProperties": {
+                    "type": "string"
+                  },
+                  "type": "object",
+                  "title": "Response Live Health Live Get"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/health/ready": {
+      "get": {
+        "tags": [
+          "health"
+        ],
+        "summary": "Ready",
+        "operationId": "ready_health_ready_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {}
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/foundation": {
+      "get": {
+        "tags": [
+          "foundation"
+        ],
+        "summary": "Read Foundation",
+        "operationId": "read_foundation_api_v1_foundation_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/FoundationResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "schemas": {
+      "FoundationData": {
+        "properties": {
+          "organization": {
+            "$ref": "#/components/schemas/FoundationOrganization"
+          },
+          "user": {
+            "$ref": "#/components/schemas/FoundationUser"
+          },
+          "role": {
+            "type": "string",
+            "title": "Role"
+          }
+        },
+        "type": "object",
+        "required": [
+          "organization",
+          "user",
+          "role"
+        ],
+        "title": "FoundationData"
+      },
+      "FoundationOrganization": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "status"
+        ],
+        "title": "FoundationOrganization"
+      },
+      "FoundationResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/FoundationData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "FoundationResponse"
+      },
+      "FoundationUser": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "name": {
+            "type": "string",
+            "title": "Name"
+          },
+          "email": {
+            "type": "string",
+            "title": "Email"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "name",
+          "email",
+          "status"
+        ],
+        "title": "FoundationUser"
+      }
+    }
+  }
+}

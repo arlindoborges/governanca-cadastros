@@ -12,6 +12,11 @@ __pycache__/
 *.pyc
 .venv/
 venv/
+.ruff_cache/
+.pytest_cache/
+.coverage
+htmlcov/
+*.egg-info/
 
 # Arquivos temporários do sistema operacional e editores
 .DS_Store

@@ -1,0 +1,16 @@
+---
+description: Invariantes de segurança e isolamento organizacional
+alwaysApply: true
+---
+
+# Segurança
+
+- Aplique deny-by-default.
+- Derive o tenant da identidade/vínculo autorizado; não confie no identificador do cliente.
+- Restrinja leitura, escrita, contagem, lookup, upload e exportação por organização.
+- Use consultas parametrizadas e validação Pydantic.
+- Nunca registre segredos, tokens, dados reais ou conteúdo sensível.
+- Valide tamanho, extensão, MIME, assinatura e caminho de uploads.
+- Remova temporários em sucesso e em qualquer rejeição.
+- Consulte `docs/padrao/04-seguranca.md` ao tocar autenticação, autorização, HTTP ou arquivos.
+

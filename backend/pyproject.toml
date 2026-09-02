@@ -1,0 +1,35 @@
+[project]
+name = "governanca-cadastros-backend"
+version = "0.1.0"
+description = "API FastAPI do MVP de Governança de Cadastros"
+requires-python = ">=3.12"
+dependencies = [
+    "fastapi>=0.116.0",
+    "uvicorn[standard]>=0.35.0",
+    "pydantic-settings>=2.10.0",
+    "sqlalchemy>=2.0.40",
+    "psycopg[binary]>=3.2.0",
+    "alembic>=1.16.0",
+]
+
+[dependency-groups]
+dev = [
+    "httpx>=0.28.0",
+    "pytest>=8.4.0",
+    "ruff>=0.12.0",
+]
+
+[tool.uv]
+package = false
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+testpaths = ["tests"]
+
+[tool.ruff]
+target-version = "py312"
+src = ["src", "tests"]
+line-length = 100
+
+[tool.ruff.lint]
+select = ["E", "F", "I"]

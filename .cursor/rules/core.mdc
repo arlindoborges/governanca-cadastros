@@ -1,0 +1,15 @@
+---
+description: Arquitetura e fontes canônicas de Governança de Cadastros
+alwaysApply: true
+---
+
+# Núcleo do projeto
+
+- Leia `docs/padrao/README.md` e os documentos roteados para o escopo.
+- Preserve mudanças preexistentes e limite o diff à tarefa.
+- Use Next.js/TypeScript, FastAPI/Python e PostgreSQL 18.
+- Mantenha o backend como monólito modular e a API sob `/api/v1`.
+- Regras de negócio e autorização pertencem ao backend.
+- Não altere contrato, arquitetura ou modelo físico sem decisão registrada.
+- Não copie exemplos, módulos, baselines ou stack de `torre-padrao-arquitetura/`.
+

@@ -1,0 +1,14 @@
+---
+description: Convenções de PostgreSQL, SQLAlchemy e Alembic
+globs: "backend/migrations/**/*.py"
+alwaysApply: false
+---
+
+# Banco e migrations
+
+- Siga `docs/modelo-dados-v0.1.md` e `docs/padrao/07-esquema-postgresql.md`.
+- Use Alembic; não edite migration já aplicada em ambiente compartilhado.
+- Inclua `organization_id` e integridade multi-tenant nos vínculos críticos.
+- Use `TIMESTAMPTZ`, UUID, `snake_case`, CHECKs e índices conforme o modelo.
+- Não use ENUM nativo no MVP.
+- Valide migrations em banco vazio e preserve compatibilidade de rollback da aplicação.

@@ -1,0 +1,15 @@
+---
+description: Padrões do frontend Next.js e TypeScript
+globs: "frontend/**/*.{ts,tsx,css}"
+alwaysApply: false
+---
+
+# Frontend
+
+- Use App Router, TypeScript estrito e Server Components por padrão.
+- Client Components somente quando houver interação necessária no navegador.
+- Centralize HTTP em `lib/api` e use tipos gerados do OpenAPI.
+- Não implemente regra autoritativa, autorização ou filtro de tenant como segurança.
+- Organize capacidades em `features/` e UI genérica em `components/ui/`.
+- Trate loading, vazio, erro, sucesso e permissão negada.
+- Preserve teclado, foco, labels, contraste e nomes acessíveis.

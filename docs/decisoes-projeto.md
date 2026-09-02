@@ -100,3 +100,42 @@
 - **DP-094** — A documentação técnica consolidada será tratada como especificação de implementação do MVP 0.1; alterações posteriores que afetem arquitetura, modelo de dados ou escopo deverão ser registradas antes de serem incorporadas ao código.
 - **DP-095** — O Modelo Físico v0.1 consolidado será composto pelas 26 entidades oficiais definidas na especificação; qualquer nova entidade proposta após o congelamento deverá ser justificada por lacuna funcional concreta e registrada antes de implementação.
 - **DP-096** — O documento `docs/modelo-dados-v0.1.md` é homologado como especificação consolidada do Modelo Físico v0.1, contendo as 26 entidades oficiais e as regras estruturais aprovadas até a DP-095.
+- **DP-097** — O desenvolvimento do MVP 0.1 será realizado prioritariamente em fatias verticais funcionais e testáveis, integrando progressivamente frontend, backend e banco de dados, em vez de desenvolver cada camada integralmente de forma isolada.
+
+- **DP-098** — O fluxo funcional do Modo 1 será composto pelas etapas Importação → Mapeamento → Validação → Normalização/Interpretação → Matching → Revisão/Decisão Humana → Consolidação → Exportação, preservando separadamente dados originais, resultados processados, recomendações e realizações.
+
+- **DP-099** — As etapas internas do processamento não serão obrigatoriamente convertidas em telas independentes; a interface será organizada por tarefas do usuário, mantendo a granularidade do processo no backend sem reproduzi-la artificialmente na navegação.
+
+- **DP-100** — O backend do MVP 0.1 será estruturado como monólito modular com `core`, `organizations`, `imports`, `governance`, `normalization`, `matching`, `reviews`, `master_data`, `audit` e `exports`, mantendo responsabilidades funcionais explícitas e evitando fragmentação em microserviços ou camadas abstratas sem necessidade comprovada.
+
+- **DP-101** — Regras de negócio e validações de governança serão responsabilidade do backend; routers terão foco na interface HTTP e o frontend não será autoridade para decisões de equivalência, integridade ou realização do saneamento.
+
+- **DP-102** — IA não será tratada como módulo funcional autônomo no MVP 0.1; recursos de IA serão incorporados aos módulos responsáveis pelas capacidades que utilizam essas técnicas, preservando separação entre tecnologia utilizada e responsabilidade de negócio.
+
+- **DP-103** — O frontend do MVP 0.1 será organizado inicialmente nas áreas Importações, Análises, Revisão, Base Mestre, Resultados e Governança, priorizando o fluxo operacional de saneamento em vez de funcionalidades periféricas de apresentação.
+
+- **DP-104** — A Revisão será tratada como área central da experiência do Modo 1, priorizando trabalho por exceção e apresentação de evidências, bloqueadores, pendências e confiança em vez de depender apenas de scores numéricos.
+
+- **DP-105** — A interface completa de configuração do Perfil de Governança não será pré-requisito para a primeira fatia funcional; o núcleo Importar → Analisar → Revisar → Consolidar → Exportar poderá ser validado inicialmente com configuração controlada, mantendo a interface configurável como requisito do MVP.
+
+- **DP-106** — O MVP 0.1 terá desktop/notebook como experiência principal, com responsividade básica; mobile-first e aplicativo móvel não fazem parte do objetivo inicial.
+
+- **DP-107** — A comunicação entre frontend e backend utilizará API REST versionada sob `/api/v1`; JSON será o formato padrão de dados, com `multipart/form-data` para uploads e respostas de arquivo para exportações.
+
+- **DP-108** — O frontend não acessará PostgreSQL diretamente nem será autoridade de regras de negócio; toda operação funcional será mediada pelo backend FastAPI.
+
+- **DP-109** — Contratos da API serão orientados aos casos de uso e não ao espelhamento direto das tabelas do banco; modelo físico, contrato de API e modelo de apresentação serão tratados como representações distintas.
+
+- **DP-110** — Operações potencialmente demoradas possuirão estados explícitos de processamento, permitindo iniciar de forma síncrona e evoluir posteriormente para execução assíncrona sem alterar o conceito funcional da interface.
+
+- **DP-111** — Erros da API utilizarão estrutura padronizada com código estável, mensagem legível e detalhes opcionais, permitindo ao frontend distinguir erros técnicos, validações, regras de negócio e autorização.
+
+- **DP-112** — Listagens potencialmente volumosas utilizarão paginação e filtros desde a primeira implementação aplicável, evitando transferência integral de grandes bases para o frontend.
+
+- **DP-113** — O contexto organizacional será validado pelo backend em todas as operações multi-tenant; identificadores fornecidos pelo cliente nunca serão considerados prova suficiente de autorização.
+
+- **DP-114** — A implementação do MVP 0.1 será dividida em seis fatias verticais: Fundação Técnica, Importação, Normalização/Atributos, Matching, Revisão/Base Mestre e Resultados/Exportação. Cada fatia deverá terminar em incremento executável e validável antes da próxima.
+
+- **DP-115** — Similaridade semântica/embeddings não será introduzida antes da existência de uma baseline funcional baseada em normalização, similaridade lexical e regras de governança, permitindo medir objetivamente o ganho da técnica semântica.
+
+- **DP-116** — A primeira implementação de cada capacidade priorizará a solução mais simples que preserve as regras de negócio; infraestrutura ou abstrações adicionais somente serão introduzidas quando testes ou requisitos demonstrarem necessidade concreta.
