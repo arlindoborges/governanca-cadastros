@@ -11,7 +11,7 @@ from app.core.tenant import TenantContext
 from app.governance.models import AttributeDefinition
 from app.imports.models import ImportBatch, SourceRecord
 from app.normalization.engine import apply_rule, extract_raw_column, extraction_confidence
-from app.normalization.fase1 import extract_brand_term, sanitize_description
+from app.normalization.fase1 import SanitizeOptions, extract_brand_term, sanitize_description
 from app.normalization.models import ReviewIssue, SourceRecordAttribute
 from app.normalization.repository import (
     clear_normalization_artifacts,
@@ -76,6 +76,7 @@ def run_batch_normalization(
     tenant: TenantContext,
     batch_id: UUID,
     *,
+    sanitize_options: SanitizeOptions | None = None,
     on_progress: ProgressCallback | None = None,
 ) -> NormalizationBatchSummary:
     batch = lock_batch(session, tenant.organization_id, batch_id)
@@ -111,6 +112,8 @@ def run_batch_normalization(
     clear_normalization_artifacts(session, tenant.organization_id, batch.id)
     session.flush()
 
+    options = sanitize_options or SanitizeOptions()
+
     if on_progress:
         on_progress(0, total_records)
 
@@ -131,7 +134,7 @@ def run_batch_normalization(
                 if rule.rule_type == "UNIT_UPPERCASE":
                     unit = apply_rule(rule.rule_type, unit)
 
-            description = sanitize_description(description) or None
+            description = sanitize_description(description, options) or None
             record.normalized_description = description
             has_open_issue = False
 

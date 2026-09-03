@@ -102,3 +102,73 @@ def test_normalization_extracts_brand_from_description(migrated_client) -> None:
     assert len(brand_attrs) == 1
     assert brand_attrs[0]["value_text"] == "STIHL"
     assert brand_attrs[0]["extraction_method"] == "RULE_DERIVED"
+
+
+def test_normalization_original_mode_preserves_description(migrated_client) -> None:
+    unique = uuid4().hex[:8]
+    payload = _upload_import_batch_and_wait(
+        migrated_client,
+        xlsx_upload(
+            [
+                ["CODIGO", "DESCRICAO", "UNIDADE"],
+                [f"O-{unique}", "Feijão 1kg", "un"],
+            ],
+            f"norm-original-{unique}.xlsx",
+        ),
+    )
+    batch_id = payload["batch"]["id"]
+    _apply_mapping_and_wait(
+        migrated_client,
+        batch_id,
+        {
+            "source_code": "CODIGO",
+            "original_description": "DESCRICAO",
+            "original_unit": "UNIDADE",
+        },
+    )
+
+    _run_normalization_and_wait(
+        migrated_client,
+        batch_id,
+        {"description_mode": "original"},
+    )
+    records = migrated_client.get(
+        f"/api/v1/normalization/batches/{batch_id}/records?page=1&page_size=20"
+    )
+    item = records.json()["data"]["items"][0]
+    assert item["record"]["normalized_description"] == "Feijão 1kg"
+
+
+def test_normalization_basica_mode_skips_fase1_steps(migrated_client) -> None:
+    unique = uuid4().hex[:8]
+    payload = _upload_import_batch_and_wait(
+        migrated_client,
+        xlsx_upload(
+            [
+                ["CODIGO", "DESCRICAO", "UNIDADE"],
+                [f"B-{unique}", "Feijão 1kg", "un"],
+            ],
+            f"norm-basica-{unique}.xlsx",
+        ),
+    )
+    batch_id = payload["batch"]["id"]
+    _apply_mapping_and_wait(
+        migrated_client,
+        batch_id,
+        {
+            "source_code": "CODIGO",
+            "original_description": "DESCRICAO",
+            "original_unit": "UNIDADE",
+        },
+    )
+
+    _run_normalization_and_wait(
+        migrated_client,
+        batch_id,
+        {"description_mode": "basica"},
+    )
+    records = migrated_client.get(
+        f"/api/v1/normalization/batches/{batch_id}/records?page=1&page_size=20"
+    )
+    item = records.json()["data"]["items"][0]
+    assert item["record"]["normalized_description"] == "FEIJAO 1KG"

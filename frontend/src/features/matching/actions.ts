@@ -2,24 +2,24 @@
 
 import { revalidatePath } from "next/cache";
 
-import { apiSend, type ApiResult } from "@/lib/api/client";
+import { apiGet, apiSend } from "@/lib/api/client";
 import type { components } from "@/generated/openapi";
 
-type MatchingSummaryResponse = components["schemas"]["MatchingBatchSummaryResponse"];
+type MatchingRunStatusResponse = components["schemas"]["MatchingRunStatusResponse"];
 
-export type ActionState = ApiResult<unknown> | null;
+export type MatchingRunStatus = components["schemas"]["MatchingRunStatus"];
 
-export async function runMatching(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const batchId = String(formData.get("batch_id") ?? "");
-  const result = await apiSend<MatchingSummaryResponse>(
-    `/api/v1/matching/batches/${batchId}/run`,
-    { method: "POST", body: JSON.stringify({}) },
-  );
-  if (result.ok) {
-    revalidatePath("/analises");
-  }
-  return result;
+export async function startMatching(batchId: string) {
+  return apiSend<MatchingRunStatusResponse>(`/api/v1/matching/batches/${batchId}/run`, {
+    method: "POST",
+    body: JSON.stringify({}),
+  });
+}
+
+export async function getMatchingRunStatus(batchId: string) {
+  return apiGet<MatchingRunStatusResponse>(`/api/v1/matching/batches/${batchId}/run/status`);
+}
+
+export async function refreshAnalysesPage() {
+  revalidatePath("/analises");
 }

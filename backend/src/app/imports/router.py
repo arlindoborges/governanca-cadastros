@@ -1,14 +1,22 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, File, Query, UploadFile, status
+from fastapi import APIRouter, Depends, File, Query, UploadFile, status
 from sqlalchemy.orm import Session
 
-from app.core.db import get_db
+from app.core.db import get_db, release_request_transaction
 from app.core.errors import AppError
-from app.core.processing import get_job, job_key, percent_for, set_running
+from app.core.processing import (
+    clear_job,
+    get_job,
+    is_stale,
+    job_key,
+    percent_for,
+    set_running,
+    spawn_job,
+)
 from app.core.tenant import TenantContext, get_tenant_context
-from app.imports.deletion import delete_progress_total
+from app.imports.deletion import count_batch_records, delete_progress_total
 from app.imports.repository import get_batch
 from app.imports.schemas import (
     ColumnMappingIn,
@@ -22,7 +30,6 @@ from app.imports.schemas import (
     ImportRowErrorListResponse,
 )
 from app.imports.service import (
-    apply_column_mapping,
     get_import_batch,
     list_batch_row_errors,
     list_organization_batches,
@@ -55,14 +62,14 @@ def read_batches(
 )
 def post_batch(
     file: Annotated[UploadFile, File()],
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_db),
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> ImportBatchProcessingStatusResponse:
     batch = queue_import_batch(session, tenant, file)
     key = job_key("import-upload", tenant.organization_id, batch.id)
     job = set_running(key, 1, "Iniciando upload...")
-    background_tasks.add_task(
+    release_request_transaction(session)
+    spawn_job(
         execute_import_batch_upload_job,
         tenant.organization_id,
         tenant.user_id,
@@ -115,11 +122,10 @@ def read_batch(
 )
 def remove_batch(
     batch_id: UUID,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_db),
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> ImportBatchDeleteStatusResponse:
-    return _start_import_batch_delete(background_tasks, session, tenant, batch_id)
+    return _start_import_batch_delete(session, tenant, batch_id)
 
 
 @router.get("/batches/{batch_id}/delete/status", response_model=ImportBatchDeleteStatusResponse)
@@ -162,22 +168,20 @@ def read_import_batch_delete_status(
 def post_batch_mapping(
     batch_id: UUID,
     payload: ColumnMappingIn,
-    background_tasks: BackgroundTasks,
     session: Session = Depends(get_db),
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> ImportBatchProcessingStatusResponse:
     total_rows = validate_mapping_request(session, tenant, batch_id, payload)
     key = job_key("import-mapping", tenant.organization_id, batch_id)
-    existing = get_job(key)
-    if existing is not None and existing.status == "RUNNING":
-        raise AppError(
-            "IMPORT_MAPPING_ALREADY_RUNNING",
-            "O mapeamento deste lote já está em andamento.",
-            status_code=409,
-        )
+    _reject_if_job_running(
+        key,
+        "IMPORT_MAPPING_ALREADY_RUNNING",
+        "O mapeamento deste lote já está em andamento.",
+    )
 
     job = set_running(key, total_rows, "Iniciando mapeamento...")
-    background_tasks.add_task(
+    release_request_transaction(session)
+    spawn_job(
         execute_import_batch_mapping_job,
         tenant.organization_id,
         tenant.user_id,
@@ -228,8 +232,17 @@ def read_batch_row_errors(
     )
 
 
+def _reject_if_job_running(key: str, code: str, message: str) -> None:
+    existing = get_job(key)
+    if existing is None or existing.status != "RUNNING":
+        return
+    if is_stale(existing):
+        clear_job(key)
+        return
+    raise AppError(code, message, status_code=409)
+
+
 def _start_import_batch_delete(
-    background_tasks: BackgroundTasks,
     session: Session,
     tenant: TenantContext,
     batch_id: UUID,
@@ -239,17 +252,17 @@ def _start_import_batch_delete(
         raise AppError("NOT_FOUND", "Recurso não encontrado.", status_code=404)
 
     key = job_key("import-delete", tenant.organization_id, batch_id)
-    existing = get_job(key)
-    if existing is not None and existing.status == "RUNNING":
-        raise AppError(
-            "IMPORT_DELETE_ALREADY_RUNNING",
-            "A exclusão deste lote já está em andamento.",
-            status_code=409,
-        )
+    _reject_if_job_running(
+        key,
+        "IMPORT_DELETE_ALREADY_RUNNING",
+        "A exclusão deste lote já está em andamento.",
+    )
 
-    total_steps = delete_progress_total(batch.total_rows)
+    record_count = count_batch_records(session, tenant.organization_id, batch_id)
+    total_steps = delete_progress_total(max(record_count, batch.total_rows))
     job = set_running(key, total_steps, "Iniciando exclusão do lote...")
-    background_tasks.add_task(
+    release_request_transaction(session)
+    spawn_job(
         execute_import_batch_delete_job,
         tenant.organization_id,
         tenant.user_id,

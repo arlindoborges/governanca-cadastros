@@ -1,10 +1,18 @@
 "use client";
 
 import { useRouter } from "next/navigation";
-import { useState } from "react";
+import { useState, type CSSProperties } from "react";
 
 import { ProcessingDialog } from "@/components/shared/ProcessingDialog";
 import { refreshAnalysesPage } from "@/features/normalization/actions";
+import {
+  applyChoiceAdoption,
+  DEFAULT_FASE1_OPTIONS,
+  DESCRIPTION_SANITIZE_STEPS,
+  isChoiceAdopted,
+  payloadFromOptions,
+  type Fase1Options,
+} from "@/features/normalization/description-sanitize";
 import { useNormalizationProcessing } from "@/features/normalization/use-normalization-processing";
 import type { components } from "@/generated/openapi";
 
@@ -23,6 +31,7 @@ export function NormalizationPanel({ batches, selectedBatchId }: Props) {
   const [batchId, setBatchId] = useState(initialBatch?.id ?? "");
   const [summary, setSummary] = useState<NormalizationSummary | null>(null);
   const [errorMessage, setErrorMessage] = useState<string | null>(null);
+  const [fase1, setFase1] = useState<Fase1Options>(DEFAULT_FASE1_OPTIONS);
 
   if (batches.length === 0) {
     return (
@@ -75,6 +84,52 @@ export function NormalizationPanel({ batches, selectedBatchId }: Props) {
             ))}
           </select>
         </div>
+        <fieldset className="option-group" disabled={isRunning}>
+          <legend>Personalizada</legend>
+          <p className="field-hint">
+            Cada passo da Fase 1 tem as escolhas da regra. O padrão é o homologado.
+          </p>
+          <ol className="step-list">
+            {DESCRIPTION_SANITIZE_STEPS.map((step) => (
+              <li key={step.title}>
+                <fieldset className="step-row">
+                  <legend>{step.title}</legend>
+                  {step.objective ? <p className="step-objective">{step.objective}</p> : null}
+                  <div
+                    className="step-choices"
+                    style={{ "--step-cols": step.choices.length } as CSSProperties}
+                  >
+                    {step.choices.map((choice) => {
+                      const choiceId = choice.id ?? choice.key;
+                      const selectId = `fase1-${choiceId}`;
+                      const currentValue = isChoiceAdopted(fase1, choice) ? "padrao" : "manter";
+                      return (
+                        <div key={choiceId} className="step-choice">
+                          <label htmlFor={selectId}>{choice.label}</label>
+                          {choice.hint ? <p className="step-choice__hint">{choice.hint}</p> : null}
+                          <select
+                            id={selectId}
+                            value={currentValue}
+                            onChange={(event) => {
+                              const adopted = event.target.value === "padrao";
+                              setFase1((current) => applyChoiceAdoption(current, choice, adopted));
+                            }}
+                          >
+                            {choice.options.map((option) => (
+                              <option key={option.value} value={option.value}>
+                                {option.label}
+                              </option>
+                            ))}
+                          </select>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </fieldset>
+              </li>
+            ))}
+          </ol>
+        </fieldset>
         {errorMessage ? <p role="alert">{errorMessage}</p> : null}
         {showSummary ? (
           <div className="result-banner" role="status">
@@ -92,7 +147,7 @@ export function NormalizationPanel({ batches, selectedBatchId }: Props) {
           onClick={async () => {
             setErrorMessage(null);
             setSummary(null);
-            const result = await run(batchId);
+            const result = await run(batchId, payloadFromOptions(fase1));
             if (result.ok) {
               setSummary(result.summary);
               await refreshAnalysesPage();

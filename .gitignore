@@ -30,3 +30,9 @@ Desktop.ini
 # Dados locais (preserva somente a documentação da pasta)
 /data/*
 !/data/README.md
+
+# Processos locais (scripts/iniciar-local.sh)
+.local-backend.log
+.local-frontend.log
+.local-backend.pid
+.local-frontend.pid

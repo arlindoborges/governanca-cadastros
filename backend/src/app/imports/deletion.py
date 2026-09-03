@@ -3,7 +3,7 @@ from __future__ import annotations
 from collections.abc import Callable, Sequence
 from uuid import UUID
 
-from sqlalchemy import ColumnElement, delete, or_, select
+from sqlalchemy import ColumnElement, delete, func, or_, select
 from sqlalchemy.orm import Session
 
 from app.imports.models import ImportBatch, SourceRecord
@@ -17,6 +17,20 @@ DELETE_SETUP_STEPS = 6
 DELETE_FINAL_STEPS = 1
 
 ProgressCallback = Callable[[int, int, str], None]
+
+
+def count_batch_records(session: Session, organization_id: UUID, batch_id: UUID) -> int:
+    return (
+        session.scalar(
+            select(func.count())
+            .select_from(SourceRecord)
+            .where(
+                SourceRecord.organization_id == organization_id,
+                SourceRecord.import_batch_id == batch_id,
+            )
+        )
+        or 0
+    )
 
 
 def delete_progress_total(record_count: int) -> int:
@@ -69,6 +83,7 @@ def delete_import_batch(
     row_units = max(record_count, 1)
     total_steps = delete_progress_total(record_count)
     current_step = 0
+    max_step = 0
 
     def report(
         message: str,
@@ -76,7 +91,7 @@ def delete_import_batch(
         processed: int | None = None,
         phase: str | None = None,
     ) -> None:
-        nonlocal current_step
+        nonlocal current_step, max_step
         if processed is None or phase is None:
             current_step += 1
             step = current_step
@@ -84,8 +99,10 @@ def delete_import_batch(
             step = DELETE_SETUP_STEPS + processed
         else:
             step = DELETE_SETUP_STEPS + row_units + processed
+        step = min(step, total_steps - DELETE_FINAL_STEPS)
+        max_step = max(max_step, step)
         if on_progress:
-            on_progress(min(step, total_steps - DELETE_FINAL_STEPS), total_steps, message)
+            on_progress(max_step, total_steps, message)
 
     run_ids = list(
         session.scalars(
@@ -182,11 +199,22 @@ def delete_import_batch(
                 phase="records",
             )
 
-    report("Finalizando exclusão do lote...")
-    locked_batch = session.get(ImportBatch, batch_id)
-    if locked_batch is not None and locked_batch.organization_id == organization_id:
-        session.delete(locked_batch)
-        session.commit()
+    if on_progress:
+        on_progress(
+            total_steps - DELETE_FINAL_STEPS,
+            total_steps,
+            "Finalizando exclusão do lote...",
+        )
+    session.expire_all()
+    deleted_rows = session.execute(
+        delete(ImportBatch).where(
+            ImportBatch.id == batch_id,
+            ImportBatch.organization_id == organization_id,
+        )
+    ).rowcount
+    session.commit()
+    if deleted_rows == 0:
+        return False
     remove_batch_temp(batch_id)
     if on_progress:
         on_progress(total_steps, total_steps, "Exclusão concluída.")

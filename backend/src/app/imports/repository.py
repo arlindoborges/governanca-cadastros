@@ -58,14 +58,20 @@ def get_batch(session: Session, organization_id: UUID, batch_id: UUID) -> Import
     )
 
 
-def lock_batch(session: Session, organization_id: UUID, batch_id: UUID) -> ImportBatch | None:
+def lock_batch(
+    session: Session,
+    organization_id: UUID,
+    batch_id: UUID,
+    *,
+    nowait: bool = False,
+) -> ImportBatch | None:
     return session.scalar(
         select(ImportBatch)
         .where(
             ImportBatch.id == batch_id,
             ImportBatch.organization_id == organization_id,
         )
-        .with_for_update()
+        .with_for_update(nowait=nowait)
     )
 
 

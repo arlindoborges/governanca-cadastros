@@ -3,37 +3,33 @@
 import { useCallback, useState } from "react";
 
 import {
-  getNormalizationRunStatus,
-  startNormalization,
-  type NormalizationRunStatus,
-} from "@/features/normalization/actions";
-import type { NormalizationRunPayload } from "@/features/normalization/description-sanitize";
+  getMatchingRunStatus,
+  startMatching,
+  type MatchingRunStatus,
+} from "@/features/matching/actions";
 
 const POLL_INTERVAL_MS = 400;
 
 type RunResult =
-  | { ok: true; summary: NonNullable<NormalizationRunStatus["summary"]> }
+  | { ok: true; summary: NonNullable<MatchingRunStatus["summary"]> }
   | { ok: false; message: string };
 
-export function useNormalizationProcessing() {
-  const [progress, setProgress] = useState<NormalizationRunStatus | null>(null);
+export function useMatchingProcessing() {
+  const [progress, setProgress] = useState<MatchingRunStatus | null>(null);
   const [isRunning, setIsRunning] = useState(false);
 
-  const run = useCallback(async (
-    batchId: string,
-    payload: NormalizationRunPayload = {},
-  ): Promise<RunResult> => {
+  const run = useCallback(async (batchId: string): Promise<RunResult> => {
     setIsRunning(true);
     setProgress({
       status: "RUNNING",
       processed: 0,
       total: 0,
       percent: 0,
-      message: "Iniciando normalização...",
+      message: "Iniciando matching...",
       summary: null,
     });
 
-    const started = await startNormalization(batchId, payload);
+    const started = await startMatching(batchId);
     if (!started.ok) {
       setIsRunning(false);
       setProgress(null);
@@ -43,7 +39,7 @@ export function useNormalizationProcessing() {
     setProgress(started.data.data);
 
     while (true) {
-      const status = await getNormalizationRunStatus(batchId);
+      const status = await getMatchingRunStatus(batchId);
       if (!status.ok) {
         setIsRunning(false);
         setProgress(null);

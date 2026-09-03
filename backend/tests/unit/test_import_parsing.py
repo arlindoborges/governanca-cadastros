@@ -1,8 +1,12 @@
-from helpers.spreadsheet import build_xlsx_bytes
-
 from app.imports.filenames import assert_xlsx_file_name, safe_file_name
-from app.imports.parsing import mapping_from_headers, parse_headers_and_rows, row_issues
+from app.imports.parsing import (
+    mapping_from_headers,
+    parse_headers,
+    parse_headers_and_rows,
+    row_issues,
+)
 from app.imports.storage import sha256_hex
+from helpers.spreadsheet import build_xlsx_bytes
 
 
 def test_safe_file_name_uses_basename() -> None:
@@ -41,6 +45,7 @@ def test_parse_xlsx_and_row_issues() -> None:
     )
     headers, rows = parse_headers_and_rows(content)
     assert headers == ["CODIGO", "DESCRICAO", "UNIDADE"]
+    assert parse_headers(content) == headers
     assert rows[0]["CODIGO"] == "A1"
     assert row_issues("A1", "Arroz", "UN") == []
     assert row_issues(None, "Feijão", "KG") == ["MISSING_SOURCE_CODE"]

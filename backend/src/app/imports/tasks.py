@@ -4,9 +4,9 @@ from uuid import UUID
 
 from app.core.db import SessionLocal
 from app.core.errors import AppError
-from app.core.processing import complete, fail, job_key, set_running, update_progress
+from app.core.processing import complete, fail, job_key, update_progress
 from app.core.tenant import TenantContext
-from app.imports.deletion import delete_import_batch, delete_progress_total
+from app.imports.deletion import count_batch_records, delete_import_batch, delete_progress_total
 from app.imports.repository import get_batch
 from app.imports.schemas import ColumnMappingIn
 from app.imports.service import apply_column_mapping, finalize_import_batch
@@ -31,8 +31,9 @@ def execute_import_batch_delete_job(
             fail(key, "Lote não encontrado.")
             return
 
-        total_steps = delete_progress_total(batch.total_rows)
-        set_running(key, total_steps, "Iniciando exclusão do lote...")
+        record_count = count_batch_records(session, organization_id, batch_id)
+        total_steps = delete_progress_total(max(record_count, batch.total_rows))
+        update_progress(key, 0, total_steps, "Iniciando exclusão do lote...")
 
         def on_progress(processed: int, total: int, message: str) -> None:
             update_progress(key, processed, total, message)
@@ -77,7 +78,6 @@ def execute_import_batch_upload_job(
             user_id=user_id,
             role=role,
         )
-        set_running(key, 1, "Preparando leitura da planilha...")
 
         def on_progress(processed: int, total: int, message: str) -> None:
             update_progress(key, processed, max(total, 1), message)
@@ -114,12 +114,9 @@ def execute_import_batch_mapping_job(
             user_id=user_id,
             role=role,
         )
-        batch = get_batch(session, organization_id, batch_id)
-        if batch is None:
+        if get_batch(session, organization_id, batch_id) is None:
             fail(key, "Lote não encontrado.")
             return
-
-        set_running(key, max(batch.valid_rows, 1) or 1, "Iniciando mapeamento...")
 
         def on_progress(processed: int, total: int, message: str) -> None:
             update_progress(key, processed, total, message)

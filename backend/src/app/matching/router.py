@@ -4,7 +4,7 @@ from uuid import UUID
 from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.db import get_db
+from app.core.db import get_db, release_request_transaction
 from app.core.errors import AppError
 from app.core.processing import get_job, job_key, percent_for, set_running
 from app.core.tenant import TenantContext, get_tenant_context
@@ -69,6 +69,7 @@ def post_run_matching(
         tenant.role,
         batch_id,
     )
+    release_request_transaction(session)
     return MatchingRunStatusResponse(
         data=MatchingRunStatus(
             status=job.status,

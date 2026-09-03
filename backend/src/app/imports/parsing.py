@@ -17,9 +17,29 @@ def looks_like_zip(prefix: bytes) -> bool:
     return prefix.startswith(ZIP_SIGNATURE)
 
 
+def parse_headers(content: bytes) -> list[str]:
+    headers, _sample = _parse_xlsx(content, row_limit=0)
+    return headers
+
+
+def parse_headers_and_sample(
+    content: bytes, *, limit: int = MAX_SAMPLE_ROWS
+) -> tuple[list[str], list[dict[str, str]]]:
+    return _parse_xlsx(content, row_limit=limit)
+
+
 def parse_headers_and_rows(
     content: bytes,
     *,
+    on_progress: ParseProgressCallback | None = None,
+) -> tuple[list[str], list[dict[str, str]]]:
+    return _parse_xlsx(content, row_limit=None, on_progress=on_progress)
+
+
+def _parse_xlsx(
+    content: bytes,
+    *,
+    row_limit: int | None,
     on_progress: ParseProgressCallback | None = None,
 ) -> tuple[list[str], list[dict[str, str]]]:
     if not content:
@@ -51,6 +71,9 @@ def parse_headers_and_rows(
         if len(headers) != len(set(headers)):
             raise ValueError("XLSX_DUPLICATE_HEADER")
 
+        if row_limit == 0:
+            return headers, []
+
         estimated_total = max((worksheet.max_row or 1) - 1, 1)
         rows: list[dict[str, str]] = []
         for raw_row in row_iter:
@@ -64,12 +87,14 @@ def parse_headers_and_rows(
                 if index < len(raw_row)
             }
             rows.append(row)
+            if row_limit is not None and len(rows) >= row_limit:
+                break
             if on_progress and (len(rows) == 1 or len(rows) % 500 == 0):
                 on_progress(len(rows), estimated_total)
 
-        if not rows:
+        if not rows and row_limit is None:
             raise ValueError("XLSX_NO_DATA")
-        if on_progress:
+        if on_progress and row_limit is None:
             on_progress(len(rows), max(len(rows), 1))
         return headers, rows
     finally:

@@ -1,10 +1,9 @@
+from collections.abc import Callable
 from datetime import UTC, datetime
 from typing import NoReturn
 from uuid import UUID, uuid4
 
-from collections.abc import Callable
-
-from sqlalchemy.exc import IntegrityError
+from sqlalchemy.exc import IntegrityError, OperationalError
 from sqlalchemy.orm import Session
 
 from app.core.config import get_settings
@@ -17,7 +16,9 @@ from app.imports.parsing import (
     iter_mapped_values,
     looks_like_zip,
     mapping_from_headers,
+    parse_headers,
     parse_headers_and_rows,
+    parse_headers_and_sample,
     preview_rows,
     row_issues,
 )
@@ -139,7 +140,7 @@ def finalize_import_batch(
     *,
     on_progress: UploadProgressCallback | None = None,
 ) -> ImportBatchPreviewData:
-    batch = lock_batch(session, tenant.organization_id, batch_id)
+    batch = get_batch(session, tenant.organization_id, batch_id)
     if batch is None:
         raise AppError("NOT_FOUND", "Recurso não encontrado.", status_code=404)
     if batch.status != "PROCESSING":
@@ -187,6 +188,14 @@ def finalize_import_batch(
             details={"max_rows": settings.import_max_rows},
         )
 
+    batch = _lock_batch_or_busy(session, tenant.organization_id, batch_id)
+    if batch.status != "PROCESSING":
+        raise AppError(
+            "IMPORT_BATCH_NOT_PROCESSABLE",
+            "Este lote não está aguardando processamento.",
+            status_code=409,
+            details={"status": batch.status},
+        )
     batch.status = "AWAITING_MAPPING"
     session.commit()
     session.refresh(batch)
@@ -214,8 +223,7 @@ def get_import_batch(
     sample: list[dict[str, str]] = []
     if batch.status == "AWAITING_MAPPING":
         try:
-            headers, rows = parse_headers_and_rows(read_temp_bytes(batch.id))
-            sample = preview_rows(rows)
+            headers, sample = parse_headers_and_sample(read_temp_bytes(batch.id))
         except FileNotFoundError:
             headers, sample = [], []
         except ValueError as exc:
@@ -250,7 +258,7 @@ def apply_column_mapping(
     *,
     on_progress: MappingProgressCallback | None = None,
 ) -> ImportBatchPreviewData:
-    batch = lock_batch(session, tenant.organization_id, batch_id)
+    batch = get_batch(session, tenant.organization_id, batch_id)
     if batch is None:
         raise AppError("NOT_FOUND", "Recurso não encontrado.", status_code=404)
     if batch.status == "COMPLETED":
@@ -268,9 +276,25 @@ def apply_column_mapping(
             details={"status": batch.status},
         )
 
-    headers, rows, mapping = _load_mapping_context(batch, payload)
+    headers, rows, mapping = _load_mapping_context(batch, payload, on_progress=on_progress)
+    batch = _lock_batch_or_busy(session, tenant.organization_id, batch_id)
+    if batch.status == "COMPLETED":
+        raise AppError(
+            "IMPORT_BATCH_ALREADY_PROCESSED",
+            "Este lote já foi processado.",
+            status_code=409,
+            details={"batch_id": str(batch.id)},
+        )
+    if batch.status != "AWAITING_MAPPING":
+        raise AppError(
+            "IMPORT_BATCH_NOT_MAPPABLE",
+            "Este lote não está aguardando mapeamento.",
+            status_code=409,
+            details={"status": batch.status},
+        )
     batch.status = "PROCESSING"
-    session.flush()
+    session.commit()
+    session.refresh(batch)
 
     records: list[SourceRecord] = []
     valid_rows = 0
@@ -375,7 +399,7 @@ def validate_mapping_request(
     batch_id: UUID,
     payload: ColumnMappingIn,
 ) -> int:
-    batch = lock_batch(session, tenant.organization_id, batch_id)
+    batch = get_batch(session, tenant.organization_id, batch_id)
     if batch is None:
         raise AppError("NOT_FOUND", "Recurso não encontrado.", status_code=404)
     if batch.status == "COMPLETED":
@@ -392,16 +416,56 @@ def validate_mapping_request(
             status_code=409,
             details={"status": batch.status},
         )
-    _, rows, _ = _load_mapping_context(batch, payload)
-    return max(len(rows), 1)
+    _validate_mapping_headers(batch, payload)
+    return 1
+
+
+def _validate_mapping_headers(batch: ImportBatch, payload: ColumnMappingIn) -> None:
+    try:
+        headers = parse_headers(read_temp_bytes(batch.id))
+        mapping_from_headers(headers, payload.model_dump())
+    except FileNotFoundError as exc:
+        raise AppError(
+            "IMPORT_UPLOAD_EXPIRED",
+            "O arquivo temporário deste lote não está mais disponível. Envie o arquivo novamente.",
+            status_code=409,
+        ) from exc
+    except KeyError as exc:
+        raise AppError(
+            "IMPORT_REQUIRED_COLUMN_MISSING",
+            "Mapeie código, descrição e unidade.",
+            status_code=422,
+            details={"field": str(exc.args[0])},
+        ) from exc
+    except LookupError as exc:
+        raise AppError(
+            "IMPORT_REQUIRED_COLUMN_MISSING",
+            "A coluna mapeada não existe no arquivo.",
+            status_code=422,
+            details={"field": str(exc.args[0])},
+        ) from exc
+    except ValueError as exc:
+        _reraise_parse_error(exc)
 
 
 def _load_mapping_context(
-    batch: ImportBatch, payload: ColumnMappingIn
+    batch: ImportBatch,
+    payload: ColumnMappingIn,
+    *,
+    on_progress: MappingProgressCallback | None = None,
 ) -> tuple[list[str], list[dict[str, str]], dict[str, str]]:
     try:
         content = read_temp_bytes(batch.id)
-        headers, rows = parse_headers_and_rows(content)
+
+        def parse_progress(processed: int, total: int) -> None:
+            if on_progress:
+                on_progress(
+                    processed,
+                    total,
+                    f"Lendo planilha ({processed:,} de {total:,})...",
+                )
+
+        headers, rows = parse_headers_and_rows(content, on_progress=parse_progress)
         mapping = mapping_from_headers(headers, payload.model_dump())
     except FileNotFoundError as exc:
         raise AppError(
@@ -426,6 +490,20 @@ def _load_mapping_context(
     except ValueError as exc:
         _reraise_parse_error(exc)
     return headers, rows, mapping
+
+
+def _lock_batch_or_busy(session: Session, organization_id: UUID, batch_id: UUID) -> ImportBatch:
+    try:
+        batch = lock_batch(session, organization_id, batch_id, nowait=True)
+    except OperationalError as exc:
+        raise AppError(
+            "IMPORT_BATCH_BUSY",
+            "Este lote já está sendo processado. Aguarde e tente novamente.",
+            status_code=409,
+        ) from exc
+    if batch is None:
+        raise AppError("NOT_FOUND", "Recurso não encontrado.", status_code=404)
+    return batch
 
 
 def _require_local_source_system(session: Session, tenant: TenantContext) -> SourceSystem:

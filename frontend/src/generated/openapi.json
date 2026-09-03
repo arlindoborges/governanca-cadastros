@@ -142,12 +142,55 @@
           }
         },
         "responses": {
-          "201": {
+          "202": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportBatchPreviewResponse"
+                  "$ref": "#/components/schemas/ImportBatchProcessingStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}/upload/status": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Import Batch Upload Status",
+        "operationId": "read_import_batch_upload_status_api_v1_imports_batches__batch_id__upload_status_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchProcessingStatusResponse"
                 }
               }
             }
@@ -322,12 +365,55 @@
           }
         },
         "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchProcessingStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}/mapping/status": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Import Batch Mapping Status",
+        "operationId": "read_import_batch_mapping_status_api_v1_imports_batches__batch_id__mapping_status_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/ImportBatchPreviewResponse"
+                  "$ref": "#/components/schemas/ImportBatchProcessingStatusResponse"
                 }
               }
             }
@@ -472,6 +558,23 @@
             }
           }
         ],
+        "requestBody": {
+          "content": {
+            "application/json": {
+              "schema": {
+                "anyOf": [
+                  {
+                    "$ref": "#/components/schemas/NormalizationRunIn"
+                  },
+                  {
+                    "type": "null"
+                  }
+                ],
+                "title": "Payload"
+              }
+            }
+          }
+        },
         "responses": {
           "202": {
             "description": "Successful Response",
@@ -755,12 +858,55 @@
           }
         ],
         "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchingRunStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matching/batches/{batch_id}/run/status": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Read Matching Run Status",
+        "operationId": "read_matching_run_status_api_v1_matching_batches__batch_id__run_status_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
           "200": {
             "description": "Successful Response",
             "content": {
               "application/json": {
                 "schema": {
-                  "$ref": "#/components/schemas/MatchingBatchSummaryResponse"
+                  "$ref": "#/components/schemas/MatchingRunStatusResponse"
                 }
               }
             }
@@ -967,6 +1113,271 @@
           "original_unit"
         ],
         "title": "ColumnMappingIn"
+      },
+      "Fase1RunOptions": {
+        "properties": {
+          "spaces": {
+            "type": "string",
+            "enum": [
+              "padrao",
+              "manter"
+            ],
+            "title": "Spaces",
+            "default": "padrao"
+          },
+          "uppercase": {
+            "type": "boolean",
+            "title": "Uppercase",
+            "default": true
+          },
+          "accents": {
+            "type": "boolean",
+            "title": "Accents",
+            "default": true
+          },
+          "identifiers": {
+            "type": "boolean",
+            "title": "Identifiers",
+            "default": true
+          },
+          "unit_aliases": {
+            "type": "boolean",
+            "title": "Unit Aliases",
+            "default": true
+          },
+          "unit_split": {
+            "type": "boolean",
+            "title": "Unit Split",
+            "default": true
+          },
+          "unit_l_to_lt": {
+            "type": "boolean",
+            "title": "Unit L To Lt",
+            "default": true
+          },
+          "unit_m_to_mt": {
+            "type": "boolean",
+            "title": "Unit M To Mt",
+            "default": true
+          },
+          "unit_percent_join": {
+            "type": "boolean",
+            "title": "Unit Percent Join",
+            "default": true
+          },
+          "spec_mt_s": {
+            "type": "boolean",
+            "title": "Spec Mt S",
+            "default": true
+          },
+          "spec_join_thousands": {
+            "type": "boolean",
+            "title": "Spec Join Thousands",
+            "default": true
+          },
+          "spec_join_sigla": {
+            "type": "boolean",
+            "title": "Spec Join Sigla",
+            "default": true
+          },
+          "spec_thousand_dots": {
+            "type": "boolean",
+            "title": "Spec Thousand Dots",
+            "default": true
+          },
+          "dimensions_x": {
+            "type": "boolean",
+            "title": "Dimensions X",
+            "default": true
+          },
+          "dimensions_order": {
+            "type": "boolean",
+            "title": "Dimensions Order",
+            "default": true
+          },
+          "dimensions_decimals": {
+            "type": "boolean",
+            "title": "Dimensions Decimals",
+            "default": true
+          },
+          "packaging_dash": {
+            "type": "boolean",
+            "title": "Packaging Dash",
+            "default": true
+          },
+          "packaging_c_slash": {
+            "type": "boolean",
+            "title": "Packaging C Slash",
+            "default": true
+          },
+          "abbr_c": {
+            "type": "boolean",
+            "title": "Abbr C",
+            "default": true
+          },
+          "abbr_s": {
+            "type": "boolean",
+            "title": "Abbr S",
+            "default": true
+          },
+          "abbr_p": {
+            "type": "boolean",
+            "title": "Abbr P",
+            "default": true
+          },
+          "size_tam_n": {
+            "type": "boolean",
+            "title": "Size Tam N",
+            "default": true
+          },
+          "size_n_ordinal": {
+            "type": "boolean",
+            "title": "Size N Ordinal",
+            "default": true
+          },
+          "size_strip_tam": {
+            "type": "boolean",
+            "title": "Size Strip Tam",
+            "default": true
+          },
+          "size_unico": {
+            "type": "boolean",
+            "title": "Size Unico",
+            "default": true
+          },
+          "punct_before": {
+            "type": "boolean",
+            "title": "Punct Before",
+            "default": true
+          },
+          "punct_after": {
+            "type": "boolean",
+            "title": "Punct After",
+            "default": true
+          },
+          "punct_repeat": {
+            "type": "boolean",
+            "title": "Punct Repeat",
+            "default": true
+          },
+          "punct_decorative_hyphens": {
+            "type": "boolean",
+            "title": "Punct Decorative Hyphens",
+            "default": true
+          },
+          "special_n_ordinal": {
+            "type": "boolean",
+            "title": "Special N Ordinal",
+            "default": true
+          },
+          "special_ordinal_symbols": {
+            "type": "boolean",
+            "title": "Special Ordinal Symbols",
+            "default": true
+          },
+          "special_quotes": {
+            "type": "boolean",
+            "title": "Special Quotes",
+            "default": true
+          },
+          "special_control": {
+            "type": "boolean",
+            "title": "Special Control",
+            "default": true
+          },
+          "special_slash_preserve": {
+            "type": "boolean",
+            "title": "Special Slash Preserve",
+            "default": true
+          },
+          "colors_simple": {
+            "type": "boolean",
+            "title": "Colors Simple",
+            "default": true
+          },
+          "colors_compound": {
+            "type": "boolean",
+            "title": "Colors Compound",
+            "default": true
+          },
+          "colors_reposition": {
+            "type": "boolean",
+            "title": "Colors Reposition",
+            "default": true
+          },
+          "brand_marca": {
+            "type": "boolean",
+            "title": "Brand Marca",
+            "default": true
+          },
+          "brand_linha": {
+            "type": "boolean",
+            "title": "Brand Linha",
+            "default": true
+          },
+          "brand_interna": {
+            "type": "boolean",
+            "title": "Brand Interna",
+            "default": true
+          },
+          "brand_legado": {
+            "type": "boolean",
+            "title": "Brand Legado",
+            "default": true
+          },
+          "structure_parens": {
+            "type": "boolean",
+            "title": "Structure Parens",
+            "default": true
+          },
+          "structure_complements": {
+            "type": "boolean",
+            "title": "Structure Complements",
+            "default": true
+          },
+          "structure_no_invent": {
+            "type": "boolean",
+            "title": "Structure No Invent",
+            "default": true
+          },
+          "structure_priority_meaning": {
+            "type": "boolean",
+            "title": "Structure Priority Meaning",
+            "default": true
+          },
+          "semantics_aco": {
+            "type": "boolean",
+            "title": "Semantics Aco",
+            "default": true
+          },
+          "semantics_cola": {
+            "type": "boolean",
+            "title": "Semantics Cola",
+            "default": true
+          },
+          "semantics_concentrado": {
+            "type": "boolean",
+            "title": "Semantics Concentrado",
+            "default": true
+          },
+          "semantics_corrente": {
+            "type": "boolean",
+            "title": "Semantics Corrente",
+            "default": true
+          },
+          "semantics_balde": {
+            "type": "boolean",
+            "title": "Semantics Balde",
+            "default": true
+          },
+          "semantics_limit": {
+            "type": "boolean",
+            "title": "Semantics Limit",
+            "default": true
+          }
+        },
+        "type": "object",
+        "title": "Fase1RunOptions"
       },
       "FoundationData": {
         "properties": {
@@ -1245,6 +1656,73 @@
           "data"
         ],
         "title": "ImportBatchPreviewResponse"
+      },
+      "ImportBatchProcessingStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "percent": {
+            "type": "integer",
+            "title": "Percent"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          },
+          "preview": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/ImportBatchPreviewData"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "processed",
+          "total",
+          "percent",
+          "message"
+        ],
+        "title": "ImportBatchProcessingStatus"
+      },
+      "ImportBatchProcessingStatusResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ImportBatchProcessingStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportBatchProcessingStatusResponse"
       },
       "ImportBatchRead": {
         "properties": {
@@ -1893,6 +2371,61 @@
         ],
         "title": "MatchingResultRead"
       },
+      "MatchingRunStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "percent": {
+            "type": "integer",
+            "title": "Percent"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/MatchingBatchSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "processed",
+          "total",
+          "percent",
+          "message"
+        ],
+        "title": "MatchingRunStatus"
+      },
+      "MatchingRunStatusResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MatchingRunStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "MatchingRunStatusResponse"
+      },
       "NormalizationBatchSummary": {
         "properties": {
           "batch_id": {
@@ -2199,6 +2732,63 @@
           "processing_status"
         ],
         "title": "NormalizationRecordRead"
+      },
+      "NormalizationRunIn": {
+        "properties": {
+          "description_mode": {
+            "type": "string",
+            "enum": [
+              "fase1",
+              "basica",
+              "original",
+              "custom"
+            ],
+            "title": "Description Mode",
+            "default": "fase1"
+          },
+          "description_steps": {
+            "anyOf": [
+              {
+                "items": {
+                  "type": "string",
+                  "enum": [
+                    "grafia",
+                    "identifiers",
+                    "units",
+                    "technical_specs",
+                    "dimensions",
+                    "packaging",
+                    "abbreviations",
+                    "uniform_sizes",
+                    "punctuation",
+                    "special_chars",
+                    "colors",
+                    "brands",
+                    "structure",
+                    "semantics"
+                  ]
+                },
+                "type": "array"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Description Steps"
+          },
+          "fase1": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/Fase1RunOptions"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "title": "NormalizationRunIn"
       },
       "NormalizationRunStatus": {
         "properties": {

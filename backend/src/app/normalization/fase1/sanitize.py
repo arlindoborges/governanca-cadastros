@@ -6,13 +6,13 @@ from dataclasses import dataclass
 
 from app.normalization.fase1.constants import (
     BRAND_TERMS,
-    COMPOUND_COLORS,
     COLOR_AS_PRODUCT_TERMS,
+    COMPOUND_COLORS,
+    IDENTIFIERS_PROTECTED,
     PROTECTED_COLOR_EXPRESSIONS,
     SIMPLE_COLORS,
     UNIFORM_EPI_TERMS,
     UNIFORM_SIZES,
-    IDENTIFIERS_PROTECTED,
 )
 
 _WHITESPACE_RE = re.compile(r"\s+")
@@ -59,39 +59,245 @@ class LocatedBrandTerm:
     end: int
 
 
-def sanitize_description(description: str | None) -> str:
+STEP_FLAG_GROUPS: dict[str, tuple[str, ...]] = {
+    "identifiers": ("identifiers",),
+    "units": ("unit_aliases", "unit_split", "unit_l_to_lt", "unit_m_to_mt", "unit_percent_join"),
+    "technical_specs": (
+        "spec_mt_s",
+        "spec_join_thousands",
+        "spec_join_sigla",
+        "spec_thousand_dots",
+    ),
+    "dimensions": ("dimensions_x", "dimensions_order", "dimensions_decimals"),
+    "packaging": ("packaging_dash", "packaging_c_slash"),
+    "abbreviations": ("abbr_c", "abbr_s", "abbr_p"),
+    "uniform_sizes": ("size_tam_n", "size_n_ordinal", "size_strip_tam", "size_unico"),
+    "punctuation": ("punct_before", "punct_after", "punct_repeat", "punct_decorative_hyphens"),
+    "special_chars": (
+        "special_n_ordinal",
+        "special_ordinal_symbols",
+        "special_quotes",
+        "special_control",
+        "special_slash_preserve",
+    ),
+    "colors": ("colors_simple", "colors_compound", "colors_reposition"),
+    "brands": ("brand_marca", "brand_linha", "brand_interna", "brand_legado"),
+    "structure": (
+        "structure_parens",
+        "structure_complements",
+        "structure_no_invent",
+        "structure_priority_meaning",
+    ),
+    "semantics": (
+        "semantics_aco",
+        "semantics_cola",
+        "semantics_concentrado",
+        "semantics_corrente",
+        "semantics_balde",
+        "semantics_limit",
+    ),
+}
+
+BOOL_OPTION_FIELDS = tuple(field for fields in STEP_FLAG_GROUPS.values() for field in fields) + (
+    "uppercase",
+    "accents",
+)
+
+
+@dataclass(frozen=True)
+class SanitizeOptions:
+    spaces: str = "padrao"
+    uppercase: bool = True
+    accents: bool = True
+    identifiers: bool = True
+    unit_aliases: bool = True
+    unit_split: bool = True
+    unit_l_to_lt: bool = True
+    unit_m_to_mt: bool = True
+    unit_percent_join: bool = True
+    spec_mt_s: bool = True
+    spec_join_thousands: bool = True
+    spec_join_sigla: bool = True
+    spec_thousand_dots: bool = True
+    dimensions_x: bool = True
+    dimensions_order: bool = True
+    dimensions_decimals: bool = True
+    packaging_dash: bool = True
+    packaging_c_slash: bool = True
+    abbr_c: bool = True
+    abbr_s: bool = True
+    abbr_p: bool = True
+    size_tam_n: bool = True
+    size_n_ordinal: bool = True
+    size_strip_tam: bool = True
+    size_unico: bool = True
+    punct_before: bool = True
+    punct_after: bool = True
+    punct_repeat: bool = True
+    punct_decorative_hyphens: bool = True
+    special_n_ordinal: bool = True
+    special_ordinal_symbols: bool = True
+    special_quotes: bool = True
+    special_control: bool = True
+    special_slash_preserve: bool = True
+    colors_simple: bool = True
+    colors_compound: bool = True
+    colors_reposition: bool = True
+    brand_marca: bool = True
+    brand_linha: bool = True
+    brand_interna: bool = True
+    brand_legado: bool = True
+    structure_parens: bool = True
+    structure_complements: bool = True
+    structure_no_invent: bool = True
+    structure_priority_meaning: bool = True
+    semantics_aco: bool = True
+    semantics_cola: bool = True
+    semantics_concentrado: bool = True
+    semantics_corrente: bool = True
+    semantics_balde: bool = True
+    semantics_limit: bool = True
+
+    @classmethod
+    def disabled(cls) -> SanitizeOptions:
+        return cls(spaces="manter", **dict.fromkeys(BOOL_OPTION_FIELDS, False))
+
+    @classmethod
+    def from_mode(cls, mode: str, steps: list[str] | None = None) -> SanitizeOptions:
+        if mode == "original":
+            return cls.disabled()
+        if mode == "basica":
+            kwargs = dict.fromkeys(BOOL_OPTION_FIELDS, False)
+            kwargs.update({"uppercase": True, "accents": True, "identifiers": True})
+            return cls(spaces="padrao", **kwargs)
+        if mode == "custom":
+            selected = set(steps or [])
+            kwargs = dict.fromkeys(BOOL_OPTION_FIELDS, False)
+            spaces = "manter"
+            if "grafia" in selected:
+                spaces = "padrao"
+                kwargs["uppercase"] = True
+                kwargs["accents"] = True
+            for step, fields in STEP_FLAG_GROUPS.items():
+                if step in selected:
+                    for field in fields:
+                        kwargs[field] = True
+            return cls(spaces=spaces, **kwargs)
+        return cls()
+
+    @classmethod
+    def from_fase1(cls, payload: dict[str, object]) -> SanitizeOptions:
+        allowed = {"spaces", *BOOL_OPTION_FIELDS}
+        filtered = {key: value for key, value in payload.items() if key in allowed}
+        return cls(**filtered)
+
+    def has_any_step(self) -> bool:
+        if self.spaces == "padrao":
+            return True
+        return any(getattr(self, field) for field in BOOL_OPTION_FIELDS)
+
+
+def sanitize_description(
+    description: str | None,
+    options: SanitizeOptions | None = None,
+) -> str:
     if description is None or not str(description).strip():
         return ""
 
-    text = normalize_spaces(description)
-    text = remove_accents(text).upper()
+    opts = options or SanitizeOptions()
+    if not opts.has_any_step():
+        return str(description).strip()
 
-    protected_ids = _protect_identifiers(text)
-    text = protected_ids.text
+    text = str(description)
+    if opts.spaces == "padrao":
+        text = normalize_spaces(text)
+    else:
+        text = text.strip()
+    if opts.accents:
+        text = remove_accents(text)
+    if opts.uppercase:
+        text = text.upper()
 
-    protected_sizes = _protect_uniform_sizes(text)
-    text = protected_sizes.text
+    if opts.identifiers:
+        protected_ids = _protect_identifiers(text)
+        text = protected_ids.text
+    else:
+        protected_ids = _ProtectionResult(text, {})
 
-    protected_p_slash = _protect_p_slash(text)
-    text = protected_p_slash.text
+    if opts.size_tam_n or opts.size_n_ordinal or opts.size_strip_tam or opts.size_unico:
+        protected_sizes = _protect_uniform_sizes(text)
+        text = protected_sizes.text
+    elif opts.punct_before or opts.punct_after or opts.punct_repeat:
+        protected_sizes = _protect_uniform_sizes(text)
+        text = protected_sizes.text
+    elif (
+        opts.special_n_ordinal
+        or opts.special_ordinal_symbols
+        or opts.special_quotes
+        or opts.special_control
+    ):
+        protected_sizes = _protect_uniform_sizes(text)
+        text = protected_sizes.text
+    else:
+        protected_sizes = _ProtectionResult(text, {})
 
-    text = _normalize_units_quantities(text)
-    text = _normalize_technical_specs(text)
-    text = _normalize_dimensions_multipliers(text)
-    text = _normalize_logistics_packaging(text)
+    if opts.packaging_dash or opts.packaging_c_slash or opts.abbr_c or opts.abbr_s or opts.abbr_p:
+        protected_p_slash = _protect_p_slash(text)
+        text = protected_p_slash.text
+    else:
+        protected_p_slash = _ProtectionResult(text, {})
+
+    if opts.unit_aliases or opts.unit_split or opts.unit_l_to_lt or opts.unit_m_to_mt or opts.unit_percent_join:
+        text = _normalize_units_quantities(text, opts)
+    if (
+        opts.spec_mt_s
+        or opts.spec_join_thousands
+        or opts.spec_join_sigla
+        or opts.spec_thousand_dots
+    ):
+        text = _normalize_technical_specs(text, opts)
+    if opts.dimensions_x:
+        text = _normalize_dimensions_multipliers(text, opts)
+    if opts.packaging_dash or opts.packaging_c_slash:
+        text = _normalize_logistics_packaging(text, opts)
     text = restore_map(text, protected_p_slash.mapping)
-    text = _normalize_slash_abbreviations(text)
-    text = _normalize_numeric_uniform_sizes(text)
-    text = _normalize_punctuation(text)
-    text = _normalize_special_characters(text)
+    if opts.abbr_c or opts.abbr_s or opts.abbr_p:
+        if opts.special_slash_preserve:
+            text = _normalize_slash_abbreviations(text, opts)
+    if opts.size_tam_n or opts.size_n_ordinal or opts.size_strip_tam or opts.size_unico:
+        text = _normalize_numeric_uniform_sizes(text, opts)
+    if opts.punct_before or opts.punct_after or opts.punct_repeat or opts.punct_decorative_hyphens:
+        text = _normalize_punctuation(text, opts)
+    if (
+        opts.special_n_ordinal
+        or opts.special_ordinal_symbols
+        or opts.special_quotes
+        or opts.special_control
+    ):
+        text = _normalize_special_characters(text, opts)
     text = restore_map(text, protected_sizes.mapping)
-    text = _normalize_color_position(text)
-    text = _reposition_brands(text)
-    text = _normalize_safe_structure(text)
+    if opts.colors_reposition and (opts.colors_simple or opts.colors_compound):
+        text = _normalize_color_position(text, opts)
+    if opts.brand_marca or opts.brand_linha or opts.brand_interna or opts.brand_legado:
+        text = _reposition_brands(text, opts)
+    if opts.structure_parens or opts.structure_complements:
+        text = _normalize_safe_structure(text, opts)
     text = restore_map(text, protected_ids.mapping)
-    text = _normalize_safe_semantics(text)
+    if (
+        opts.semantics_limit
+        and (
+            opts.semantics_aco
+            or opts.semantics_cola
+            or opts.semantics_concentrado
+            or opts.semantics_corrente
+            or opts.semantics_balde
+        )
+    ):
+        text = _normalize_safe_semantics(text, opts)
 
-    return normalize_spaces(text)
+    if opts.spaces == "padrao":
+        return normalize_spaces(text)
+    return str(text).strip()
 
 
 def extract_brand_term(description: str | None) -> str | None:
@@ -127,9 +333,7 @@ def _protect_identifiers(text: str) -> _ProtectionResult:
     mapping: dict[str, str] = {}
     counter = 0
     for identifier in IDENTIFIERS_PROTECTED:
-        pattern = re.compile(
-            rf"(^|[^A-Z0-9])({escape_regex(identifier)})(?=$|[^A-Z0-9])"
-        )
+        pattern = re.compile(rf"(^|[^A-Z0-9])({escape_regex(identifier)})(?=$|[^A-Z0-9])")
 
         def replacer(match: re.Match[str]) -> str:
             nonlocal counter
@@ -190,36 +394,43 @@ def _protect_p_slash(text: str) -> _ProtectionResult:
     return _ProtectionResult(result, mapping)
 
 
-def _normalize_units_quantities(text: str) -> str:
+def _normalize_units_quantities(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
-    conversions = [
-        ("FOLHAS", "FL"),
-        ("FOLHA", "FL"),
-        ("FLS", "FL"),
-        ("UNID", "UN"),
-        ("UND", "UN"),
-        ("PCT", "PC"),
-        ("PCS", "PC"),
-        ("GRS", "G"),
-        ("GR", "G"),
-        ("LITROS", "LT"),
-        ("LITRO", "LT"),
-        ("LTS", "LT"),
-        ("METROS", "MT"),
-        ("METRO", "MT"),
-        ("MTS", "MT"),
-    ]
-    for origin, dest in conversions:
-        result = re.sub(
-            rf"(\d+(?:[.,]\d+)?)\s*{origin}\b",
-            rf"\1 {dest}",
-            result,
-        )
-    units = ["KG", "G", "ML", "LT", "KM", "MT", "CM", "MM", "UN", "PC", "FL", "CX"]
-    for unit in sorted(units, key=len, reverse=True):
-        result = re.sub(rf"(\d+(?:[.,]\d+)?)\s*{unit}\b", rf"\1 {unit}", result)
-    result = re.sub(r"(\d+(?:[.,]\d+)?)\s*L\b", r"\1 LT", result)
-    result = re.sub(r"(\d+(?:[.,]\d+)?)\s*M\b", r"\1 MT", result)
+    if opts.unit_aliases:
+        conversions = [
+            ("FOLHAS", "FL"),
+            ("FOLHA", "FL"),
+            ("FLS", "FL"),
+            ("UNID", "UN"),
+            ("UND", "UN"),
+            ("PCT", "PC"),
+            ("PCS", "PC"),
+            ("GRS", "G"),
+            ("GR", "G"),
+            ("LITROS", "LT"),
+            ("LITRO", "LT"),
+            ("LTS", "LT"),
+            ("METROS", "MT"),
+            ("METRO", "MT"),
+            ("MTS", "MT"),
+        ]
+        for origin, dest in conversions:
+            result = re.sub(
+                rf"(\d+(?:[.,]\d+)?)\s*{origin}\b",
+                rf"\1 {dest}",
+                result,
+            )
+    if opts.unit_split:
+        units = ["KG", "G", "ML", "LT", "KM", "MT", "CM", "MM", "UN", "PC", "FL", "CX"]
+        for unit in sorted(units, key=len, reverse=True):
+            result = re.sub(rf"(\d+(?:[.,]\d+)?)\s*{unit}\b", rf"\1 {unit}", result)
+    if opts.unit_l_to_lt:
+        result = re.sub(r"(\d+(?:[.,]\d+)?)\s*L\b", r"\1 LT", result)
+    if opts.unit_m_to_mt:
+        result = re.sub(r"(\d+(?:[.,]\d+)?)\s*M\b", r"\1 MT", result)
+    if opts.unit_percent_join:
+        result = re.sub(r"(\d+(?:[.,]\d+)?)\s+%", r"\1%", result)
     return normalize_spaces(result)
 
 
@@ -228,14 +439,16 @@ def _format_thousand(number: str) -> str:
     return re.sub(r"\B(?=(\d{3})+(?!\d))", ".", value)
 
 
-def _normalize_technical_specs(text: str) -> str:
+def _normalize_technical_specs(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
-    result = re.sub(
-        r"\b(\d{4,})\s*MT\s*/\s*S\b",
-        lambda match: f"{_format_thousand(match.group(1))}MT/S",
-        result,
-    )
-    result = re.sub(r"\b(\d{1,3})\s*MT\s*/\s*S\b", r"\1MT/S", result)
+    if opts.spec_mt_s:
+        result = re.sub(
+            r"\b(\d{4,})\s*MT\s*/\s*S\b",
+            lambda match: f"{_format_thousand(match.group(1))}MT/S",
+            result,
+        )
+        result = re.sub(r"\b(\d{1,3})\s*MT\s*/\s*S\b", r"\1MT/S", result)
 
     preserved: dict[str, str] = {}
     counter = 0
@@ -256,11 +469,12 @@ def _normalize_technical_specs(text: str) -> str:
     result = protect(re.compile(r"\bPFF-?\d+\b"), result)
     result = protect(re.compile(r"\b\d{1,3}(?:\.\d{3})*MT/S\b"), result)
 
-    result = re.sub(
-        r"\b(\d{1,3})\s+000\s*(BTUS?|RPM|MAH|W|KW|K|HZ|GHZ|MHZ|KHZ)\b",
-        r"\g<1>000\2",
-        result,
-    )
+    if opts.spec_join_thousands:
+        result = re.sub(
+            r"\b(\d{1,3})\s+000\s*(BTUS?|RPM|MAH|W|KW|K|HZ|GHZ|MHZ|KHZ)\b",
+            r"\g<1>000\2",
+            result,
+        )
 
     siglas = [
         "BTUS",
@@ -293,22 +507,25 @@ def _normalize_technical_specs(text: str) -> str:
         "P",
         "K",
     ]
-    for sigla in sorted(siglas, key=len, reverse=True):
+    if opts.spec_join_sigla:
+        for sigla in sorted(siglas, key=len, reverse=True):
+            result = re.sub(
+                rf"(\d+(?:[.,]\d+)?)\s*{escape_regex(sigla)}\b",
+                rf"\1{sigla}",
+                result,
+            )
+    if opts.spec_thousand_dots:
+        sigla_pattern = "|".join(escape_regex(sigla) for sigla in siglas)
         result = re.sub(
-            rf"(\d+(?:[.,]\d+)?)\s*{escape_regex(sigla)}\b",
-            rf"\1{sigla}",
+            rf"\b(\d{{4,}})(?=({sigla_pattern})\b)",
+            lambda match: _format_thousand(match.group(1)),
             result,
         )
-    sigla_pattern = "|".join(escape_regex(sigla) for sigla in siglas)
-    result = re.sub(
-        rf"\b(\d{{4,}})(?=({sigla_pattern})\b)",
-        lambda match: _format_thousand(match.group(1)),
-        result,
-    )
     return normalize_spaces(restore_map(result, preserved))
 
 
-def _normalize_dimensions_multipliers(text: str) -> str:
+def _normalize_dimensions_multipliers(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     units = ["KM", "MT", "CM", "MM", "M", "KG", "G", "ML", "LT", "L", "UN", "PC", "FL"]
     unit_pattern = "|".join(escape_regex(unit) for unit in units)
     result = re.sub(
@@ -318,130 +535,146 @@ def _normalize_dimensions_multipliers(text: str) -> str:
         flags=re.IGNORECASE,
     )
     result = re.sub(r"(\d+(?:[.,]\d+)?)\s+X\s+(?=\d)", r"\1 X ", result)
-    result = _normalize_units_quantities(result)
-    result = _normalize_technical_specs(result)
+    result = _normalize_units_quantities(result, opts)
+    result = _normalize_technical_specs(result, opts)
     return normalize_spaces(result)
 
 
-def _normalize_logistics_packaging(text: str) -> str:
+def _normalize_logistics_packaging(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
     siglas = ["CX", "FD", "MC"]
     sigla_pattern = "|".join(siglas)
     units = ["KG", "G", "ML", "LT", "KM", "MT", "CM", "MM", "UN", "PC", "FL", "CX"]
     unit_pattern = "|".join(units)
-    result = re.sub(
-        rf"(\d+(?:[.,]\d+)?\s+(?:{unit_pattern}))\s+({sigla_pattern})\s+(?=(?:C/\s*)?\d)",
-        r"\1 - \2 ",
-        result,
-    )
-    result = re.sub(
-        rf"(\d+(?:[.,]\d+)?\s+X\s+\d+(?:[.,]\d+)?(?:\s+(?:CM|MM|MT))?)\s+({sigla_pattern})\s+(?=\d)",
-        r"\1 - \2 ",
-        result,
-    )
-    result = re.sub(
-        rf"(\d+(?:[.,]\d+)?\s+(?:{unit_pattern}))\s+({sigla_pattern})\s+C/\s*(?=\d)",
-        r"\1 - \2 C/ ",
-        result,
-    )
-    result = re.sub(
-        rf"(^|\s)({sigla_pattern})\s+C/\s*(?=\d)",
-        lambda match: f" - {match.group(2)} C/ ",
-        result,
-    )
-    result = re.sub(r"\s+-\s+-\s+", " - ", result)
-    result = re.sub(r"\s*-\s*(?=(?:CX|FD|MC)\b)", " - ", result)
+    if opts.packaging_dash:
+        result = re.sub(
+            rf"(\d+(?:[.,]\d+)?\s+(?:{unit_pattern}))\s+({sigla_pattern})\s+(?=(?:C/\s*)?\d)",
+            r"\1 - \2 ",
+            result,
+        )
+        result = re.sub(
+            rf"(\d+(?:[.,]\d+)?\s+X\s+\d+(?:[.,]\d+)?(?:\s+(?:CM|MM|MT))?)\s+({sigla_pattern})\s+(?=\d)",
+            r"\1 - \2 ",
+            result,
+        )
+        result = re.sub(r"\s+-\s+-\s+", " - ", result)
+        result = re.sub(r"\s*-\s*(?=(?:CX|FD|MC)\b)", " - ", result)
+    if opts.packaging_c_slash:
+        result = re.sub(
+            rf"(\d+(?:[.,]\d+)?\s+(?:{unit_pattern}))\s+({sigla_pattern})\s+C/\s*(?=\d)",
+            r"\1 - \2 C/ ",
+            result,
+        )
+        result = re.sub(
+            rf"(^|\s)({sigla_pattern})\s+C/\s*(?=\d)",
+            lambda match: f" - {match.group(2)} C/ ",
+            result,
+        )
     return normalize_spaces(result)
 
 
-def _normalize_slash_abbreviations(text: str) -> str:
+def _normalize_slash_abbreviations(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
-    result = re.sub(r"\bC/\s*", "C/ ", result)
-    result = re.sub(r"\bS/\s*", "S/ ", result)
-    result = re.sub(r"\bP/\s*", "P/ ", result)
+    if opts.abbr_c:
+        result = re.sub(r"\bC/\s*", "C/ ", result)
+    if opts.abbr_s:
+        result = re.sub(r"\bS/\s*", "S/ ", result)
+    if opts.abbr_p:
+        result = re.sub(r"\bP/\s*", "P/ ", result)
     return normalize_spaces(result)
 
 
-def _normalize_numeric_uniform_sizes(text: str) -> str:
+def _normalize_numeric_uniform_sizes(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
     if not _is_uniform_epi_context(result):
         return result
-    result = re.sub(r"\bTAM\.?\s*(?:N\s*[º°.]?\s*)?(\d{1,3})\b", r"N.\1", result)
-    result = re.sub(r"\bN\s*[º°.]?\s*(\d{1,3})\b", r"N.\1", result)
-    result = re.sub(
-        r"\bTAM\.?\s+(PP|P|M|G|GG|XG|XGG|EXG|EXGG|XXG|EXXG|EG|EGG|G1|G2|G3|G4|G5)\b",
-        r"\1",
-        result,
-    )
-    result = re.sub(r"\bTAM\.?\s+UNICO\b", "UNICO", result)
+    if opts.size_tam_n:
+        result = re.sub(r"\bTAM\.?\s*(?:N\s*[º°.]?\s*)?(\d{1,3})\b", r"N.\1", result)
+    if opts.size_n_ordinal:
+        result = re.sub(r"\bN\s*[º°.]?\s*(\d{1,3})\b", r"N.\1", result)
+    if opts.size_strip_tam:
+        result = re.sub(
+            r"\bTAM\.?\s+(PP|P|M|G|GG|XG|XGG|EXG|EXGG|XXG|EXXG|EG|EGG|G1|G2|G3|G4|G5)\b",
+            r"\1",
+            result,
+        )
+    if opts.size_unico:
+        result = re.sub(r"\bTAM\.?\s+UNICO\b", "UNICO", result)
     return normalize_spaces(result)
 
 
-def _normalize_punctuation(text: str) -> str:
+def _normalize_punctuation(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
-    result = re.sub(r"\s+,", ",", result)
-    result = re.sub(r"\s+;", ";", result)
-    result = re.sub(r"\s+:", ":", result)
-    result = re.sub(r"\s+\.", ".", result)
-    result = re.sub(r",([A-Z])", r", \1", result)
-    result = re.sub(r";([A-Z])", r"; \1", result)
-    result = re.sub(r":([A-Z])", r": \1", result)
-    result = re.sub(r",{2,}", ",", result)
-    result = re.sub(r";{2,}", ";", result)
-    result = re.sub(r":{2,}", ":", result)
+    if opts.punct_before:
+        result = re.sub(r"\s+,", ",", result)
+        result = re.sub(r"\s+;", ";", result)
+        result = re.sub(r"\s+:", ":", result)
+        result = re.sub(r"\s+\.", ".", result)
+    if opts.punct_after:
+        result = re.sub(r",([A-Z])", r", \1", result)
+        result = re.sub(r";([A-Z])", r"; \1", result)
+        result = re.sub(r":([A-Z])", r": \1", result)
+    if opts.punct_repeat:
+        result = re.sub(r",{2,}", ",", result)
+        result = re.sub(r";{2,}", ";", result)
+        result = re.sub(r":{2,}", ":", result)
+    if opts.punct_decorative_hyphens:
+        result = re.sub(r"-{2,}", " ", result)
     return normalize_spaces(result)
 
 
-def _normalize_special_characters(text: str) -> str:
+def _normalize_special_characters(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text)
-    result = re.sub(r"\bN\s*[º°.]?\s*(\d{1,3})\b", r"N.\1", result)
-    result = re.sub(r"[º°ª]", "", result)
-    result = result.replace("“", '"').replace("”", '"').replace("„", '"')
-    result = result.replace("‘", "'").replace("’", "'").replace("´", "'").replace("`", "'")
-    result = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", result)
-    result = result.replace("\u00a0", " ")
+    if opts.special_n_ordinal:
+        result = re.sub(r"\bN\s*[º°.]?\s*(\d{1,3})\b", r"N.\1", result)
+    if opts.special_ordinal_symbols:
+        result = re.sub(r"[º°ª]", "", result)
+    if opts.special_quotes:
+        result = result.replace("“", '"').replace("”", '"').replace("„", '"')
+        result = result.replace("‘", "'").replace("’", "'").replace("´", "'").replace("`", "'")
+    if opts.special_control:
+        result = re.sub(r"[\x00-\x1f\x7f-\x9f]", " ", result)
+        result = result.replace("\u00a0", " ")
     return normalize_spaces(result)
 
 
-def _identify_color_blocks(text: str) -> tuple[list[ColorBlock], set[str]]:
+def _identify_color_blocks(
+    text: str, options: SanitizeOptions | None = None
+) -> tuple[list[ColorBlock], set[str]]:
+    opts = options or SanitizeOptions()
     description = str(text).upper()
     blocks: list[ColorBlock] = []
     families: set[str] = set()
     mask = description
 
-    for compound in COMPOUND_COLORS:
-        pattern = re.compile(
-            rf"(^|\s){escape_regex(compound)}(?=$|\s|[,;:.()\-])"
-        )
-        while match := pattern.search(mask):
-            prefix = match.group(1) or ""
-            start = match.start() + len(prefix)
-            end = start + len(compound)
-            blocks.append(
-                ColorBlock(description[start:end], start, end, compound)
-            )
-            families.add(compound)
-            mask = mask[:start] + (" " * len(compound)) + mask[end:]
-            pattern = re.compile(
-                rf"(^|\s){escape_regex(compound)}(?=$|\s|[,;:.()\-])"
-            )
+    if opts.colors_compound:
+        for compound in COMPOUND_COLORS:
+            pattern = re.compile(rf"(^|\s){escape_regex(compound)}(?=$|\s|[,;:.()\-])")
+            while match := pattern.search(mask):
+                prefix = match.group(1) or ""
+                start = match.start() + len(prefix)
+                end = start + len(compound)
+                blocks.append(ColorBlock(description[start:end], start, end, compound))
+                families.add(compound)
+                mask = mask[:start] + (" " * len(compound)) + mask[end:]
+                pattern = re.compile(rf"(^|\s){escape_regex(compound)}(?=$|\s|[,;:.()\-])")
 
-    for item in SIMPLE_COLORS:
-        pattern = re.compile(
-            rf"(^|\s){escape_regex(item.color)}(?=$|\s|[,;:.()\-])"
-        )
-        while match := pattern.search(mask):
-            prefix = match.group(1) or ""
-            start = match.start() + len(prefix)
-            end = start + len(item.color)
-            blocks.append(
-                ColorBlock(description[start:end], start, end, item.family)
-            )
-            families.add(item.family)
-            mask = mask[:start] + (" " * len(item.color)) + mask[end:]
-            pattern = re.compile(
-                rf"(^|\s){escape_regex(item.color)}(?=$|\s|[,;:.()\-])"
-            )
+    if opts.colors_simple:
+        for item in SIMPLE_COLORS:
+            pattern = re.compile(rf"(^|\s){escape_regex(item.color)}(?=$|\s|[,;:.()\-])")
+            while match := pattern.search(mask):
+                prefix = match.group(1) or ""
+                start = match.start() + len(prefix)
+                end = start + len(item.color)
+                blocks.append(ColorBlock(description[start:end], start, end, item.family))
+                families.add(item.family)
+                mask = mask[:start] + (" " * len(item.color)) + mask[end:]
+                pattern = re.compile(rf"(^|\s){escape_regex(item.color)}(?=$|\s|[,;:.()\-])")
 
     blocks.sort(key=lambda block: block.start)
     return blocks, families
@@ -519,7 +752,8 @@ def _position_uniform_color(text: str, color: str) -> str:
     return _insert_color_before_size(base, color, size_match)
 
 
-def _normalize_color_position(text: str) -> str:
+def _normalize_color_position(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text).strip()
     principal = result
     packaging = ""
@@ -528,7 +762,7 @@ def _normalize_color_position(text: str) -> str:
         packaging = packaging_match.group(0).strip()
         principal = result[: packaging_match.start()].strip()
 
-    blocks, families = _identify_color_blocks(principal)
+    blocks, families = _identify_color_blocks(principal, opts)
     if not blocks or len(families) > 1 or len(blocks) != 1:
         return result
     if _has_protected_color_expression(principal) or _is_color_as_product_name(principal):
@@ -554,7 +788,20 @@ def _remove_brand_occurrences(text: str, term: str) -> str:
     return normalize_spaces(result)
 
 
-def _reposition_brands(text: str) -> str:
+def _reposition_brands(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
+    allowed: set[str] = set()
+    if opts.brand_marca:
+        allowed.add("MARCA")
+    if opts.brand_linha:
+        allowed.add("LINHA_COMERCIAL")
+    if opts.brand_interna:
+        allowed.add("IDENTIFICACAO_INTERNA")
+    if opts.brand_legado:
+        allowed.add("MARCADOR_LEGADO")
+    if not allowed:
+        return str(text)
+
     result = normalize_spaces(text)
     principal = result
     packaging = ""
@@ -576,7 +823,6 @@ def _reposition_brands(text: str) -> str:
     if item is None:
         return result
 
-    allowed = {"MARCA", "LINHA_COMERCIAL", "IDENTIFICACAO_INTERNA", "MARCADOR_LEGADO"}
     if item.kind not in allowed:
         return result
 
@@ -608,44 +854,53 @@ def _normalize_known_parentheticals(text: str) -> str:
     return result
 
 
-def _normalize_safe_structure(text: str) -> str:
+def _normalize_safe_structure(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = str(text).strip()
-    if count_char(result, "(") != count_char(result, ")"):
-        return result
-    result = re.sub(r"\(\s+", "(", result)
-    result = re.sub(r"\s+\)", ")", result)
-    result = re.sub(r"\(\s*\)", " ", result)
-    result = re.sub(r"\s+\(", " (", result)
-    result = re.sub(r"\)(?=[A-Z0-9])", ") ", result)
-    result = _normalize_known_parentheticals(result)
-    result = re.sub(r"\s*,\s*\(", " (", result)
-    result = re.sub(r"\s*;\s*\(", " (", result)
+    if opts.structure_parens:
+        if count_char(result, "(") != count_char(result, ")"):
+            return result
+        result = re.sub(r"\(\s+", "(", result)
+        result = re.sub(r"\s+\)", ")", result)
+        result = re.sub(r"\(\s*\)", " ", result)
+        result = re.sub(r"\s+\(", " (", result)
+        result = re.sub(r"\)(?=[A-Z0-9])", ") ", result)
+        result = re.sub(r"\s*,\s*\(", " (", result)
+        result = re.sub(r"\s*;\s*\(", " (", result)
+    if opts.structure_complements:
+        result = _normalize_known_parentheticals(result)
     return normalize_spaces(result)
 
 
-def _normalize_safe_semantics(text: str) -> str:
+def _normalize_safe_semantics(text: str, options: SanitizeOptions | None = None) -> str:
+    opts = options or SanitizeOptions()
     result = normalize_spaces(text)
-    result = re.sub(r"\b(ARMARIO|ARQUIVO)\s+ACO\b", r"\1 DE ACO", result)
-    result = re.sub(
-        r"\bCOLA\s+(\d+(?:[.,]\d+)?\s+(?:G|KG|ML|LT))\s+BRANCA\b",
-        r"COLA BRANCA \1",
-        result,
-    )
-    result = re.sub(
-        r"\bCONCENTRADO\s+(?:DE\s+)?AGUA\s+SANITARIA\b",
-        "AGUA SANITARIA CONCENTRADO",
-        result,
-    )
-    result = re.sub(r"\bCONCENTRADO\s+DESINFETANTE\b", "DESINFETANTE CONCENTRADO", result)
-    result = re.sub(
-        r"\bCONCENTRADO\s+DETERGENTE\s+NEUTRO\b",
-        "DETERGENTE NEUTRO CONCENTRADO",
-        result,
-    )
-    result = re.sub(r"\bCONCENTRADO\s+MULTIUSO\b", "MULTIUSO CONCENTRADO", result)
-    result = re.sub(r"\bCORRENTE\s+PARA\s+MOTOSSERRA\b", "CORRENTE MOTOSSERRA", result)
-    result = re.sub(r"\bBALDE\s+PLASTICO\s+-\s+(?=\d)", "BALDE PLASTICO ", result)
-    result = re.sub(r"\bBALDE\s+PLASTICO\s+DE\s+(?=\d)", "BALDE PLASTICO ", result)
+    if opts.semantics_aco:
+        result = re.sub(r"\b(ARMARIO|ARQUIVO)\s+ACO\b", r"\1 DE ACO", result)
+    if opts.semantics_cola:
+        result = re.sub(
+            r"\bCOLA\s+(\d+(?:[.,]\d+)?\s+(?:G|KG|ML|LT))\s+BRANCA\b",
+            r"COLA BRANCA \1",
+            result,
+        )
+    if opts.semantics_concentrado:
+        result = re.sub(
+            r"\bCONCENTRADO\s+(?:DE\s+)?AGUA\s+SANITARIA\b",
+            "AGUA SANITARIA CONCENTRADO",
+            result,
+        )
+        result = re.sub(r"\bCONCENTRADO\s+DESINFETANTE\b", "DESINFETANTE CONCENTRADO", result)
+        result = re.sub(
+            r"\bCONCENTRADO\s+DETERGENTE\s+NEUTRO\b",
+            "DETERGENTE NEUTRO CONCENTRADO",
+            result,
+        )
+        result = re.sub(r"\bCONCENTRADO\s+MULTIUSO\b", "MULTIUSO CONCENTRADO", result)
+    if opts.semantics_corrente:
+        result = re.sub(r"\bCORRENTE\s+PARA\s+MOTOSSERRA\b", "CORRENTE MOTOSSERRA", result)
+    if opts.semantics_balde:
+        result = re.sub(r"\bBALDE\s+PLASTICO\s+-\s+(?=\d)", "BALDE PLASTICO ", result)
+        result = re.sub(r"\bBALDE\s+PLASTICO\s+DE\s+(?=\d)", "BALDE PLASTICO ", result)
     return normalize_spaces(result)
 
 

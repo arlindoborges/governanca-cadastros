@@ -46,7 +46,7 @@ export function ProcessingDialog({
         </div>
         {hasTotal ? (
           <p className="processing-dialog__meta">
-            {processed.toLocaleString("pt-BR")} de {total.toLocaleString("pt-BR")} registros
+            {processed.toLocaleString("pt-BR")} de {total.toLocaleString("pt-BR")}
             {displayPercent !== null ? ` · ${displayPercent}%` : null}
           </p>
         ) : (

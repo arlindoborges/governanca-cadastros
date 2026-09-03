@@ -38,7 +38,13 @@ cd backend
 uv sync --group dev
 uv run alembic upgrade head
 cd ..
-docker compose up -d
+docker compose --profile apps up -d
+```
+
+No Linux, para evitar build pesado de imagens, prefira o modo leve (só PostgreSQL no Docker):
+
+```bash
+./scripts/iniciar-local.sh
 ```
 
 Abrir `http://localhost:3000`. O sistema abre no Início, sem login. Em **Importações** envie e mapeie CSV; em **Análises** execute normalização e matching do lote.

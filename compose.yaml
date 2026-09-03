@@ -23,6 +23,7 @@ services:
       start_period: 10s
 
   backend:
+    profiles: ["apps"]
     build:
       context: ./backend
     container_name: governanca-cadastros-backend
@@ -49,6 +50,7 @@ services:
         condition: service_healthy
 
   frontend:
+    profiles: ["apps"]
     build:
       context: ./frontend
       target: development

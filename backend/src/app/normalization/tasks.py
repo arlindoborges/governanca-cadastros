@@ -4,8 +4,9 @@ from uuid import UUID
 
 from app.core.db import SessionLocal
 from app.core.errors import AppError
-from app.core.processing import complete, fail, job_key, set_running, update_progress
+from app.core.processing import complete, fail, job_key, update_progress
 from app.core.tenant import TenantContext
+from app.normalization.fase1 import SanitizeOptions
 from app.normalization.schemas import NormalizationBatchSummary
 from app.normalization.service import get_batch_for_normalization, run_batch_normalization
 
@@ -15,6 +16,7 @@ def execute_normalization_job(
     user_id: UUID,
     role: str,
     batch_id: UUID,
+    sanitize_options: SanitizeOptions | None = None,
 ) -> None:
     key = job_key("normalization", organization_id, batch_id)
     session = SessionLocal()
@@ -29,7 +31,7 @@ def execute_normalization_job(
             fail(key, "Lote não encontrado.")
             return
 
-        set_running(key, batch.valid_rows, "Preparando normalização...")
+        update_progress(key, 0, batch.valid_rows, "Preparando normalização...")
 
         def on_progress(processed: int, total: int) -> None:
             update_progress(
@@ -43,6 +45,7 @@ def execute_normalization_job(
             session,
             tenant,
             batch_id,
+            sanitize_options=sanitize_options,
             on_progress=on_progress,
         )
         complete(key, summary.model_dump(), "Normalização concluída.")

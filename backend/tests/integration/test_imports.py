@@ -1,17 +1,18 @@
 from io import BytesIO
 from uuid import uuid4
 
+from sqlalchemy.orm import Session
+
+from app.core.db import SessionLocal
+from app.core.processing import job_key, mark_job_stale, set_running
+from app.imports.models import ImportBatch, SourceSystem
+from app.organizations.models import Organization, OrganizationUser, User
 from helpers.imports import (
     _apply_mapping_and_wait,
     _delete_import_batch_and_wait,
     _upload_import_batch_and_wait,
 )
 from helpers.spreadsheet import xlsx_upload
-from sqlalchemy.orm import Session
-
-from app.core.db import SessionLocal
-from app.imports.models import ImportBatch, SourceSystem
-from app.organizations.models import Organization, OrganizationUser, User
 
 
 def test_import_xlsx_maps_and_keeps_invalid_rows(migrated_client) -> None:
@@ -102,6 +103,38 @@ def test_missing_mapped_column_returns_stable_code(migrated_client) -> None:
     error = mapped.json()["error"]
     assert error["code"] == "IMPORT_REQUIRED_COLUMN_MISSING"
     assert error["details"]["field"] == "original_unit"
+
+
+def test_mapping_retries_after_stale_running_job(migrated_client) -> None:
+    unique = uuid4().hex[:8]
+    payload = _upload_import_batch_and_wait(
+        migrated_client,
+        xlsx_upload(
+            [
+                ["CODIGO", "DESCRICAO", "UNIDADE"],
+                [f"R-{unique}", "Reprocessar", "UN"],
+            ],
+            f"retry-{unique}.xlsx",
+        ),
+    )
+    batch_id = payload["batch"]["id"]
+    foundation = migrated_client.get("/api/v1/foundation")
+    organization_id = foundation.json()["data"]["organization"]["id"]
+
+    key = job_key("import-mapping", organization_id, batch_id)
+    set_running(key, 1, "Job obsoleto")
+    mark_job_stale(key)
+
+    mapped_payload = _apply_mapping_and_wait(
+        migrated_client,
+        batch_id,
+        {
+            "source_code": "CODIGO",
+            "original_description": "DESCRICAO",
+            "original_unit": "UNIDADE",
+        },
+    )
+    assert mapped_payload["batch"]["status"] == "COMPLETED"
 
 
 def test_invalid_xlsx_content_is_rejected(migrated_client) -> None:

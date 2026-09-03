@@ -73,6 +73,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/batches/{batch_id}/upload/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Import Batch Upload Status */
+        get: operations["read_import_batch_upload_status_api_v1_imports_batches__batch_id__upload_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/imports/batches/{batch_id}": {
         parameters: {
             query?: never;
@@ -119,6 +136,23 @@ export interface paths {
         put?: never;
         /** Post Batch Mapping */
         post: operations["post_batch_mapping_api_v1_imports_batches__batch_id__mapping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/mapping/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Import Batch Mapping Status */
+        get: operations["read_import_batch_mapping_status_api_v1_imports_batches__batch_id__mapping_status_get"];
+        put?: never;
+        post?: never;
         delete?: never;
         options?: never;
         head?: never;
@@ -295,6 +329,23 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/matching/batches/{batch_id}/run/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Matching Run Status */
+        get: operations["read_matching_run_status_api_v1_matching_batches__batch_id__run_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
     "/api/v1/matching/batches/{batch_id}/summary": {
         parameters: {
             query?: never;
@@ -361,6 +412,265 @@ export interface components {
             original_description: string;
             /** Original Unit */
             original_unit: string;
+        };
+        /** Fase1RunOptions */
+        Fase1RunOptions: {
+            /**
+             * Spaces
+             * @default padrao
+             * @enum {string}
+             */
+            spaces: "padrao" | "manter";
+            /**
+             * Uppercase
+             * @default true
+             */
+            uppercase: boolean;
+            /**
+             * Accents
+             * @default true
+             */
+            accents: boolean;
+            /**
+             * Identifiers
+             * @default true
+             */
+            identifiers: boolean;
+            /**
+             * Unit Aliases
+             * @default true
+             */
+            unit_aliases: boolean;
+            /**
+             * Unit Split
+             * @default true
+             */
+            unit_split: boolean;
+            /**
+             * Unit L To Lt
+             * @default true
+             */
+            unit_l_to_lt: boolean;
+            /**
+             * Unit M To Mt
+             * @default true
+             */
+            unit_m_to_mt: boolean;
+            /**
+             * Unit Percent Join
+             * @default true
+             */
+            unit_percent_join: boolean;
+            /**
+             * Spec Mt S
+             * @default true
+             */
+            spec_mt_s: boolean;
+            /**
+             * Spec Join Thousands
+             * @default true
+             */
+            spec_join_thousands: boolean;
+            /**
+             * Spec Join Sigla
+             * @default true
+             */
+            spec_join_sigla: boolean;
+            /**
+             * Spec Thousand Dots
+             * @default true
+             */
+            spec_thousand_dots: boolean;
+            /**
+             * Dimensions X
+             * @default true
+             */
+            dimensions_x: boolean;
+            /**
+             * Dimensions Order
+             * @default true
+             */
+            dimensions_order: boolean;
+            /**
+             * Dimensions Decimals
+             * @default true
+             */
+            dimensions_decimals: boolean;
+            /**
+             * Packaging Dash
+             * @default true
+             */
+            packaging_dash: boolean;
+            /**
+             * Packaging C Slash
+             * @default true
+             */
+            packaging_c_slash: boolean;
+            /**
+             * Abbr C
+             * @default true
+             */
+            abbr_c: boolean;
+            /**
+             * Abbr S
+             * @default true
+             */
+            abbr_s: boolean;
+            /**
+             * Abbr P
+             * @default true
+             */
+            abbr_p: boolean;
+            /**
+             * Size Tam N
+             * @default true
+             */
+            size_tam_n: boolean;
+            /**
+             * Size N Ordinal
+             * @default true
+             */
+            size_n_ordinal: boolean;
+            /**
+             * Size Strip Tam
+             * @default true
+             */
+            size_strip_tam: boolean;
+            /**
+             * Size Unico
+             * @default true
+             */
+            size_unico: boolean;
+            /**
+             * Punct Before
+             * @default true
+             */
+            punct_before: boolean;
+            /**
+             * Punct After
+             * @default true
+             */
+            punct_after: boolean;
+            /**
+             * Punct Repeat
+             * @default true
+             */
+            punct_repeat: boolean;
+            /**
+             * Punct Decorative Hyphens
+             * @default true
+             */
+            punct_decorative_hyphens: boolean;
+            /**
+             * Special N Ordinal
+             * @default true
+             */
+            special_n_ordinal: boolean;
+            /**
+             * Special Ordinal Symbols
+             * @default true
+             */
+            special_ordinal_symbols: boolean;
+            /**
+             * Special Quotes
+             * @default true
+             */
+            special_quotes: boolean;
+            /**
+             * Special Control
+             * @default true
+             */
+            special_control: boolean;
+            /**
+             * Special Slash Preserve
+             * @default true
+             */
+            special_slash_preserve: boolean;
+            /**
+             * Colors Simple
+             * @default true
+             */
+            colors_simple: boolean;
+            /**
+             * Colors Compound
+             * @default true
+             */
+            colors_compound: boolean;
+            /**
+             * Colors Reposition
+             * @default true
+             */
+            colors_reposition: boolean;
+            /**
+             * Brand Marca
+             * @default true
+             */
+            brand_marca: boolean;
+            /**
+             * Brand Linha
+             * @default true
+             */
+            brand_linha: boolean;
+            /**
+             * Brand Interna
+             * @default true
+             */
+            brand_interna: boolean;
+            /**
+             * Brand Legado
+             * @default true
+             */
+            brand_legado: boolean;
+            /**
+             * Structure Parens
+             * @default true
+             */
+            structure_parens: boolean;
+            /**
+             * Structure Complements
+             * @default true
+             */
+            structure_complements: boolean;
+            /**
+             * Structure No Invent
+             * @default true
+             */
+            structure_no_invent: boolean;
+            /**
+             * Structure Priority Meaning
+             * @default true
+             */
+            structure_priority_meaning: boolean;
+            /**
+             * Semantics Aco
+             * @default true
+             */
+            semantics_aco: boolean;
+            /**
+             * Semantics Cola
+             * @default true
+             */
+            semantics_cola: boolean;
+            /**
+             * Semantics Concentrado
+             * @default true
+             */
+            semantics_concentrado: boolean;
+            /**
+             * Semantics Corrente
+             * @default true
+             */
+            semantics_corrente: boolean;
+            /**
+             * Semantics Balde
+             * @default true
+             */
+            semantics_balde: boolean;
+            /**
+             * Semantics Limit
+             * @default true
+             */
+            semantics_limit: boolean;
         };
         /** FoundationData */
         FoundationData: {
@@ -473,6 +783,26 @@ export interface components {
         /** ImportBatchPreviewResponse */
         ImportBatchPreviewResponse: {
             data: components["schemas"]["ImportBatchPreviewData"];
+        };
+        /** ImportBatchProcessingStatus */
+        ImportBatchProcessingStatus: {
+            /** Status */
+            status: string;
+            /** Processed */
+            processed: number;
+            /** Total */
+            total: number;
+            /** Percent */
+            percent: number;
+            /** Message */
+            message: string;
+            /** Batch Id */
+            batch_id?: string | null;
+            preview?: components["schemas"]["ImportBatchPreviewData"] | null;
+        };
+        /** ImportBatchProcessingStatusResponse */
+        ImportBatchProcessingStatusResponse: {
+            data: components["schemas"]["ImportBatchProcessingStatus"];
         };
         /** ImportBatchRead */
         ImportBatchRead: {
@@ -698,6 +1028,24 @@ export interface components {
             /** Requires Review */
             requires_review: boolean;
         };
+        /** MatchingRunStatus */
+        MatchingRunStatus: {
+            /** Status */
+            status: string;
+            /** Processed */
+            processed: number;
+            /** Total */
+            total: number;
+            /** Percent */
+            percent: number;
+            /** Message */
+            message: string;
+            summary?: components["schemas"]["MatchingBatchSummary"] | null;
+        };
+        /** MatchingRunStatusResponse */
+        MatchingRunStatusResponse: {
+            data: components["schemas"]["MatchingRunStatus"];
+        };
         /** NormalizationBatchSummary */
         NormalizationBatchSummary: {
             /**
@@ -805,6 +1153,18 @@ export interface components {
             normalized_description: string | null;
             /** Processing Status */
             processing_status: string;
+        };
+        /** NormalizationRunIn */
+        NormalizationRunIn: {
+            /**
+             * Description Mode
+             * @default fase1
+             * @enum {string}
+             */
+            description_mode: "fase1" | "basica" | "original" | "custom";
+            /** Description Steps */
+            description_steps?: ("grafia" | "identifiers" | "units" | "technical_specs" | "dimensions" | "packaging" | "abbreviations" | "uniform_sizes" | "punctuation" | "special_chars" | "colors" | "brands" | "structure" | "semantics")[] | null;
+            fase1?: components["schemas"]["Fase1RunOptions"] | null;
         };
         /** NormalizationRunStatus */
         NormalizationRunStatus: {
@@ -995,12 +1355,43 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
-            201: {
+            202: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ImportBatchPreviewResponse"];
+                    "application/json": components["schemas"]["ImportBatchProcessingStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_import_batch_upload_status_api_v1_imports_batches__batch_id__upload_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchProcessingStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1123,12 +1514,43 @@ export interface operations {
         };
         responses: {
             /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchProcessingStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_import_batch_mapping_status_api_v1_imports_batches__batch_id__mapping_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["ImportBatchPreviewResponse"];
+                    "application/json": components["schemas"]["ImportBatchProcessingStatusResponse"];
                 };
             };
             /** @description Validation Error */
@@ -1225,7 +1647,11 @@ export interface operations {
             };
             cookie?: never;
         };
-        requestBody?: never;
+        requestBody?: {
+            content: {
+                "application/json": components["schemas"]["NormalizationRunIn"] | null;
+            };
+        };
         responses: {
             /** @description Successful Response */
             202: {
@@ -1409,12 +1835,43 @@ export interface operations {
         requestBody?: never;
         responses: {
             /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchingRunStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_matching_run_status_api_v1_matching_batches__batch_id__run_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
             200: {
                 headers: {
                     [name: string]: unknown;
                 };
                 content: {
-                    "application/json": components["schemas"]["MatchingBatchSummaryResponse"];
+                    "application/json": components["schemas"]["MatchingRunStatusResponse"];
                 };
             };
             /** @description Validation Error */

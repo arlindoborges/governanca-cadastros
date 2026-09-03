@@ -1,18 +1,29 @@
 from typing import Annotated
 from uuid import UUID
 
-from fastapi import APIRouter, BackgroundTasks, Depends, Query, status
+from fastapi import APIRouter, Body, Depends, Query, status
 from sqlalchemy.orm import Session
 
-from app.core.db import get_db
+from app.core.db import get_db, release_request_transaction
 from app.core.errors import AppError
-from app.core.processing import get_job, job_key, percent_for, set_running
+from app.core.processing import (
+    clear_job,
+    get_job,
+    is_stale,
+    job_key,
+    percent_for,
+    set_running,
+    spawn_job,
+)
 from app.core.tenant import TenantContext, get_tenant_context
+from app.normalization.fase1 import SanitizeOptions
+from app.normalization.repository import get_batch_for_normalization
 from app.normalization.schemas import (
     NormalizationBatchSummary,
     NormalizationBatchSummaryResponse,
     NormalizationEligibleBatchListResponse,
     NormalizationRecordListResponse,
+    NormalizationRunIn,
     NormalizationRunStatus,
     NormalizationRunStatusResponse,
     ReviewIssueListResponse,
@@ -24,7 +35,6 @@ from app.normalization.service import (
     list_normalized_records,
 )
 from app.normalization.tasks import execute_normalization_job
-from app.normalization.repository import get_batch_for_normalization
 
 router = APIRouter(prefix="/normalization", tags=["normalization"])
 
@@ -44,7 +54,7 @@ def read_eligible_batches(
 )
 def post_run_normalization(
     batch_id: UUID,
-    background_tasks: BackgroundTasks,
+    payload: Annotated[NormalizationRunIn | None, Body()] = None,
     session: Session = Depends(get_db),
     tenant: TenantContext = Depends(get_tenant_context),
 ) -> NormalizationRunStatusResponse:
@@ -59,22 +69,36 @@ def post_run_normalization(
             details={"status": batch.status},
         )
 
+    run = payload or NormalizationRunIn()
+    if run.fase1 is not None:
+        options = SanitizeOptions.from_fase1(run.fase1.model_dump())
+    else:
+        options = SanitizeOptions.from_mode(
+            run.description_mode,
+            list(run.description_steps) if run.description_steps else None,
+        )
+
     key = job_key("normalization", tenant.organization_id, batch_id)
     existing = get_job(key)
     if existing is not None and existing.status == "RUNNING":
-        raise AppError(
-            "NORMALIZATION_ALREADY_RUNNING",
-            "A normalização deste lote já está em andamento.",
-            status_code=409,
-        )
+        if is_stale(existing):
+            clear_job(key)
+        else:
+            raise AppError(
+                "NORMALIZATION_ALREADY_RUNNING",
+                "A normalização deste lote já está em andamento.",
+                status_code=409,
+            )
 
     job = set_running(key, batch.valid_rows, "Iniciando normalização...")
-    background_tasks.add_task(
+    release_request_transaction(session)
+    spawn_job(
         execute_normalization_job,
         tenant.organization_id,
         tenant.user_id,
         tenant.role,
         batch_id,
+        options,
     )
     return NormalizationRunStatusResponse(
         data=NormalizationRunStatus(

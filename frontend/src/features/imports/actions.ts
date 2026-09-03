@@ -3,25 +3,27 @@
 import { revalidatePath } from "next/cache";
 
 import { isXlsxFileName } from "@/features/imports/validation";
-import type { ActionState } from "@/lib/forms/action-state";
 import { apiGet, apiSend } from "@/lib/api/client";
 import type { components } from "@/generated/openapi";
 
-type ImportBatchPreviewResponse = components["schemas"]["ImportBatchPreviewResponse"];
+type ImportBatchProcessingStatusResponse =
+  components["schemas"]["ImportBatchProcessingStatusResponse"];
 type ImportBatchDeleteStatusResponse = components["schemas"]["ImportBatchDeleteStatusResponse"];
 
+export type ImportBatchProcessingStatus = components["schemas"]["ImportBatchProcessingStatus"];
 export type ImportBatchDeleteStatus = components["schemas"]["ImportBatchDeleteStatus"];
 
-export type { ActionRedirectState, ActionState } from "@/lib/forms/action-state";
+type ColumnMappingPayload = {
+  source_code: string;
+  original_description: string;
+  original_unit: string;
+};
 
-export async function uploadImportBatch(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
+export async function startImportBatchUpload(formData: FormData) {
   const file = formData.get("file");
   if (!(file instanceof Blob) || file.size === 0) {
     return {
-      ok: false,
+      ok: false as const,
       status: 422,
       error: {
         code: "VALIDATION_ERROR",
@@ -35,7 +37,7 @@ export async function uploadImportBatch(
   const fileName = file instanceof File && file.name ? file.name : "arquivo.xlsx";
   if (!isXlsxFileName(fileName)) {
     return {
-      ok: false,
+      ok: false as const,
       status: 422,
       error: {
         code: "VALIDATION_ERROR",
@@ -49,39 +51,32 @@ export async function uploadImportBatch(
   const body = new FormData();
   body.set("file", file, fileName);
 
-  const result = await apiSend<ImportBatchPreviewResponse>("/api/v1/imports/batches", {
+  return apiSend<ImportBatchProcessingStatusResponse>("/api/v1/imports/batches", {
     method: "POST",
     body,
   });
-  if (!result.ok) {
-    return result;
-  }
-  revalidatePath("/importacoes");
-  return { ok: true, redirectTo: `/importacoes/${result.data.data.batch.id}` };
 }
 
-export async function applyColumnMapping(
-  _prev: ActionState,
-  formData: FormData,
-): Promise<ActionState> {
-  const batchId = String(formData.get("batch_id") ?? "");
-  const result = await apiSend<ImportBatchPreviewResponse>(
+export async function startColumnMapping(batchId: string, payload: ColumnMappingPayload) {
+  return apiSend<ImportBatchProcessingStatusResponse>(
     `/api/v1/imports/batches/${batchId}/mapping`,
     {
       method: "POST",
-      body: JSON.stringify({
-        source_code: String(formData.get("source_code") ?? ""),
-        original_description: String(formData.get("original_description") ?? ""),
-        original_unit: String(formData.get("original_unit") ?? ""),
-      }),
+      body: JSON.stringify(payload),
     },
   );
-  if (!result.ok) {
-    return result;
-  }
-  revalidatePath("/importacoes");
-  revalidatePath(`/importacoes/${batchId}`);
-  return { ok: true, redirectTo: `/importacoes/${batchId}` };
+}
+
+export async function getImportBatchUploadStatus(batchId: string) {
+  return apiGet<ImportBatchProcessingStatusResponse>(
+    `/api/v1/imports/batches/${batchId}/upload/status`,
+  );
+}
+
+export async function getImportBatchMappingStatus(batchId: string) {
+  return apiGet<ImportBatchProcessingStatusResponse>(
+    `/api/v1/imports/batches/${batchId}/mapping/status`,
+  );
 }
 
 export async function startImportBatchDelete(batchId: string) {
