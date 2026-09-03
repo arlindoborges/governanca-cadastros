@@ -1,74 +1,49 @@
 # Governança de Cadastros
 
-MVP de uma aplicação web configurável para saneamento e governança de cadastros de produtos.
+Reimplementação do zero do MVP de saneamento e governança cadastral.
 
-## Arquitetura planejada
+## Referências preservadas
 
-- Frontend: Next.js + TypeScript
-- Backend: FastAPI + Python
-- Banco de dados: PostgreSQL
-- Ambiente local: Docker Compose
-- Estilo: monorepo com monólito modular
+- `Fase1.gs` — saneamento (planilha)
+- `Fase2.gs` — matching e agrupamento (planilha)
+- `Desenho_Funcional_MVP_Governanca_Cadastros.md`
+- `desenho_funcional_ferramenta_saneamento_cadastros.md`
 
-A definição completa está em [docs/arquitetura-tecnica-v0.1.md](docs/arquitetura-tecnica-v0.1.md).
+## Stack
 
-O índice da documentação e o contrato de desenvolvimento estão em:
+- Frontend: Next.js 15 + TypeScript
+- Backend: FastAPI + SQLAlchemy + Alembic
+- Banco: PostgreSQL 18
 
-- [docs/README.md](docs/README.md)
-- [PADRAO_PROJETO.md](PADRAO_PROJETO.md)
-
-O projeto concluiu a Fatia 4 (Matching lexical). O Compose sobe PostgreSQL, FastAPI e Next.js; em desenvolvimento o código das apps também pode rodar nos servidores do host.
-
-## Ambiente local
-
-Pré-requisitos no Windows:
-
-- Docker Desktop
-- Node.js 24 LTS
-- Python 3.12 (`py -3.12`)
-- [uv](https://docs.astral.sh/uv/) no `PATH` (`%USERPROFILE%\.local\bin`)
-- Git
-
-```powershell
-$env:Path = "$env:USERPROFILE\.local\bin;$env:Path"
-Copy-Item .env.example .env   # somente na primeira vez; ajuste POSTGRES_PORT se 5432 estiver ocupada
-.\scripts\iniciar-db.ps1
-
-cd backend
-uv sync --group dev
-uv run alembic upgrade head
-cd ..
-docker compose --profile apps up -d
-```
-
-No Linux, para evitar build pesado de imagens, prefira o modo leve (só PostgreSQL no Docker):
+## Subir ambiente
 
 ```bash
-./scripts/iniciar-local.sh
-```
-
-Abrir `http://localhost:3000`. O sistema abre no Início, sem login. Em **Importações** envie e mapeie CSV; em **Análises** execute normalização e matching do lote.
-
-Para validar a Fatia 2:
-
-```powershell
-.\scripts\validar-fatia2.ps1
-```
-
-Para validar backend da Fatia 3 (após migration):
-
-```powershell
-cd backend
+cp .env.example .env
+docker compose up -d
+cd backend && uv sync --extra dev
 uv run alembic upgrade head
-uv run pytest
+uv run uvicorn governanca.main:app --reload --port 8000
 ```
 
-Para validar backend da Fatia 4 (matching):
+Em outro terminal:
 
-```powershell
-cd backend
-uv run alembic upgrade head
-uv run pytest tests/unit/test_matching_engine.py tests/integration/test_matching.py
+```bash
+cd frontend && npm install && npm run dev
 ```
 
-Se a porta 5432 já estiver ocupada (por exemplo o serviço Windows `postgresql-x64-18`), altere `POSTGRES_PORT` e a porta de `DATABASE_URL` no `.env`. A porta publicada é configurável; 5432 permanece o padrão da DP-010.
+## Validação
+
+```bash
+cd backend && uv run pytest
+cd frontend && npm run typecheck
+```
+
+## Fluxo MVP (Etapa 1)
+
+Dashboard → Projeto → Importação → Saneamento (Fase 1) → Análises (Fase 2) → DE/PARA → Base Mestre
+
+Princípios:
+
+- Original importado imutável
+- DE/PARA em vínculo separado
+- Sem autenticação no MVP

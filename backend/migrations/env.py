@@ -1,52 +1,30 @@
-"""Alembic migration environment."""
-
-from __future__ import annotations
-
-import sys
 from logging.config import fileConfig
-from pathlib import Path
 
 from alembic import context
 from sqlalchemy import engine_from_config, pool
 
-BACKEND_ROOT = Path(__file__).resolve().parents[1]
-sys.path.insert(0, str(BACKEND_ROOT / "src"))
-
-from app.core.config import get_settings
-from app.core.db import Base
-from app.governance import models as governance_models  # noqa: F401
-from app.imports import models as imports_models  # noqa: F401
-from app.normalization import models as normalization_models  # noqa: F401
-from app.organizations import models as organizations_models  # noqa: F401
+from governanca.core.config import get_settings
+from governanca.core.db import Base
+from governanca.models import entities  # noqa: F401
 
 config = context.config
-
 if config.config_file_name is not None:
     fileConfig(config.config_file_name)
-
-config.set_main_option("sqlalchemy.url", get_settings().database_url.replace("%", "%%"))
 
 target_metadata = Base.metadata
 
 
 def run_migrations_offline() -> None:
-    url = config.get_main_option("sqlalchemy.url")
-    context.configure(
-        url=url,
-        target_metadata=target_metadata,
-        literal_binds=True,
-        dialect_opts={"paramstyle": "named"},
-    )
+    url = get_settings().database_url
+    context.configure(url=url, target_metadata=target_metadata, literal_binds=True)
     with context.begin_transaction():
         context.run_migrations()
 
 
 def run_migrations_online() -> None:
-    connectable = engine_from_config(
-        config.get_section(config.config_ini_section, {}),
-        prefix="sqlalchemy.",
-        poolclass=pool.NullPool,
-    )
+    configuration = config.get_section(config.config_ini_section) or {}
+    configuration["sqlalchemy.url"] = get_settings().database_url
+    connectable = engine_from_config(configuration, prefix="sqlalchemy.", poolclass=pool.NullPool)
     with connectable.connect() as connection:
         context.configure(connection=connection, target_metadata=target_metadata)
         with context.begin_transaction():

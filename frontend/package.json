@@ -1,32 +1,24 @@
 {
-  "name": "frontend",
+  "name": "governanca-frontend",
   "version": "0.1.0",
   "private": true,
   "scripts": {
-    "dev": "next dev",
+    "dev": "next dev --port 3000 --turbopack",
+    "dev:webpack": "next dev --port 3000",
     "build": "next build",
-    "start": "next start",
-    "lint": "eslint",
-    "typecheck": "tsc --noEmit",
-    "test:e2e": "playwright test",
-    "generate:api": "uv run --project ../backend python ../scripts/export_openapi.py && openapi-typescript src/generated/openapi.json -o src/generated/openapi.d.ts"
-  },
-  "engines": {
-    "node": ">=24 <25"
+    "start": "next start --port 3000",
+    "start:local": "npm run build && npm run start",
+    "typecheck": "tsc --noEmit"
   },
   "dependencies": {
-    "next": "16.3.4",
-    "react": "19.2.8",
-    "react-dom": "19.2.8"
+    "next": "^15.1.0",
+    "react": "^19.0.0",
+    "react-dom": "^19.0.0"
   },
   "devDependencies": {
-    "@playwright/test": "^1.62.1",
-    "@types/node": "^20",
-    "@types/react": "^19",
-    "@types/react-dom": "^19",
-    "eslint": "^9",
-    "eslint-config-next": "16.3.4",
-    "openapi-typescript": "^7.13.0",
-    "typescript": "^5"
+    "@types/node": "^22.10.0",
+    "@types/react": "^19.0.0",
+    "@types/react-dom": "^19.0.0",
+    "typescript": "^5.7.0"
   }
 }

@@ -1,23 +1,11 @@
 import type { NextConfig } from "next";
+import path from "node:path";
 
 const nextConfig: NextConfig = {
-  agentRules: false,
-  devIndicators: {
-    position: "bottom-left",
-  },
-  output: "standalone",
-  experimental: {
-    serverActions: {
-      bodySizeLimit: "11mb",
-    },
-  },
+  reactStrictMode: true,
+  outputFileTracingRoot: path.join(__dirname, ".."),
   async rewrites() {
-    return [
-      {
-        source: "/favicon.ico",
-        destination: "/favicon.svg",
-      },
-    ];
+    return [{ source: "/favicon.ico", destination: "/icon.svg" }];
   },
 };
 
