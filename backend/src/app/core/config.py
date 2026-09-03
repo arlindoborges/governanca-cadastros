@@ -14,6 +14,10 @@ class Settings(BaseSettings):
     app_env: Literal["local", "test", "production"] = "local"
     database_url: str
     cors_origins: str = "http://localhost:3000"
+    import_temp_dir: str = ""
+    import_max_bytes: int = 10_485_760
+    import_max_rows: int = 300_000
+    import_max_columns: int = 80
 
     @property
     def cors_origin_list(self) -> list[str]:

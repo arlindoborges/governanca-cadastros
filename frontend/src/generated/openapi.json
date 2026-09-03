@@ -69,10 +69,905 @@
           }
         }
       }
+    },
+    "/api/v1/imports/batches": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Batches",
+        "operationId": "read_batches_api_v1_imports_batches_get",
+        "parameters": [
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Post Batch",
+        "operationId": "post_batch_api_v1_imports_batches_post",
+        "requestBody": {
+          "required": true,
+          "content": {
+            "multipart/form-data": {
+              "schema": {
+                "$ref": "#/components/schemas/Body_post_batch_api_v1_imports_batches_post"
+              }
+            }
+          }
+        },
+        "responses": {
+          "201": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Batch",
+        "operationId": "read_batch_api_v1_imports_batches__batch_id__get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Remove Batch",
+        "operationId": "remove_batch_api_v1_imports_batches__batch_id__delete",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchDeleteStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}/delete/status": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Import Batch Delete Status",
+        "operationId": "read_import_batch_delete_status_api_v1_imports_batches__batch_id__delete_status_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchDeleteStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}/mapping": {
+      "post": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Post Batch Mapping",
+        "operationId": "post_batch_mapping_api_v1_imports_batches__batch_id__mapping_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "requestBody": {
+          "required": true,
+          "content": {
+            "application/json": {
+              "schema": {
+                "$ref": "#/components/schemas/ColumnMappingIn"
+              }
+            }
+          }
+        },
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportBatchPreviewResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/imports/batches/{batch_id}/row-errors": {
+      "get": {
+        "tags": [
+          "imports"
+        ],
+        "summary": "Read Batch Row Errors",
+        "operationId": "read_batch_row_errors_api_v1_imports_batches__batch_id__row_errors_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ImportRowErrorListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/governance/profile/active": {
+      "get": {
+        "tags": [
+          "governance"
+        ],
+        "summary": "Read Active Profile",
+        "operationId": "read_active_profile_api_v1_governance_profile_active_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ActiveGovernanceProfileResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches": {
+      "get": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Read Eligible Batches",
+        "operationId": "read_eligible_batches_api_v1_normalization_batches_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NormalizationEligibleBatchListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches/{batch_id}/run": {
+      "post": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Post Run Normalization",
+        "operationId": "post_run_normalization_api_v1_normalization_batches__batch_id__run_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "202": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NormalizationRunStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches/{batch_id}/run/status": {
+      "get": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Read Normalization Run Status",
+        "operationId": "read_normalization_run_status_api_v1_normalization_batches__batch_id__run_status_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NormalizationRunStatusResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches/{batch_id}/summary": {
+      "get": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Read Normalization Summary",
+        "operationId": "read_normalization_summary_api_v1_normalization_batches__batch_id__summary_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NormalizationBatchSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches/{batch_id}/records": {
+      "get": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Read Normalized Records",
+        "operationId": "read_normalized_records_api_v1_normalization_batches__batch_id__records_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/NormalizationRecordListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/normalization/batches/{batch_id}/issues": {
+      "get": {
+        "tags": [
+          "normalization"
+        ],
+        "summary": "Read Review Issues",
+        "operationId": "read_review_issues_api_v1_normalization_batches__batch_id__issues_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/ReviewIssueListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matching/batches": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Read Eligible Matching Batches",
+        "operationId": "read_eligible_matching_batches_api_v1_matching_batches_get",
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchingEligibleBatchListResponse"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matching/batches/{batch_id}/run": {
+      "post": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Post Run Matching",
+        "operationId": "post_run_matching_api_v1_matching_batches__batch_id__run_post",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchingBatchSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matching/batches/{batch_id}/summary": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Read Matching Summary",
+        "operationId": "read_matching_summary_api_v1_matching_batches__batch_id__summary_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchingBatchSummaryResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "/api/v1/matching/batches/{batch_id}/results": {
+      "get": {
+        "tags": [
+          "matching"
+        ],
+        "summary": "Read Matching Results",
+        "operationId": "read_matching_results_api_v1_matching_batches__batch_id__results_get",
+        "parameters": [
+          {
+            "name": "batch_id",
+            "in": "path",
+            "required": true,
+            "schema": {
+              "type": "string",
+              "format": "uuid",
+              "title": "Batch Id"
+            }
+          },
+          {
+            "name": "page",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "minimum": 1,
+              "default": 1,
+              "title": "Page"
+            }
+          },
+          {
+            "name": "page_size",
+            "in": "query",
+            "required": false,
+            "schema": {
+              "type": "integer",
+              "maximum": 100,
+              "minimum": 1,
+              "default": 20,
+              "title": "Page Size"
+            }
+          }
+        ],
+        "responses": {
+          "200": {
+            "description": "Successful Response",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/MatchingResultListResponse"
+                }
+              }
+            }
+          },
+          "422": {
+            "description": "Validation Error",
+            "content": {
+              "application/json": {
+                "schema": {
+                  "$ref": "#/components/schemas/HTTPValidationError"
+                }
+              }
+            }
+          }
+        }
+      }
     }
   },
   "components": {
     "schemas": {
+      "ActiveGovernanceProfileData": {
+        "properties": {
+          "profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Profile Id"
+          },
+          "profile_name": {
+            "type": "string",
+            "title": "Profile Name"
+          },
+          "version": {
+            "$ref": "#/components/schemas/GovernanceProfileVersionRead"
+          }
+        },
+        "type": "object",
+        "required": [
+          "profile_id",
+          "profile_name",
+          "version"
+        ],
+        "title": "ActiveGovernanceProfileData"
+      },
+      "ActiveGovernanceProfileResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ActiveGovernanceProfileData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ActiveGovernanceProfileResponse"
+      },
+      "Body_post_batch_api_v1_imports_batches_post": {
+        "properties": {
+          "file": {
+            "type": "string",
+            "contentMediaType": "application/octet-stream",
+            "title": "File"
+          }
+        },
+        "type": "object",
+        "required": [
+          "file"
+        ],
+        "title": "Body_post_batch_api_v1_imports_batches_post"
+      },
+      "ColumnMappingIn": {
+        "properties": {
+          "source_code": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Source Code"
+          },
+          "original_description": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Original Description"
+          },
+          "original_unit": {
+            "type": "string",
+            "maxLength": 255,
+            "minLength": 1,
+            "title": "Original Unit"
+          }
+        },
+        "type": "object",
+        "required": [
+          "source_code",
+          "original_description",
+          "original_unit"
+        ],
+        "title": "ColumnMappingIn"
+      },
       "FoundationData": {
         "properties": {
           "organization": {
@@ -158,6 +1053,1342 @@
           "status"
         ],
         "title": "FoundationUser"
+      },
+      "GovernanceProfileVersionRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "governance_profile_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Governance Profile Id"
+          },
+          "version_number": {
+            "type": "integer",
+            "title": "Version Number"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "governance_profile_id",
+          "version_number",
+          "status",
+          "created_at"
+        ],
+        "title": "GovernanceProfileVersionRead"
+      },
+      "HTTPValidationError": {
+        "properties": {
+          "detail": {
+            "items": {
+              "$ref": "#/components/schemas/ValidationError"
+            },
+            "type": "array",
+            "title": "Detail"
+          }
+        },
+        "type": "object",
+        "title": "HTTPValidationError"
+      },
+      "ImportBatchDeleteStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "percent": {
+            "type": "integer",
+            "title": "Percent"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "batch_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Batch Id"
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "processed",
+          "total",
+          "percent",
+          "message"
+        ],
+        "title": "ImportBatchDeleteStatus"
+      },
+      "ImportBatchDeleteStatusResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ImportBatchDeleteStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportBatchDeleteStatusResponse"
+      },
+      "ImportBatchListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ImportBatchRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "ImportBatchListData"
+      },
+      "ImportBatchListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ImportBatchListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportBatchListResponse"
+      },
+      "ImportBatchPreviewData": {
+        "properties": {
+          "batch": {
+            "$ref": "#/components/schemas/ImportBatchRead"
+          },
+          "headers": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Headers"
+          },
+          "sample_rows": {
+            "items": {
+              "additionalProperties": {
+                "type": "string"
+              },
+              "type": "object"
+            },
+            "type": "array",
+            "title": "Sample Rows"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch",
+          "headers",
+          "sample_rows"
+        ],
+        "title": "ImportBatchPreviewData"
+      },
+      "ImportBatchPreviewResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ImportBatchPreviewData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportBatchPreviewResponse"
+      },
+      "ImportBatchRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_system_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source System Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "file_type": {
+            "type": "string",
+            "title": "File Type"
+          },
+          "file_hash": {
+            "type": "string",
+            "title": "File Hash"
+          },
+          "column_mapping": {
+            "anyOf": [
+              {
+                "additionalProperties": true,
+                "type": "object"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Column Mapping"
+          },
+          "source_reference_date": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Reference Date"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "total_rows": {
+            "type": "integer",
+            "title": "Total Rows"
+          },
+          "valid_rows": {
+            "type": "integer",
+            "title": "Valid Rows"
+          },
+          "invalid_rows": {
+            "type": "integer",
+            "title": "Invalid Rows"
+          },
+          "imported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imported At"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          },
+          "updated_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Updated At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_system_id",
+          "file_name",
+          "file_type",
+          "file_hash",
+          "column_mapping",
+          "source_reference_date",
+          "status",
+          "total_rows",
+          "valid_rows",
+          "invalid_rows",
+          "imported_at",
+          "created_at",
+          "updated_at"
+        ],
+        "title": "ImportBatchRead"
+      },
+      "ImportRowError": {
+        "properties": {
+          "row_number": {
+            "type": "integer",
+            "title": "Row Number"
+          },
+          "source_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Code"
+          },
+          "original_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Description"
+          },
+          "original_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Unit"
+          },
+          "issues": {
+            "items": {
+              "type": "string"
+            },
+            "type": "array",
+            "title": "Issues"
+          }
+        },
+        "type": "object",
+        "required": [
+          "row_number",
+          "source_code",
+          "original_description",
+          "original_unit",
+          "issues"
+        ],
+        "title": "ImportRowError"
+      },
+      "ImportRowErrorListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ImportRowError"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "ImportRowErrorListData"
+      },
+      "ImportRowErrorListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ImportRowErrorListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ImportRowErrorListResponse"
+      },
+      "MatchCandidateRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "candidate_source_record_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Source Record Id"
+          },
+          "candidate_source_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Source Code"
+          },
+          "candidate_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Candidate Description"
+          },
+          "lexical_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Lexical Score"
+          },
+          "attribute_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribute Score"
+          },
+          "overall_score": {
+            "anyOf": [
+              {
+                "type": "number"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Overall Score"
+          },
+          "relationship_class": {
+            "type": "string",
+            "title": "Relationship Class"
+          },
+          "confidence_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Level"
+          },
+          "has_blocker": {
+            "type": "boolean",
+            "title": "Has Blocker"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "candidate_source_record_id",
+          "candidate_source_code",
+          "candidate_description",
+          "lexical_score",
+          "attribute_score",
+          "overall_score",
+          "relationship_class",
+          "confidence_level",
+          "has_blocker"
+        ],
+        "title": "MatchCandidateRead"
+      },
+      "MatchingBatchSummary": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "matching_run_id": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "uuid"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Matching Run Id"
+          },
+          "governance_profile_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Governance Profile Version Id"
+          },
+          "algorithm_version": {
+            "type": "string",
+            "title": "Algorithm Version"
+          },
+          "processed_records": {
+            "type": "integer",
+            "title": "Processed Records"
+          },
+          "equivalent_records": {
+            "type": "integer",
+            "title": "Equivalent Records"
+          },
+          "similar_records": {
+            "type": "integer",
+            "title": "Similar Records"
+          },
+          "different_records": {
+            "type": "integer",
+            "title": "Different Records"
+          },
+          "pending_information_records": {
+            "type": "integer",
+            "title": "Pending Information Records"
+          },
+          "requires_review_records": {
+            "type": "integer",
+            "title": "Requires Review Records"
+          },
+          "candidates_created": {
+            "type": "integer",
+            "title": "Candidates Created"
+          },
+          "evidences_created": {
+            "type": "integer",
+            "title": "Evidences Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "file_name",
+          "matching_run_id",
+          "governance_profile_version_id",
+          "algorithm_version",
+          "processed_records",
+          "equivalent_records",
+          "similar_records",
+          "different_records",
+          "pending_information_records",
+          "requires_review_records",
+          "candidates_created",
+          "evidences_created"
+        ],
+        "title": "MatchingBatchSummary"
+      },
+      "MatchingBatchSummaryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MatchingBatchSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "MatchingBatchSummaryResponse"
+      },
+      "MatchingEligibleBatch": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_rows": {
+            "type": "integer",
+            "title": "Valid Rows"
+          },
+          "imported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imported At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "file_name",
+          "status",
+          "valid_rows",
+          "imported_at"
+        ],
+        "title": "MatchingEligibleBatch"
+      },
+      "MatchingEligibleBatchListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MatchingEligibleBatch"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "MatchingEligibleBatchListData"
+      },
+      "MatchingEligibleBatchListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MatchingEligibleBatchListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "MatchingEligibleBatchListResponse"
+      },
+      "MatchingRecordRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "row_number": {
+            "type": "integer",
+            "title": "Row Number"
+          },
+          "source_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Code"
+          },
+          "normalized_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalized Description"
+          },
+          "processing_status": {
+            "type": "string",
+            "title": "Processing Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "row_number",
+          "source_code",
+          "normalized_description",
+          "processing_status"
+        ],
+        "title": "MatchingRecordRead"
+      },
+      "MatchingResultDetail": {
+        "properties": {
+          "record": {
+            "$ref": "#/components/schemas/MatchingRecordRead"
+          },
+          "result": {
+            "$ref": "#/components/schemas/MatchingResultRead"
+          },
+          "top_candidates": {
+            "items": {
+              "$ref": "#/components/schemas/MatchCandidateRead"
+            },
+            "type": "array",
+            "title": "Top Candidates"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record",
+          "result",
+          "top_candidates"
+        ],
+        "title": "MatchingResultDetail"
+      },
+      "MatchingResultListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/MatchingResultDetail"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "MatchingResultListData"
+      },
+      "MatchingResultListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/MatchingResultListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "MatchingResultListResponse"
+      },
+      "MatchingResultRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_record_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Record Id"
+          },
+          "result": {
+            "type": "string",
+            "title": "Result"
+          },
+          "confidence_level": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Confidence Level"
+          },
+          "candidate_count": {
+            "type": "integer",
+            "title": "Candidate Count"
+          },
+          "has_blocker": {
+            "type": "boolean",
+            "title": "Has Blocker"
+          },
+          "requires_review": {
+            "type": "boolean",
+            "title": "Requires Review"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_record_id",
+          "result",
+          "confidence_level",
+          "candidate_count",
+          "has_blocker",
+          "requires_review"
+        ],
+        "title": "MatchingResultRead"
+      },
+      "NormalizationBatchSummary": {
+        "properties": {
+          "batch_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Batch Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "governance_profile_version_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Governance Profile Version Id"
+          },
+          "processed_records": {
+            "type": "integer",
+            "title": "Processed Records"
+          },
+          "normalized_records": {
+            "type": "integer",
+            "title": "Normalized Records"
+          },
+          "pending_information_records": {
+            "type": "integer",
+            "title": "Pending Information Records"
+          },
+          "attributes_created": {
+            "type": "integer",
+            "title": "Attributes Created"
+          },
+          "issues_created": {
+            "type": "integer",
+            "title": "Issues Created"
+          }
+        },
+        "type": "object",
+        "required": [
+          "batch_id",
+          "file_name",
+          "governance_profile_version_id",
+          "processed_records",
+          "normalized_records",
+          "pending_information_records",
+          "attributes_created",
+          "issues_created"
+        ],
+        "title": "NormalizationBatchSummary"
+      },
+      "NormalizationBatchSummaryResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NormalizationBatchSummary"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "NormalizationBatchSummaryResponse"
+      },
+      "NormalizationEligibleBatch": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "file_name": {
+            "type": "string",
+            "title": "File Name"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "valid_rows": {
+            "type": "integer",
+            "title": "Valid Rows"
+          },
+          "imported_at": {
+            "anyOf": [
+              {
+                "type": "string",
+                "format": "date-time"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Imported At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "file_name",
+          "status",
+          "valid_rows",
+          "imported_at"
+        ],
+        "title": "NormalizationEligibleBatch"
+      },
+      "NormalizationEligibleBatchListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NormalizationEligibleBatch"
+            },
+            "type": "array",
+            "title": "Items"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items"
+        ],
+        "title": "NormalizationEligibleBatchListData"
+      },
+      "NormalizationEligibleBatchListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NormalizationEligibleBatchListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "NormalizationEligibleBatchListResponse"
+      },
+      "NormalizationRecordAttributeRead": {
+        "properties": {
+          "attribute_code": {
+            "type": "string",
+            "title": "Attribute Code"
+          },
+          "attribute_name": {
+            "type": "string",
+            "title": "Attribute Name"
+          },
+          "value_text": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Value Text"
+          },
+          "extraction_method": {
+            "type": "string",
+            "title": "Extraction Method"
+          },
+          "confirmed": {
+            "type": "boolean",
+            "title": "Confirmed"
+          }
+        },
+        "type": "object",
+        "required": [
+          "attribute_code",
+          "attribute_name",
+          "value_text",
+          "extraction_method",
+          "confirmed"
+        ],
+        "title": "NormalizationRecordAttributeRead"
+      },
+      "NormalizationRecordDetail": {
+        "properties": {
+          "record": {
+            "$ref": "#/components/schemas/NormalizationRecordRead"
+          },
+          "attributes": {
+            "items": {
+              "$ref": "#/components/schemas/NormalizationRecordAttributeRead"
+            },
+            "type": "array",
+            "title": "Attributes"
+          }
+        },
+        "type": "object",
+        "required": [
+          "record",
+          "attributes"
+        ],
+        "title": "NormalizationRecordDetail"
+      },
+      "NormalizationRecordListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/NormalizationRecordDetail"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "NormalizationRecordListData"
+      },
+      "NormalizationRecordListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NormalizationRecordListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "NormalizationRecordListResponse"
+      },
+      "NormalizationRecordRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "row_number": {
+            "type": "integer",
+            "title": "Row Number"
+          },
+          "source_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Source Code"
+          },
+          "original_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Description"
+          },
+          "original_unit": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Original Unit"
+          },
+          "normalized_description": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Normalized Description"
+          },
+          "processing_status": {
+            "type": "string",
+            "title": "Processing Status"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "row_number",
+          "source_code",
+          "original_description",
+          "original_unit",
+          "normalized_description",
+          "processing_status"
+        ],
+        "title": "NormalizationRecordRead"
+      },
+      "NormalizationRunStatus": {
+        "properties": {
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "processed": {
+            "type": "integer",
+            "title": "Processed"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          },
+          "percent": {
+            "type": "integer",
+            "title": "Percent"
+          },
+          "message": {
+            "type": "string",
+            "title": "Message"
+          },
+          "summary": {
+            "anyOf": [
+              {
+                "$ref": "#/components/schemas/NormalizationBatchSummary"
+              },
+              {
+                "type": "null"
+              }
+            ]
+          }
+        },
+        "type": "object",
+        "required": [
+          "status",
+          "processed",
+          "total",
+          "percent",
+          "message"
+        ],
+        "title": "NormalizationRunStatus"
+      },
+      "NormalizationRunStatusResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/NormalizationRunStatus"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "NormalizationRunStatusResponse"
+      },
+      "ReviewIssueListData": {
+        "properties": {
+          "items": {
+            "items": {
+              "$ref": "#/components/schemas/ReviewIssueRead"
+            },
+            "type": "array",
+            "title": "Items"
+          },
+          "page": {
+            "type": "integer",
+            "title": "Page"
+          },
+          "page_size": {
+            "type": "integer",
+            "title": "Page Size"
+          },
+          "total": {
+            "type": "integer",
+            "title": "Total"
+          }
+        },
+        "type": "object",
+        "required": [
+          "items",
+          "page",
+          "page_size",
+          "total"
+        ],
+        "title": "ReviewIssueListData"
+      },
+      "ReviewIssueListResponse": {
+        "properties": {
+          "data": {
+            "$ref": "#/components/schemas/ReviewIssueListData"
+          }
+        },
+        "type": "object",
+        "required": [
+          "data"
+        ],
+        "title": "ReviewIssueListResponse"
+      },
+      "ReviewIssueRead": {
+        "properties": {
+          "id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Id"
+          },
+          "source_record_id": {
+            "type": "string",
+            "format": "uuid",
+            "title": "Source Record Id"
+          },
+          "issue_type": {
+            "type": "string",
+            "title": "Issue Type"
+          },
+          "description": {
+            "type": "string",
+            "title": "Description"
+          },
+          "status": {
+            "type": "string",
+            "title": "Status"
+          },
+          "attribute_code": {
+            "anyOf": [
+              {
+                "type": "string"
+              },
+              {
+                "type": "null"
+              }
+            ],
+            "title": "Attribute Code"
+          },
+          "created_at": {
+            "type": "string",
+            "format": "date-time",
+            "title": "Created At"
+          }
+        },
+        "type": "object",
+        "required": [
+          "id",
+          "source_record_id",
+          "issue_type",
+          "description",
+          "status",
+          "created_at"
+        ],
+        "title": "ReviewIssueRead"
+      },
+      "ValidationError": {
+        "properties": {
+          "loc": {
+            "items": {
+              "anyOf": [
+                {
+                  "type": "string"
+                },
+                {
+                  "type": "integer"
+                }
+              ]
+            },
+            "type": "array",
+            "title": "Location"
+          },
+          "msg": {
+            "type": "string",
+            "title": "Message"
+          },
+          "type": {
+            "type": "string",
+            "title": "Error Type"
+          },
+          "input": {
+            "title": "Input"
+          },
+          "ctx": {
+            "type": "object",
+            "title": "Context"
+          }
+        },
+        "type": "object",
+        "required": [
+          "loc",
+          "msg",
+          "type"
+        ],
+        "title": "ValidationError"
       }
     }
   }

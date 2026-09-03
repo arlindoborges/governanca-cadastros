@@ -11,7 +11,7 @@ npm run generate:api
 npm run dev
 ```
 
-A aplicação abre em `/` sem login. A sidebar leva a Importações, Análises, Revisão, Base Mestre, Resultados e Governança.
+A aplicação abre em `/` sem login. A área Importações cobre envio de planilha XLSX, mapeamento e erros por linha.
 
 ```powershell
 npm run build

@@ -14,6 +14,9 @@ sys.path.insert(0, str(BACKEND_ROOT / "src"))
 
 from app.core.config import get_settings
 from app.core.db import Base
+from app.governance import models as governance_models  # noqa: F401
+from app.imports import models as imports_models  # noqa: F401
+from app.normalization import models as normalization_models  # noqa: F401
 from app.organizations import models as organizations_models  # noqa: F401
 
 config = context.config

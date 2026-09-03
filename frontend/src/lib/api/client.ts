@@ -14,12 +14,23 @@ function apiBaseUrl(): string {
 }
 
 export async function apiGet<T>(path: string): Promise<ApiResult<T>> {
+  return apiSend<T>(path, { method: "GET" });
+}
+
+export async function apiSend<T>(path: string, init: RequestInit): Promise<ApiResult<T>> {
   const requestId = crypto.randomUUID();
+  const headers = new Headers(init.headers);
+  headers.set("X-Request-ID", requestId);
+  if (init.body && !(init.body instanceof FormData) && !headers.has("Content-Type")) {
+    headers.set("Content-Type", "application/json");
+  }
+
   let response: Response;
   try {
     response = await fetch(`${apiBaseUrl()}${path}`, {
       cache: "no-store",
-      headers: { "X-Request-ID": requestId },
+      ...init,
+      headers,
     });
   } catch {
     return {

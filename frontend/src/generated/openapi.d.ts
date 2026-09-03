@@ -55,10 +55,313 @@ export interface paths {
         patch?: never;
         trace?: never;
     };
+    "/api/v1/imports/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Batches */
+        get: operations["read_batches_api_v1_imports_batches_get"];
+        put?: never;
+        /** Post Batch */
+        post: operations["post_batch_api_v1_imports_batches_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Batch */
+        get: operations["read_batch_api_v1_imports_batches__batch_id__get"];
+        put?: never;
+        post?: never;
+        /** Remove Batch */
+        delete: operations["remove_batch_api_v1_imports_batches__batch_id__delete"];
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/delete/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Import Batch Delete Status */
+        get: operations["read_import_batch_delete_status_api_v1_imports_batches__batch_id__delete_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/mapping": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Batch Mapping */
+        post: operations["post_batch_mapping_api_v1_imports_batches__batch_id__mapping_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/imports/batches/{batch_id}/row-errors": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Batch Row Errors */
+        get: operations["read_batch_row_errors_api_v1_imports_batches__batch_id__row_errors_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/governance/profile/active": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Active Profile */
+        get: operations["read_active_profile_api_v1_governance_profile_active_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Eligible Batches */
+        get: operations["read_eligible_batches_api_v1_normalization_batches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches/{batch_id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Run Normalization */
+        post: operations["post_run_normalization_api_v1_normalization_batches__batch_id__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches/{batch_id}/run/status": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Normalization Run Status */
+        get: operations["read_normalization_run_status_api_v1_normalization_batches__batch_id__run_status_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches/{batch_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Normalization Summary */
+        get: operations["read_normalization_summary_api_v1_normalization_batches__batch_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches/{batch_id}/records": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Normalized Records */
+        get: operations["read_normalized_records_api_v1_normalization_batches__batch_id__records_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/normalization/batches/{batch_id}/issues": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Review Issues */
+        get: operations["read_review_issues_api_v1_normalization_batches__batch_id__issues_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matching/batches": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Eligible Matching Batches */
+        get: operations["read_eligible_matching_batches_api_v1_matching_batches_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matching/batches/{batch_id}/run": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        get?: never;
+        put?: never;
+        /** Post Run Matching */
+        post: operations["post_run_matching_api_v1_matching_batches__batch_id__run_post"];
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matching/batches/{batch_id}/summary": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Matching Summary */
+        get: operations["read_matching_summary_api_v1_matching_batches__batch_id__summary_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
+    "/api/v1/matching/batches/{batch_id}/results": {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        /** Read Matching Results */
+        get: operations["read_matching_results_api_v1_matching_batches__batch_id__results_get"];
+        put?: never;
+        post?: never;
+        delete?: never;
+        options?: never;
+        head?: never;
+        patch?: never;
+        trace?: never;
+    };
 }
 export type webhooks = Record<string, never>;
 export interface components {
     schemas: {
+        /** ActiveGovernanceProfileData */
+        ActiveGovernanceProfileData: {
+            /**
+             * Profile Id
+             * Format: uuid
+             */
+            profile_id: string;
+            /** Profile Name */
+            profile_name: string;
+            version: components["schemas"]["GovernanceProfileVersionRead"];
+        };
+        /** ActiveGovernanceProfileResponse */
+        ActiveGovernanceProfileResponse: {
+            data: components["schemas"]["ActiveGovernanceProfileData"];
+        };
+        /** Body_post_batch_api_v1_imports_batches_post */
+        Body_post_batch_api_v1_imports_batches_post: {
+            /** File */
+            file: string;
+        };
+        /** ColumnMappingIn */
+        ColumnMappingIn: {
+            /** Source Code */
+            source_code: string;
+            /** Original Description */
+            original_description: string;
+            /** Original Unit */
+            original_unit: string;
+        };
         /** FoundationData */
         FoundationData: {
             organization: components["schemas"]["FoundationOrganization"];
@@ -95,6 +398,485 @@ export interface components {
             email: string;
             /** Status */
             status: string;
+        };
+        /** GovernanceProfileVersionRead */
+        GovernanceProfileVersionRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Governance Profile Id
+             * Format: uuid
+             */
+            governance_profile_id: string;
+            /** Version Number */
+            version_number: number;
+            /** Status */
+            status: string;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** HTTPValidationError */
+        HTTPValidationError: {
+            /** Detail */
+            detail?: components["schemas"]["ValidationError"][];
+        };
+        /** ImportBatchDeleteStatus */
+        ImportBatchDeleteStatus: {
+            /** Status */
+            status: string;
+            /** Processed */
+            processed: number;
+            /** Total */
+            total: number;
+            /** Percent */
+            percent: number;
+            /** Message */
+            message: string;
+            /** Batch Id */
+            batch_id?: string | null;
+        };
+        /** ImportBatchDeleteStatusResponse */
+        ImportBatchDeleteStatusResponse: {
+            data: components["schemas"]["ImportBatchDeleteStatus"];
+        };
+        /** ImportBatchListData */
+        ImportBatchListData: {
+            /** Items */
+            items: components["schemas"]["ImportBatchRead"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** ImportBatchListResponse */
+        ImportBatchListResponse: {
+            data: components["schemas"]["ImportBatchListData"];
+        };
+        /** ImportBatchPreviewData */
+        ImportBatchPreviewData: {
+            batch: components["schemas"]["ImportBatchRead"];
+            /** Headers */
+            headers: string[];
+            /** Sample Rows */
+            sample_rows: {
+                [key: string]: string;
+            }[];
+        };
+        /** ImportBatchPreviewResponse */
+        ImportBatchPreviewResponse: {
+            data: components["schemas"]["ImportBatchPreviewData"];
+        };
+        /** ImportBatchRead */
+        ImportBatchRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Source System Id
+             * Format: uuid
+             */
+            source_system_id: string;
+            /** File Name */
+            file_name: string;
+            /** File Type */
+            file_type: string;
+            /** File Hash */
+            file_hash: string;
+            /** Column Mapping */
+            column_mapping: {
+                [key: string]: unknown;
+            } | null;
+            /** Source Reference Date */
+            source_reference_date: string | null;
+            /** Status */
+            status: string;
+            /** Total Rows */
+            total_rows: number;
+            /** Valid Rows */
+            valid_rows: number;
+            /** Invalid Rows */
+            invalid_rows: number;
+            /** Imported At */
+            imported_at: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+            /**
+             * Updated At
+             * Format: date-time
+             */
+            updated_at: string;
+        };
+        /** ImportRowError */
+        ImportRowError: {
+            /** Row Number */
+            row_number: number;
+            /** Source Code */
+            source_code: string | null;
+            /** Original Description */
+            original_description: string | null;
+            /** Original Unit */
+            original_unit: string | null;
+            /** Issues */
+            issues: string[];
+        };
+        /** ImportRowErrorListData */
+        ImportRowErrorListData: {
+            /** Items */
+            items: components["schemas"]["ImportRowError"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** ImportRowErrorListResponse */
+        ImportRowErrorListResponse: {
+            data: components["schemas"]["ImportRowErrorListData"];
+        };
+        /** MatchCandidateRead */
+        MatchCandidateRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Candidate Source Record Id */
+            candidate_source_record_id: string | null;
+            /** Candidate Source Code */
+            candidate_source_code: string | null;
+            /** Candidate Description */
+            candidate_description: string | null;
+            /** Lexical Score */
+            lexical_score: number | null;
+            /** Attribute Score */
+            attribute_score: number | null;
+            /** Overall Score */
+            overall_score: number | null;
+            /** Relationship Class */
+            relationship_class: string;
+            /** Confidence Level */
+            confidence_level: string | null;
+            /** Has Blocker */
+            has_blocker: boolean;
+        };
+        /** MatchingBatchSummary */
+        MatchingBatchSummary: {
+            /**
+             * Batch Id
+             * Format: uuid
+             */
+            batch_id: string;
+            /** File Name */
+            file_name: string;
+            /** Matching Run Id */
+            matching_run_id: string | null;
+            /**
+             * Governance Profile Version Id
+             * Format: uuid
+             */
+            governance_profile_version_id: string;
+            /** Algorithm Version */
+            algorithm_version: string;
+            /** Processed Records */
+            processed_records: number;
+            /** Equivalent Records */
+            equivalent_records: number;
+            /** Similar Records */
+            similar_records: number;
+            /** Different Records */
+            different_records: number;
+            /** Pending Information Records */
+            pending_information_records: number;
+            /** Requires Review Records */
+            requires_review_records: number;
+            /** Candidates Created */
+            candidates_created: number;
+            /** Evidences Created */
+            evidences_created: number;
+        };
+        /** MatchingBatchSummaryResponse */
+        MatchingBatchSummaryResponse: {
+            data: components["schemas"]["MatchingBatchSummary"];
+        };
+        /** MatchingEligibleBatch */
+        MatchingEligibleBatch: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** File Name */
+            file_name: string;
+            /** Status */
+            status: string;
+            /** Valid Rows */
+            valid_rows: number;
+            /** Imported At */
+            imported_at: string | null;
+        };
+        /** MatchingEligibleBatchListData */
+        MatchingEligibleBatchListData: {
+            /** Items */
+            items: components["schemas"]["MatchingEligibleBatch"][];
+        };
+        /** MatchingEligibleBatchListResponse */
+        MatchingEligibleBatchListResponse: {
+            data: components["schemas"]["MatchingEligibleBatchListData"];
+        };
+        /** MatchingRecordRead */
+        MatchingRecordRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Row Number */
+            row_number: number;
+            /** Source Code */
+            source_code: string | null;
+            /** Normalized Description */
+            normalized_description: string | null;
+            /** Processing Status */
+            processing_status: string;
+        };
+        /** MatchingResultDetail */
+        MatchingResultDetail: {
+            record: components["schemas"]["MatchingRecordRead"];
+            result: components["schemas"]["MatchingResultRead"];
+            /** Top Candidates */
+            top_candidates: components["schemas"]["MatchCandidateRead"][];
+        };
+        /** MatchingResultListData */
+        MatchingResultListData: {
+            /** Items */
+            items: components["schemas"]["MatchingResultDetail"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** MatchingResultListResponse */
+        MatchingResultListResponse: {
+            data: components["schemas"]["MatchingResultListData"];
+        };
+        /** MatchingResultRead */
+        MatchingResultRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Source Record Id
+             * Format: uuid
+             */
+            source_record_id: string;
+            /** Result */
+            result: string;
+            /** Confidence Level */
+            confidence_level: string | null;
+            /** Candidate Count */
+            candidate_count: number;
+            /** Has Blocker */
+            has_blocker: boolean;
+            /** Requires Review */
+            requires_review: boolean;
+        };
+        /** NormalizationBatchSummary */
+        NormalizationBatchSummary: {
+            /**
+             * Batch Id
+             * Format: uuid
+             */
+            batch_id: string;
+            /** File Name */
+            file_name: string;
+            /**
+             * Governance Profile Version Id
+             * Format: uuid
+             */
+            governance_profile_version_id: string;
+            /** Processed Records */
+            processed_records: number;
+            /** Normalized Records */
+            normalized_records: number;
+            /** Pending Information Records */
+            pending_information_records: number;
+            /** Attributes Created */
+            attributes_created: number;
+            /** Issues Created */
+            issues_created: number;
+        };
+        /** NormalizationBatchSummaryResponse */
+        NormalizationBatchSummaryResponse: {
+            data: components["schemas"]["NormalizationBatchSummary"];
+        };
+        /** NormalizationEligibleBatch */
+        NormalizationEligibleBatch: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** File Name */
+            file_name: string;
+            /** Status */
+            status: string;
+            /** Valid Rows */
+            valid_rows: number;
+            /** Imported At */
+            imported_at: string | null;
+        };
+        /** NormalizationEligibleBatchListData */
+        NormalizationEligibleBatchListData: {
+            /** Items */
+            items: components["schemas"]["NormalizationEligibleBatch"][];
+        };
+        /** NormalizationEligibleBatchListResponse */
+        NormalizationEligibleBatchListResponse: {
+            data: components["schemas"]["NormalizationEligibleBatchListData"];
+        };
+        /** NormalizationRecordAttributeRead */
+        NormalizationRecordAttributeRead: {
+            /** Attribute Code */
+            attribute_code: string;
+            /** Attribute Name */
+            attribute_name: string;
+            /** Value Text */
+            value_text: string | null;
+            /** Extraction Method */
+            extraction_method: string;
+            /** Confirmed */
+            confirmed: boolean;
+        };
+        /** NormalizationRecordDetail */
+        NormalizationRecordDetail: {
+            record: components["schemas"]["NormalizationRecordRead"];
+            /** Attributes */
+            attributes: components["schemas"]["NormalizationRecordAttributeRead"][];
+        };
+        /** NormalizationRecordListData */
+        NormalizationRecordListData: {
+            /** Items */
+            items: components["schemas"]["NormalizationRecordDetail"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** NormalizationRecordListResponse */
+        NormalizationRecordListResponse: {
+            data: components["schemas"]["NormalizationRecordListData"];
+        };
+        /** NormalizationRecordRead */
+        NormalizationRecordRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /** Row Number */
+            row_number: number;
+            /** Source Code */
+            source_code: string | null;
+            /** Original Description */
+            original_description: string | null;
+            /** Original Unit */
+            original_unit: string | null;
+            /** Normalized Description */
+            normalized_description: string | null;
+            /** Processing Status */
+            processing_status: string;
+        };
+        /** NormalizationRunStatus */
+        NormalizationRunStatus: {
+            /** Status */
+            status: string;
+            /** Processed */
+            processed: number;
+            /** Total */
+            total: number;
+            /** Percent */
+            percent: number;
+            /** Message */
+            message: string;
+            summary?: components["schemas"]["NormalizationBatchSummary"] | null;
+        };
+        /** NormalizationRunStatusResponse */
+        NormalizationRunStatusResponse: {
+            data: components["schemas"]["NormalizationRunStatus"];
+        };
+        /** ReviewIssueListData */
+        ReviewIssueListData: {
+            /** Items */
+            items: components["schemas"]["ReviewIssueRead"][];
+            /** Page */
+            page: number;
+            /** Page Size */
+            page_size: number;
+            /** Total */
+            total: number;
+        };
+        /** ReviewIssueListResponse */
+        ReviewIssueListResponse: {
+            data: components["schemas"]["ReviewIssueListData"];
+        };
+        /** ReviewIssueRead */
+        ReviewIssueRead: {
+            /**
+             * Id
+             * Format: uuid
+             */
+            id: string;
+            /**
+             * Source Record Id
+             * Format: uuid
+             */
+            source_record_id: string;
+            /** Issue Type */
+            issue_type: string;
+            /** Description */
+            description: string;
+            /** Status */
+            status: string;
+            /** Attribute Code */
+            attribute_code?: string | null;
+            /**
+             * Created At
+             * Format: date-time
+             */
+            created_at: string;
+        };
+        /** ValidationError */
+        ValidationError: {
+            /** Location */
+            loc: (string | number)[];
+            /** Message */
+            msg: string;
+            /** Error Type */
+            type: string;
+            /** Input */
+            input?: unknown;
+            /** Context */
+            ctx?: Record<string, never>;
         };
     };
     responses: never;
@@ -163,6 +945,550 @@ export interface operations {
                 };
                 content: {
                     "application/json": components["schemas"]["FoundationResponse"];
+                };
+            };
+        };
+    };
+    read_batches_api_v1_imports_batches_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_batch_api_v1_imports_batches_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "multipart/form-data": components["schemas"]["Body_post_batch_api_v1_imports_batches_post"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            201: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_batch_api_v1_imports_batches__batch_id__get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    remove_batch_api_v1_imports_batches__batch_id__delete: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchDeleteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_import_batch_delete_status_api_v1_imports_batches__batch_id__delete_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchDeleteStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    post_batch_mapping_api_v1_imports_batches__batch_id__mapping_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody: {
+            content: {
+                "application/json": components["schemas"]["ColumnMappingIn"];
+            };
+        };
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportBatchPreviewResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_batch_row_errors_api_v1_imports_batches__batch_id__row_errors_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ImportRowErrorListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_active_profile_api_v1_governance_profile_active_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ActiveGovernanceProfileResponse"];
+                };
+            };
+        };
+    };
+    read_eligible_batches_api_v1_normalization_batches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormalizationEligibleBatchListResponse"];
+                };
+            };
+        };
+    };
+    post_run_normalization_api_v1_normalization_batches__batch_id__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            202: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormalizationRunStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_normalization_run_status_api_v1_normalization_batches__batch_id__run_status_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormalizationRunStatusResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_normalization_summary_api_v1_normalization_batches__batch_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormalizationBatchSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_normalized_records_api_v1_normalization_batches__batch_id__records_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["NormalizationRecordListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_review_issues_api_v1_normalization_batches__batch_id__issues_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["ReviewIssueListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_eligible_matching_batches_api_v1_matching_batches_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path?: never;
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchingEligibleBatchListResponse"];
+                };
+            };
+        };
+    };
+    post_run_matching_api_v1_matching_batches__batch_id__run_post: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchingBatchSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_matching_summary_api_v1_matching_batches__batch_id__summary_get: {
+        parameters: {
+            query?: never;
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchingBatchSummaryResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
+                };
+            };
+        };
+    };
+    read_matching_results_api_v1_matching_batches__batch_id__results_get: {
+        parameters: {
+            query?: {
+                page?: number;
+                page_size?: number;
+            };
+            header?: never;
+            path: {
+                batch_id: string;
+            };
+            cookie?: never;
+        };
+        requestBody?: never;
+        responses: {
+            /** @description Successful Response */
+            200: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["MatchingResultListResponse"];
+                };
+            };
+            /** @description Validation Error */
+            422: {
+                headers: {
+                    [name: string]: unknown;
+                };
+                content: {
+                    "application/json": components["schemas"]["HTTPValidationError"];
                 };
             };
         };

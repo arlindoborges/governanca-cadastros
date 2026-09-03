@@ -8,6 +8,8 @@ from fastapi.testclient import TestClient
 
 from app.core.db import SessionLocal
 from app.core.seed import ensure_local_foundation
+from app.governance.seed import ensure_local_governance
+from app.imports.seed import ensure_local_source_system
 from app.main import app
 
 BACKEND_ROOT = Path(__file__).resolve().parents[2]
@@ -20,6 +22,8 @@ def migrated_client() -> Iterator[TestClient]:
     session = SessionLocal()
     try:
         ensure_local_foundation(session)
+        ensure_local_source_system(session)
+        ensure_local_governance(session)
     finally:
         session.close()
     with TestClient(app) as client:
