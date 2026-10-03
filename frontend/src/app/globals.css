@@ -601,7 +601,7 @@ textarea:focus {
 }
 
 .decision-matrix__step {
-  flex: 0 0 min(16rem, 32%);
+  flex: 0 0 min(12rem, 22%);
   padding: 1rem 1.1rem;
   text-align: left;
   background: var(--ios-fill-secondary);
