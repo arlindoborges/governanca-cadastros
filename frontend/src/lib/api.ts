@@ -1,4 +1,12 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+function resolveApiBase(): string {
+  const fromEnv =
+    process.env.NEXT_PUBLIC_API_URL ??
+    (typeof window === "undefined" ? process.env.API_URL : undefined);
+  const base = (fromEnv ?? "http://127.0.0.1:8000").replace(/\/$/, "");
+  return base.endsWith("/api/v1") ? base : `${base}/api/v1`;
+}
+
+const API_BASE = resolveApiBase();
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
