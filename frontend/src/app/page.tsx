@@ -20,10 +20,11 @@ export default async function DashboardPage() {
 
   return (
     <section className="stack">
-      <div>
+      <header className="page-hero">
+        <p className="page-hero__eyebrow">Governança de Cadastros</p>
         <h1>Dashboard</h1>
         <p className="muted">Visão resumida do saneamento e da base mestre.</p>
-      </div>
+      </header>
 
       {error ? <div className="panel">{error}</div> : null}
 
