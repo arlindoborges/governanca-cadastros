@@ -2,7 +2,11 @@
 
 import "@/app/login/jarvis.css";
 
-import { handoffFlyDurationMs, handoffStartRect } from "@/lib/login-handoff-rect";
+import {
+  handoffFlyDurationMs,
+  handoffStartRect,
+  resolveBrandMarkTarget,
+} from "@/lib/login-handoff-rect";
 import { useRouter } from "next/navigation";
 import {
   createContext,
@@ -13,10 +17,12 @@ import {
   useMemo,
   useRef,
   useState,
+  type CSSProperties,
   type ReactNode,
 } from "react";
 
 const REVEAL_WIPE_MS = 1050;
+const TARGET_WAIT_MS = 4000;
 
 export type LoginRevealOrigin = {
   x: number;
@@ -26,6 +32,18 @@ export type LoginRevealOrigin = {
 };
 
 type HandoffPhase = "idle" | "preflight" | "flying" | "reveal";
+
+type FlyVars = {
+  fromX: number;
+  fromY: number;
+  fromW: number;
+  fromH: number;
+  toX: number;
+  toY: number;
+  toW: number;
+  toH: number;
+  durationMs: number;
+};
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
@@ -38,14 +56,10 @@ const LoginRevealContext = createContext<LoginRevealContextValue | null>(null);
 
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
-  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;
-}
-
-function applyRect(el: HTMLElement, rect: DOMRect) {
-  el.style.top = `${rect.top}px`;
-  el.style.left = `${rect.left}px`;
-  el.style.width = `${rect.width}px`;
-  el.style.height = `${rect.height}px`;
+  if (window.matchMedia("(prefers-reduced-motion: reduce)").matches) {
+    return Math.min(base, 280);
+  }
+  return base;
 }
 
 function BrandHandoffOverlay({
@@ -61,84 +75,94 @@ function BrandHandoffOverlay({
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
   const flyStartedRef = useRef(false);
-
-  useLayoutEffect(() => {
-    const el = markRef.current;
-    if (!el) return;
-    applyRect(el, startRect);
-  }, [startRect]);
+  const [flyVars, setFlyVars] = useState<FlyVars | null>(null);
+  const [animating, setAnimating] = useState(false);
 
   useLayoutEffect(() => {
     if (phase !== "flying" || flyStartedRef.current) return;
-    const el = markRef.current;
-    if (!el) return;
 
-    let attempts = 0;
+    const startedAt = performance.now();
     let cancelled = false;
 
-    const runFly = () => {
-      if (cancelled) return;
-      const targetEl = document.querySelector("[data-brand-handoff-target]");
-      if (!targetEl) {
-        attempts += 1;
-        if (attempts < 40) {
-          requestAnimationFrame(runFly);
-          return;
-        }
-        onDone();
-        return;
-      }
-
-      const toRect =
-        targetEl.getBoundingClientRect().width > 1
-          ? targetEl.getBoundingClientRect()
-          : new DOMRect(20, 20, 40, 40);
-
+    const beginFly = (toRect: DOMRect) => {
+      if (cancelled || flyStartedRef.current) return;
       flyStartedRef.current = true;
-      applyRect(el, startRect);
-
-      const flyMs = motionMs(handoffFlyDurationMs(startRect, toRect));
-      const animation = el.animate(
-        [
-          {
-            top: `${startRect.top}px`,
-            left: `${startRect.left}px`,
-            width: `${startRect.width}px`,
-            height: `${startRect.height}px`,
-          },
-          {
-            top: `${toRect.top}px`,
-            left: `${toRect.left}px`,
-            width: `${toRect.width}px`,
-            height: `${toRect.height}px`,
-          },
-        ],
-        {
-          duration: flyMs,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
-          fill: "forwards",
-        },
-      );
-
-      animation.onfinish = () => {
-        if (cancelled) return;
-        applyRect(el, toRect);
-        onArrived(toRect);
-      };
+      const durationMs = motionMs(handoffFlyDurationMs(startRect, toRect));
+      setFlyVars({
+        fromX: startRect.left,
+        fromY: startRect.top,
+        fromW: startRect.width,
+        fromH: startRect.height,
+        toX: toRect.left,
+        toY: toRect.top,
+        toW: toRect.width,
+        toH: toRect.height,
+        durationMs,
+      });
+      requestAnimationFrame(() => setAnimating(true));
     };
 
-    requestAnimationFrame(runFly);
+    const waitForTarget = () => {
+      if (cancelled || flyStartedRef.current) return;
+      const target = document.querySelector("[data-brand-handoff-target]");
+      const rect = target?.getBoundingClientRect();
+      if (rect && rect.width > 1 && rect.height > 1) {
+        beginFly(rect);
+        return;
+      }
+      if (performance.now() - startedAt < TARGET_WAIT_MS) {
+        requestAnimationFrame(waitForTarget);
+        return;
+      }
+      beginFly(resolveBrandMarkTarget());
+    };
+
+    requestAnimationFrame(waitForTarget);
 
     return () => {
       cancelled = true;
     };
-  }, [phase, startRect, onArrived, onDone]);
+  }, [phase, startRect]);
+
+  const arrivedRef = useRef(false);
+
+  const handleAnimationEnd = useCallback(() => {
+    if (!flyVars || arrivedRef.current || phase === "reveal") return;
+    arrivedRef.current = true;
+    const target = new DOMRect(flyVars.toX, flyVars.toY, flyVars.toW, flyVars.toH);
+    onArrived(target);
+  }, [flyVars, onArrived, phase]);
+
+  useEffect(() => {
+    if (!animating || !flyVars) return;
+    const t = window.setTimeout(() => handleAnimationEnd(), flyVars.durationMs + 120);
+    return () => window.clearTimeout(t);
+  }, [animating, flyVars, handleAnimationEnd]);
 
   useEffect(() => {
     if (phase !== "reveal") return;
     const t = window.setTimeout(onDone, motionMs(REVEAL_WIPE_MS) + 60);
     return () => window.clearTimeout(t);
   }, [phase, onDone]);
+
+  const markStyle: CSSProperties | undefined = flyVars
+    ? ({
+        "--handoff-from-x": `${flyVars.fromX}px`,
+        "--handoff-from-y": `${flyVars.fromY}px`,
+        "--handoff-from-w": `${flyVars.fromW}px`,
+        "--handoff-from-h": `${flyVars.fromH}px`,
+        "--handoff-to-x": `${flyVars.toX}px`,
+        "--handoff-to-y": `${flyVars.toY}px`,
+        "--handoff-to-w": `${flyVars.toW}px`,
+        "--handoff-to-h": `${flyVars.toH}px`,
+        "--handoff-fly-ms": `${flyVars.durationMs}ms`,
+      } as CSSProperties)
+    : ({
+        top: `${startRect.top}px`,
+        left: `${startRect.left}px`,
+        width: `${startRect.width}px`,
+        height: `${startRect.height}px`,
+      } as CSSProperties);
 
   const revealing = phase === "reveal";
 
@@ -147,7 +171,9 @@ function BrandHandoffOverlay({
       <div className={`jarvis-handoff-overlay__scrim${revealing ? " is-revealing" : ""}`} />
       <span
         ref={markRef}
-        className={`jarvis-handoff-overlay__mark brand__mark${phase === "flying" ? " is-flying" : ""}${revealing ? " is-arrived" : ""}`}
+        className={`jarvis-handoff-overlay__mark brand__mark${animating ? " is-animating" : ""}${revealing ? " is-arrived" : ""}`}
+        style={markStyle}
+        onAnimationEnd={animating ? handleAnimationEnd : undefined}
       >
         GC
       </span>
