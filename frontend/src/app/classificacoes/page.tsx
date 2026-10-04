@@ -10,46 +10,6 @@ import {
   updateProductClassificationNode,
 } from "@/lib/api";
 
-type NodeFormProps = {
-  title: string;
-  parentId?: string;
-  onSaved: () => Promise<void>;
-};
-
-function NodeForm({ title, parentId, onSaved }: NodeFormProps) {
-  const [name, setName] = useState("");
-  const [description, setDescription] = useState("");
-  const [busy, setBusy] = useState(false);
-
-  async function onSubmit(event: FormEvent) {
-    event.preventDefault();
-    setBusy(true);
-    try {
-      await createProductClassificationNode(name, description || undefined, parentId);
-      setName("");
-      setDescription("");
-      await onSaved();
-    } finally {
-      setBusy(false);
-    }
-  }
-
-  return (
-    <form className="classification-form stack" onSubmit={onSubmit}>
-      <h4>{title}</h4>
-      <input value={name} onChange={(e) => setName(e.target.value)} placeholder="Nome" required disabled={busy} />
-      <textarea
-        value={description}
-        onChange={(e) => setDescription(e.target.value)}
-        placeholder="Descrição (opcional)"
-        rows={2}
-        disabled={busy}
-      />
-      <button type="submit" disabled={busy}>Adicionar</button>
-    </form>
-  );
-}
-
 function findNode(nodes: ProductClassificationNode[], id: string): ProductClassificationNode | null {
   for (const node of nodes) {
     if (node.id === id) return node;
@@ -80,6 +40,312 @@ function collectPaths(nodes: ProductClassificationNode[]): ProductClassification
   return paths;
 }
 
+function pathToNode(tree: ProductClassificationNode[], nodeId: string): ProductClassificationNode[] {
+  function walk(nodes: ProductClassificationNode[], trail: ProductClassificationNode[]): ProductClassificationNode[] | null {
+    for (const node of nodes) {
+      const next = [...trail, node];
+      if (node.id === nodeId) return next;
+      const found = walk(node.children, next);
+      if (found) return found;
+    }
+    return null;
+  }
+  return walk(tree, []) ?? [];
+}
+
+function nodesAvailableAtLevel(
+  tree: ProductClassificationNode[],
+  ancestorPath: ProductClassificationNode[],
+  level: number,
+): ProductClassificationNode[] {
+  if (level === 1) return tree;
+  const parent = ancestorPath[level - 2];
+  if (!parent) return [];
+  return parent.children.filter((child) => child.level === level);
+}
+
+type LevelFlowIndicatorProps = {
+  depthLevels: number;
+  variant: "static" | "interactive";
+  targetLevel?: number;
+  ancestorPath?: ProductClassificationNode[];
+  pickLevel?: number | null;
+  onSelectTargetLevel?: (level: number) => void;
+  onPickAncestorLevel?: (level: number) => void;
+};
+
+function LevelFlowIndicator({
+  depthLevels,
+  variant,
+  targetLevel = 1,
+  ancestorPath = [],
+  pickLevel = null,
+  onSelectTargetLevel,
+  onPickAncestorLevel,
+}: LevelFlowIndicatorProps) {
+  return (
+    <div
+      className={`classification-flow__legend${variant === "interactive" ? " classification-flow__legend--interactive" : ""}`}
+      role={variant === "interactive" ? "group" : undefined}
+      aria-label={variant === "interactive" ? "Nível para cadastro" : undefined}
+    >
+      {Array.from({ length: depthLevels }, (_, index) => {
+        const level = index + 1;
+        const ancestor = ancestorPath[level - 1];
+        const isTarget = variant === "interactive" && level === targetLevel;
+        const isAncestor = variant === "interactive" && level < targetLevel;
+        const isFuture = variant === "interactive" && level > targetLevel;
+        const isPicking = variant === "interactive" && pickLevel === level;
+
+        const label = isAncestor && ancestor ? ancestor.name : `Nível ${level}`;
+
+        if (variant === "static") {
+          return (
+            <span key={level} className="classification-flow__legend-item">
+              {index > 0 ? <span className="classification-flow__arrow" aria-hidden>→</span> : null}
+              <span className="classification-flow__legend-pill">Nível {level}</span>
+            </span>
+          );
+        }
+
+        return (
+          <span key={level} className="classification-flow__legend-item">
+            {index > 0 ? <span className="classification-flow__arrow" aria-hidden>→</span> : null}
+            <button
+              type="button"
+              className={[
+                "classification-flow__legend-btn",
+                isTarget ? "is-target" : "",
+                isAncestor ? "is-ancestor" : "",
+                isFuture ? "is-future" : "",
+                isPicking ? "is-picking" : "",
+                isAncestor && !ancestor ? "is-missing" : "",
+              ]
+                .filter(Boolean)
+                .join(" ")}
+              onClick={() => {
+                if (level === targetLevel) return;
+                if (level < targetLevel) {
+                  onPickAncestorLevel?.(level);
+                } else {
+                  onSelectTargetLevel?.(level);
+                }
+              }}
+              aria-pressed={isTarget || isPicking}
+            >
+              <span className="classification-flow__legend-btn-level">Nível {level}</span>
+              <span className="classification-flow__legend-btn-label">{label}</span>
+            </button>
+          </span>
+        );
+      })}
+    </div>
+  );
+}
+
+type CreateNodeFormProps = {
+  targetLevel: number;
+  ancestorPath: ProductClassificationNode[];
+  parentId?: string;
+  canSubmit: boolean;
+  onSaved: () => Promise<void>;
+};
+
+function CreateNodeForm({ targetLevel, ancestorPath, parentId, canSubmit, onSaved }: CreateNodeFormProps) {
+  const [name, setName] = useState("");
+  const [description, setDescription] = useState("");
+  const [busy, setBusy] = useState(false);
+
+  async function onSubmit(event: FormEvent) {
+    event.preventDefault();
+    if (!canSubmit) return;
+    setBusy(true);
+    try {
+      await createProductClassificationNode(name, description || undefined, parentId);
+      setName("");
+      setDescription("");
+      await onSaved();
+    } finally {
+      setBusy(false);
+    }
+  }
+
+  return (
+    <form className="classification-form stack" onSubmit={onSubmit}>
+      {targetLevel > 1 && ancestorPath.length > 0 ? (
+        <div className="classification-create__breadcrumb" aria-label="Caminho dos níveis superiores">
+          {ancestorPath.map((node, index) => (
+            <span key={node.id} className="classification-create__breadcrumb-segment">
+              {index > 0 ? <span className="classification-flow__arrow" aria-hidden>→</span> : null}
+              <span className="classification-create__breadcrumb-step">
+                <span className="classification-flow__step-level">Nível {node.level}</span>
+                <span className="classification-flow__step-name">{node.name}</span>
+              </span>
+            </span>
+          ))}
+        </div>
+      ) : null}
+
+      <h4>Nova classificação de nível {targetLevel}</h4>
+
+      {!canSubmit && targetLevel > 1 ? (
+        <p className="muted classification-create__hint">
+          Selecione os níveis acima no indicador para definir onde este cadastro será inserido.
+        </p>
+      ) : null}
+
+      <input
+        value={name}
+        onChange={(e) => setName(e.target.value)}
+        placeholder="Nome"
+        required
+        disabled={busy || !canSubmit}
+      />
+      <textarea
+        value={description}
+        onChange={(e) => setDescription(e.target.value)}
+        placeholder="Descrição (opcional)"
+        rows={2}
+        disabled={busy || !canSubmit}
+      />
+      <button type="submit" disabled={busy || !canSubmit}>Adicionar</button>
+    </form>
+  );
+}
+
+type CreateClassificationPanelProps = {
+  tree: ProductClassificationNode[];
+  depthLevels: number;
+  onSaved: () => Promise<void>;
+  syncFromNodeId: string | null;
+};
+
+function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId }: CreateClassificationPanelProps) {
+  const [targetLevel, setTargetLevel] = useState(1);
+  const [ancestorPath, setAncestorPath] = useState<ProductClassificationNode[]>([]);
+  const [pickLevel, setPickLevel] = useState<number | null>(null);
+
+  useEffect(() => {
+    if (targetLevel > depthLevels) {
+      setTargetLevel(depthLevels);
+      setAncestorPath((path) => path.slice(0, depthLevels - 1));
+    }
+  }, [depthLevels, targetLevel]);
+
+  useEffect(() => {
+    setAncestorPath((path) => path.slice(0, targetLevel - 1));
+    setPickLevel(targetLevel > 1 ? 1 : null);
+  }, [targetLevel]);
+
+  useEffect(() => {
+    if (!syncFromNodeId) return;
+    const path = pathToNode(tree, syncFromNodeId);
+    const node = path[path.length - 1];
+    if (!node || node.level >= depthLevels) return;
+    setTargetLevel(node.level + 1);
+    setAncestorPath(path);
+    setPickLevel(null);
+  }, [syncFromNodeId, tree, depthLevels]);
+
+  const requiredAncestors = targetLevel - 1;
+  const ancestorsComplete = ancestorPath.length >= requiredAncestors && ancestorPath.every((n, i) => n.level === i + 1);
+  const parentId = ancestorsComplete && targetLevel > 1 ? ancestorPath[targetLevel - 2]?.id : undefined;
+  const canSubmit = targetLevel === 1 || ancestorsComplete;
+
+  const firstMissingLevel = useMemo(() => {
+    for (let level = 1; level < targetLevel; level += 1) {
+      const node = ancestorPath[level - 1];
+      if (!node || node.level !== level) return level;
+    }
+    return null;
+  }, [ancestorPath, targetLevel]);
+
+  const activePickLevel = pickLevel ?? firstMissingLevel;
+
+  const pickOptions = useMemo(() => {
+    if (!activePickLevel || activePickLevel >= targetLevel) return [];
+    const prefix = ancestorPath.slice(0, activePickLevel - 1);
+    return nodesAvailableAtLevel(tree, prefix, activePickLevel);
+  }, [activePickLevel, ancestorPath, targetLevel, tree]);
+
+  function selectTargetLevel(level: number) {
+    setTargetLevel(level);
+  }
+
+  function startPickAncestor(level: number) {
+    setPickLevel(level);
+    setAncestorPath((path) => path.slice(0, level - 1));
+  }
+
+  function chooseAncestor(node: ProductClassificationNode) {
+    setAncestorPath((path) => {
+      const next = path.slice(0, node.level - 1);
+      next[node.level - 1] = node;
+      return next;
+    });
+    if (node.level < targetLevel - 1) {
+      setPickLevel(node.level + 1);
+    } else {
+      setPickLevel(null);
+    }
+  }
+
+  return (
+    <div className="classification-workspace__create stack">
+      <h3 className="classification-workspace__subhead">Nova classificação</h3>
+      <p className="muted">Escolha em qual nível deseja cadastrar. Nos níveis 2 em diante, defina os pais no fluxo abaixo.</p>
+
+      <LevelFlowIndicator
+        depthLevels={depthLevels}
+        variant="interactive"
+        targetLevel={targetLevel}
+        ancestorPath={ancestorPath}
+        pickLevel={activePickLevel}
+        onSelectTargetLevel={selectTargetLevel}
+        onPickAncestorLevel={startPickAncestor}
+      />
+
+      {targetLevel > 1 && activePickLevel !== null && activePickLevel < targetLevel ? (
+        <div className="classification-create__picker stack">
+          <p className="classification-create__picker-label">
+            Escolha o item do <strong>nível {activePickLevel}</strong>
+            {activePickLevel > 1 && ancestorPath[activePickLevel - 2]
+              ? ` (abaixo de “${ancestorPath[activePickLevel - 2].name}”)`
+              : ""}
+            :
+          </p>
+          {pickOptions.length > 0 ? (
+            <div className="classification-create__picker-options">
+              {pickOptions.map((node) => (
+                <button
+                  key={node.id}
+                  type="button"
+                  className={`classification-create__picker-option${
+                    ancestorPath[activePickLevel - 1]?.id === node.id ? " is-selected" : ""
+                  }`}
+                  onClick={() => chooseAncestor(node)}
+                >
+                  {node.name}
+                </button>
+              ))}
+            </div>
+          ) : (
+            <p className="muted">Nenhum cadastro neste nível ainda. Cadastre o nível anterior primeiro.</p>
+          )}
+        </div>
+      ) : null}
+
+      <CreateNodeForm
+        targetLevel={targetLevel}
+        ancestorPath={ancestorPath.slice(0, targetLevel - 1)}
+        parentId={parentId}
+        canSubmit={canSubmit}
+        onSaved={onSaved}
+      />
+    </div>
+  );
+}
+
 type ClassificationFlowProps = {
   paths: ProductClassificationNode[][];
   depthLevels: number;
@@ -88,37 +354,18 @@ type ClassificationFlowProps = {
 };
 
 function ClassificationFlow({ paths, depthLevels, selectedId, onSelect }: ClassificationFlowProps) {
-  const levelLabels = useMemo(
-    () => Array.from({ length: depthLevels }, (_, i) => `Nível ${i + 1}`),
-    [depthLevels],
-  );
-
   if (paths.length === 0) {
     return (
       <div className="classification-flow classification-flow--empty">
         <p className="muted">Nenhuma classificação cadastrada. Use o painel à esquerda para começar no nível 1.</p>
-        <div className="classification-flow__legend" aria-hidden>
-          {levelLabels.map((label, index) => (
-            <span key={label} className="classification-flow__legend-item">
-              {index > 0 ? <span className="classification-flow__arrow">→</span> : null}
-              <span className="classification-flow__legend-pill">{label}</span>
-            </span>
-          ))}
-        </div>
+        <LevelFlowIndicator depthLevels={depthLevels} variant="static" />
       </div>
     );
   }
 
   return (
     <div className="classification-flow">
-      <div className="classification-flow__legend" aria-hidden>
-        {levelLabels.map((label, index) => (
-          <span key={label} className="classification-flow__legend-item">
-            {index > 0 ? <span className="classification-flow__arrow">→</span> : null}
-            <span className="classification-flow__legend-pill">{label}</span>
-          </span>
-        ))}
-      </div>
+      <LevelFlowIndicator depthLevels={depthLevels} variant="static" />
       <ul className="classification-flow__paths">
         {paths.map((path, pathIndex) => (
           <li key={path.map((n) => n.id).join("-") || pathIndex} className="classification-flow__path">
@@ -233,9 +480,6 @@ export default function ClassificacoesPage() {
     [tree, selectedNodeId],
   );
 
-  const canAddChild = selectedNode !== null && selectedNode.level < depthLevels;
-  const addChildLevel = selectedNode ? selectedNode.level + 1 : 1;
-
   async function saveDepth(event: FormEvent) {
     event.preventDefault();
     setError(null);
@@ -305,24 +549,12 @@ export default function ClassificacoesPage() {
             <NodeEditor node={selectedNode} onChanged={onChanged} onDeleted={onDeleted} />
           ) : null}
 
-          <div className="classification-workspace__create stack">
-            <h3 className="classification-workspace__subhead">Nova classificação</h3>
-            {canAddChild ? (
-              <p className="muted">
-                Será adicionada como nível {addChildLevel}, abaixo de <strong>{selectedNode.name}</strong>.
-              </p>
-            ) : (
-              <p className="muted">Cadastre uma classificação principal (nível 1).</p>
-            )}
-            <NodeForm
-              title={canAddChild ? `Nível ${addChildLevel} sob “${selectedNode!.name}”` : "Nova classificação de nível 1"}
-              parentId={canAddChild ? selectedNode!.id : undefined}
-              onSaved={onChanged}
-            />
-            {canAddChild ? (
-              <NodeForm title="Outra classificação de nível 1" onSaved={onChanged} />
-            ) : null}
-          </div>
+          <CreateClassificationPanel
+            tree={tree}
+            depthLevels={depthLevels}
+            onSaved={onChanged}
+            syncFromNodeId={selectedNodeId}
+          />
         </div>
 
         <div className="panel stack classification-workspace__flow-panel">
