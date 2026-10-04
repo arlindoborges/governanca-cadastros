@@ -24,7 +24,7 @@
   --hud-t-lower: 0.95s;
   --ring-travel: calc((var(--hud-stem-gap) + var(--hud-panel-w)) / 2);
   --jarvis-handoff-fly: var(--hud-t-ring-move);
-  --jarvis-handoff-reveal: 1.05s;
+  --jarvis-handoff-reveal: 0.88s;
 }
 
 .jarvis-login {
@@ -801,7 +801,9 @@
 
 .jarvis-login--handoff .jarvis-hud,
 .jarvis-login--handoff .jarvis-login__top {
+  opacity: 0;
   visibility: hidden;
+  transition: opacity 0.22s var(--jarvis-ease-smooth), visibility 0s linear 0.22s;
 }
 
 .jarvis-handoff-overlay {
@@ -816,7 +818,7 @@
   inset: 0;
   background: var(--jarvis-bg);
   opacity: 1;
-  transition: opacity var(--jarvis-handoff-reveal) ease 0.04s;
+  transition: opacity var(--jarvis-handoff-reveal) var(--jarvis-ease-smooth);
 }
 
 .jarvis-handoff-overlay__scrim.is-revealing {

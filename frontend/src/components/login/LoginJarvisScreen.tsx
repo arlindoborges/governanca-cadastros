@@ -4,6 +4,7 @@ import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { JarvisRingGraphic } from "@/components/login/JarvisRingGraphic";
 import { useLoginReveal } from "@/contexts/LoginRevealContext";
+import { morphHandoffDelayMs } from "@/lib/login-exit-timeline";
 
 type Props = {
   email: string;
@@ -33,8 +34,6 @@ type HudPhase =
 const RING_MS = 550;
 const LINE_MS = 550;
 const SQUARE_MS = 950;
-/** Tempo para o anel encolher e virar ícone GC (alinha ao CSS do morph). */
-const BRAND_MORPH_MS = 380;
 
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
@@ -98,10 +97,8 @@ export function LoginJarvisScreen({
   useEffect(() => {
     if (phase !== "brand-morph" || handoffStartedRef.current || !onSuccessBrandReady) return;
     handoffStartedRef.current = true;
-    const frameId = requestAnimationFrame(() => {
-      onSuccessBrandReady();
-    });
-    return () => cancelAnimationFrame(frameId);
+    const t = window.setTimeout(() => onSuccessBrandReady(), motionMs(morphHandoffDelayMs()));
+    return () => window.clearTimeout(t);
   }, [phase, onSuccessBrandReady]);
 
   useEffect(() => {

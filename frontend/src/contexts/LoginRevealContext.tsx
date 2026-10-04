@@ -2,10 +2,11 @@
 
 import "@/app/login/jarvis.css";
 
+import { LOGIN_EXIT_TIMELINE } from "@/lib/login-exit-timeline";
 import {
+  estimateBrandMarkRect,
   handoffFlyDurationMs,
   handoffStartRect,
-  resolveBrandMarkTarget,
 } from "@/lib/login-handoff-rect";
 import { useRouter } from "next/navigation";
 import {
@@ -20,8 +21,7 @@ import {
   type ReactNode,
 } from "react";
 
-const REVEAL_WIPE_MS = 1050;
-const TARGET_WAIT_MS = 4000;
+const TARGET_WAIT_MS = 120;
 
 export type LoginRevealOrigin = {
   x: number;
@@ -40,6 +40,8 @@ type LoginRevealContextValue = {
 };
 
 const LoginRevealContext = createContext<LoginRevealContextValue | null>(null);
+
+const HUD_EASE = "cubic-bezier(0.22, 1, 0.36, 1)";
 
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
@@ -72,7 +74,7 @@ function BrandHandoffOverlay({
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
   const flyStartedRef = useRef(false);
-  const arrivedRef = useRef(false);
+  const revealStartedRef = useRef(false);
   const animationRef = useRef<Animation | null>(null);
 
   useLayoutEffect(() => {
@@ -113,24 +115,34 @@ function BrandHandoffOverlay({
         ],
         {
           duration: durationMs,
-          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          easing: HUD_EASE,
           fill: "forwards",
         },
       );
 
       animationRef.current = animation;
 
-      const finish = () => {
-        if (cancelled || arrivedRef.current) return;
-        arrivedRef.current = true;
-        placeMark(el, toRect);
+      const startReveal = () => {
+        if (cancelled || revealStartedRef.current) return;
+        revealStartedRef.current = true;
         onArrived(toRect);
       };
 
-      const fallbackId = window.setTimeout(finish, durationMs + 200);
+      const endFly = () => {
+        if (cancelled) return;
+        placeMark(el, toRect);
+        startReveal();
+      };
+
+      const revealLeadMs = Math.round(durationMs * LOGIN_EXIT_TIMELINE.flyRevealOverlap);
+      const revealAt = Math.max(0, durationMs - revealLeadMs);
+      const revealTimer = window.setTimeout(startReveal, revealAt);
+      const fallbackId = window.setTimeout(endFly, durationMs + 120);
+
       animation.onfinish = () => {
         window.clearTimeout(fallbackId);
-        finish();
+        window.clearTimeout(revealTimer);
+        endFly();
       };
     };
 
@@ -146,7 +158,7 @@ function BrandHandoffOverlay({
         requestAnimationFrame(waitForTarget);
         return;
       }
-      beginFly(resolveBrandMarkTarget());
+      beginFly(estimateBrandMarkRect());
     };
 
     requestAnimationFrame(waitForTarget);
@@ -159,7 +171,7 @@ function BrandHandoffOverlay({
 
   useEffect(() => {
     if (phase !== "reveal") return;
-    const t = window.setTimeout(onDone, motionMs(REVEAL_WIPE_MS) + 60);
+    const t = window.setTimeout(onDone, motionMs(LOGIN_EXIT_TIMELINE.revealWipe) + 40);
     return () => window.clearTimeout(t);
   }, [phase, onDone]);
 
@@ -170,7 +182,7 @@ function BrandHandoffOverlay({
       <div className={`jarvis-handoff-overlay__scrim${revealing ? " is-revealing" : ""}`} />
       <span
         ref={markRef}
-        className={`jarvis-handoff-overlay__mark brand__mark${revealing ? " is-arrived" : ""}`}
+        className={`jarvis-handoff-overlay__mark brand__mark${phase === "flying" ? " is-flying" : ""}${revealing ? " is-arrived" : ""}`}
       >
         GC
       </span>
