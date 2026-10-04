@@ -30,9 +30,9 @@ export function JarvisRingGraphic() {
     <svg className="jarvis-hud__ring-svg" viewBox="0 0 320 320" aria-hidden="true">
       <defs>
         <radialGradient id="jarvis-ring-core" cx="50%" cy="45%" r="55%">
-          <stop offset="0%" stopColor="rgba(0, 48, 72, 0.95)" />
-          <stop offset="55%" stopColor="rgba(0, 18, 32, 0.98)" />
-          <stop offset="100%" stopColor="rgba(0, 6, 14, 1)" />
+          <stop offset="0%" stopColor="rgba(8, 36, 22, 0.95)" />
+          <stop offset="55%" stopColor="rgba(2, 12, 7, 0.98)" />
+          <stop offset="100%" stopColor="rgba(0, 4, 2, 1)" />
         </radialGradient>
         <filter id="jarvis-ring-bloom" x="-40%" y="-40%" width="180%" height="180%">
           <feGaussianBlur stdDeviation="3.5" result="blur" />

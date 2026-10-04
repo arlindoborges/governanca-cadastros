@@ -2,10 +2,6 @@
 
 :root {
   --jarvis-bg: #000000;
-  --jarvis-ring-cyan: #00f0ff;
-  --jarvis-ring-cyan-soft: #00b8d4;
-  --jarvis-ring-cyan-dim: rgba(0, 184, 212, 0.35);
-  --jarvis-ring-glow: rgba(0, 240, 255, 0.55);
   --jarvis-green: #3dff97;
   --jarvis-green-soft: #1a9d5c;
   --jarvis-green-dim: #0b2e1c;
@@ -14,7 +10,7 @@
   --jarvis-glow: rgba(61, 255, 151, 0.45);
   --jarvis-panel-bg: rgba(4, 12, 8, 0.94);
   --jarvis-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
-  --hud-ring-size: 9.25rem;
+  --hud-ring-size: 18.5rem;
   --hud-panel-w: 22.5rem;
   --hud-panel-h: 21rem;
   --hud-edge-pad: clamp(1rem, 4vw, 2.5rem);
@@ -120,25 +116,25 @@
 
 .jarvis-hud__ring {
   position: relative;
-  width: min(42vw, var(--hud-ring-size));
-  height: min(42vw, var(--hud-ring-size));
+  width: min(72vw, var(--hud-ring-size));
+  height: min(72vw, var(--hud-ring-size));
   flex-shrink: 0;
   transform: translateX(0);
   transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
   border-radius: 50%;
-  border: 1px solid rgba(0, 200, 230, 0.35);
-  background: radial-gradient(circle at 42% 38%, rgba(0, 55, 80, 0.45), rgba(0, 8, 16, 0.92) 68%);
+  border: 1px solid var(--jarvis-green-soft);
+  background: radial-gradient(circle at 42% 38%, rgba(8, 32, 20, 0.55), rgba(2, 8, 5, 0.94) 68%);
   box-shadow:
-    0 0 36px rgba(0, 200, 255, 0.22),
-    0 0 72px rgba(0, 120, 180, 0.12),
-    inset 0 0 28px rgba(0, 220, 255, 0.08);
+    0 0 36px rgba(61, 255, 151, 0.2),
+    0 0 72px rgba(26, 157, 92, 0.12),
+    inset 0 0 28px rgba(61, 255, 151, 0.08);
   cursor: pointer;
   overflow: visible;
   z-index: 2;
 }
 
 .jarvis-hud__ring:focus-visible {
-  outline: 2px solid var(--jarvis-ring-cyan);
+  outline: 2px solid var(--jarvis-green);
   outline-offset: 4px;
 }
 
@@ -155,7 +151,7 @@
 
 .jarvis-hud__ring-halo {
   fill: none;
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-width: 10;
   stroke-opacity: 0.08;
   filter: url(#jarvis-ring-soft);
@@ -198,7 +194,7 @@
 
 .jarvis-hud__ring-orbit {
   fill: none;
-  stroke: var(--jarvis-ring-cyan-soft);
+  stroke: var(--jarvis-green-soft);
   stroke-width: 1;
 }
 
@@ -208,7 +204,7 @@
 }
 
 .jarvis-hud__ring-orbit--dashed {
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-opacity: 0.4;
   stroke-dasharray: 2 9;
 }
@@ -220,14 +216,14 @@
 }
 
 .jarvis-hud__ring-orbit--inner {
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-opacity: 0.85;
   stroke-width: 2;
   filter: url(#jarvis-ring-bloom);
 }
 
 .jarvis-hud__ring-segment {
-  fill: var(--jarvis-ring-cyan);
+  fill: var(--jarvis-green);
   opacity: 0.75;
 }
 
@@ -241,21 +237,21 @@
 
 .jarvis-hud__ring-core {
   fill: url(#jarvis-ring-core);
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-width: 1.5;
   stroke-opacity: 0.9;
 }
 
 .jarvis-hud__ring-core-glow {
   fill: none;
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-width: 2;
   stroke-opacity: 0.35;
 }
 
 .jarvis-hud__ring-cross {
   fill: none;
-  stroke: var(--jarvis-ring-cyan);
+  stroke: var(--jarvis-green);
   stroke-width: 2;
   stroke-opacity: 0.5;
   filter: url(#jarvis-ring-bloom);
@@ -276,24 +272,24 @@
 .jarvis-hud__ring-brand {
   margin: 0;
   font-family: Orbitron, ui-sans-serif, system-ui, sans-serif;
-  font-size: clamp(0.72rem, 2.8vw, 0.95rem);
+  font-size: clamp(0.85rem, 3.2vw, 1.15rem);
   font-weight: 800;
   letter-spacing: 0.28em;
   text-transform: uppercase;
-  color: var(--jarvis-ring-cyan);
+  color: var(--jarvis-green);
   text-shadow:
-    0 0 12px var(--jarvis-ring-glow),
-    0 0 24px rgba(0, 180, 255, 0.35);
+    0 0 12px var(--jarvis-glow),
+    0 0 24px rgba(61, 255, 151, 0.35);
 }
 
 .jarvis-hud__ring-title {
   margin: 0.35rem 0 0;
   font-family: Orbitron, ui-sans-serif, system-ui, sans-serif;
-  font-size: 0.5rem;
+  font-size: 0.58rem;
   font-weight: 600;
   letter-spacing: 0.14em;
   text-transform: uppercase;
-  color: rgba(0, 220, 255, 0.75);
+  color: rgba(61, 255, 151, 0.8);
 }
 
 .jarvis-hud__ring-hint {
@@ -310,7 +306,7 @@
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: rgba(0, 220, 255, 0.65);
+  color: rgba(61, 255, 151, 0.65);
 }
 
 .jarvis-hud__lane {
