@@ -109,10 +109,11 @@
   padding: 1rem var(--hud-edge-pad) 2rem;
 }
 
-/* HUD: círculo desliza à esquerda enquanto a linha desenha o painel à direita */
+/* HUD: anel + linha + painel centralizados na tela */
 .jarvis-hud {
   display: flex;
   align-items: center;
+  justify-content: center;
   width: 100%;
   min-height: var(--hud-panel-h);
 }
@@ -122,8 +123,7 @@
   width: min(42vw, var(--hud-ring-size));
   height: min(42vw, var(--hud-ring-size));
   flex-shrink: 0;
-  --ring-shift: calc(50vw - var(--hud-ring-size) / 2 - var(--hud-edge-pad));
-  transform: translateX(var(--ring-shift));
+  transform: translateX(0);
   transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
   border-radius: 50%;
   border: 1px solid rgba(0, 200, 230, 0.35);
@@ -144,13 +144,6 @@
 
 .jarvis-hud--open .jarvis-hud__ring {
   cursor: default;
-  transform: translateX(0);
-}
-
-.jarvis-hud--open::after {
-  content: "";
-  flex: 1 1 auto;
-  min-width: 0;
 }
 
 .jarvis-hud__ring-svg {
@@ -577,12 +570,8 @@
 
   .jarvis-hud--open {
     flex-direction: column;
-    align-items: stretch;
+    align-items: center;
     gap: 0.5rem;
-  }
-
-  .jarvis-hud__ring {
-    --ring-shift: calc(50vw - var(--hud-ring-size) / 2 - var(--hud-edge-pad));
   }
 
   .jarvis-hud__lane {
@@ -606,7 +595,7 @@
     width: 100%;
     max-width: var(--hud-panel-w);
     margin-left: auto;
-    margin-right: 0;
+    margin-right: auto;
   }
 
   .jarvis-hud--open .jarvis-hud__window-frame {
