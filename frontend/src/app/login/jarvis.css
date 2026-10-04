@@ -7,10 +7,18 @@
   --jarvis-muted: #5f8f72;
   --jarvis-glow: rgba(61, 255, 151, 0.45);
   --jarvis-panel-bg: rgba(4, 12, 8, 0.94);
-  --jarvis-ease: cubic-bezier(0.33, 1, 0.68, 1);
-  --jarvis-t-ring: 0.55s;
-  --jarvis-t-beam: 0.7s;
-  --jarvis-t-window: 0.8s;
+  --jarvis-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
+  --hud-ring-size: 9.25rem;
+  --hud-stem-length: 6.5rem;
+  --hud-panel-w: 22.5rem;
+  --hud-panel-h: 21rem;
+  --hud-t-ring: 0.28s;
+  --hud-t-stem: 0.15s;
+  --hud-t-upper: 0.7s;
+  --hud-t-lower: 1.12s;
+  --hud-draw-delay: 0.16s;
+  --hud-draw-split: calc(var(--hud-draw-delay) + var(--hud-t-stem));
+  --hud-fill-reveal: calc(var(--hud-draw-split) + var(--hud-t-lower) * 0.92);
 }
 
 .jarvis-login {
@@ -91,35 +99,36 @@
   padding: 1rem 1.5rem 2rem;
 }
 
-/* HUD: círculo → desloca à esquerda → linha → janela quadrada */
+/* HUD: círculo menor → desloca → linha desenha o painel */
 .jarvis-hud {
   display: flex;
   align-items: center;
   justify-content: center;
   width: 100%;
-  max-width: 46rem;
+  max-width: 52rem;
   transform: translateX(0);
-  transition: transform var(--jarvis-t-ring) var(--jarvis-ease);
+  transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
 }
 
 .jarvis-hud--open {
   justify-content: flex-start;
-  transform: translateX(clamp(-5rem, -14vw, -1.5rem));
+  transform: translateX(clamp(-3.5rem, -11vw, -0.75rem));
 }
 
 .jarvis-hud__ring {
   position: relative;
-  width: min(72vw, 18.5rem);
-  height: min(72vw, 18.5rem);
+  width: min(42vw, var(--hud-ring-size));
+  height: min(42vw, var(--hud-ring-size));
   flex-shrink: 0;
   border-radius: 50%;
   border: 1px solid var(--jarvis-green-soft);
   background: rgba(2, 8, 5, 0.55);
   box-shadow:
-    0 0 32px rgba(61, 255, 151, 0.15),
-    inset 0 0 24px rgba(61, 255, 151, 0.06);
+    0 0 24px rgba(61, 255, 151, 0.15),
+    inset 0 0 18px rgba(61, 255, 151, 0.06);
   cursor: pointer;
   overflow: hidden;
+  z-index: 2;
 }
 
 .jarvis-hud__ring:focus-visible {
@@ -173,109 +182,123 @@
   align-items: center;
   justify-content: center;
   text-align: center;
-  padding: 1.5rem;
+  padding: 0.65rem;
   pointer-events: none;
 }
 
 .jarvis-hud__ring-title {
   margin: 0;
-  font-size: 0.9rem;
+  font-size: 0.62rem;
   font-weight: 700;
-  letter-spacing: 0.08em;
+  letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--jarvis-green);
 }
 
 .jarvis-hud__ring-hint {
-  margin: 0.45rem 0 0;
-  font-size: 0.78rem;
+  margin: 0.3rem 0 0;
+  font-size: 0.62rem;
   color: var(--jarvis-muted);
 }
 
 .jarvis-hud__ring-active {
   margin: 0;
-  font-size: 1rem;
+  font-size: 0.72rem;
   font-weight: 800;
   color: var(--jarvis-green);
-  letter-spacing: 0.2em;
+  letter-spacing: 0.18em;
 }
 
-.jarvis-hud__beam {
+.jarvis-hud__assembly {
   position: relative;
-  width: 0;
-  height: 2.5rem;
   flex-shrink: 0;
-  display: flex;
-  align-items: center;
+  width: 0;
+  height: var(--hud-panel-h);
+  margin-left: -2px;
   overflow: visible;
-  transition: width var(--jarvis-t-beam) var(--jarvis-ease) var(--jarvis-t-ring);
-}
-
-.jarvis-hud--open .jarvis-hud__beam {
-  width: clamp(2rem, 8vw, 3.25rem);
-}
-
-.jarvis-hud__beam-line {
-  display: block;
-  width: 100%;
-  height: 2px;
-  background: linear-gradient(90deg, var(--jarvis-green-soft), var(--jarvis-green));
-  box-shadow: 0 0 12px var(--jarvis-glow);
-}
-
-.jarvis-hud__beam-pulse {
-  position: absolute;
-  right: -2px;
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--jarvis-green);
-  box-shadow: 0 0 14px var(--jarvis-green);
+  pointer-events: none;
   opacity: 0;
-  transition: opacity 0.25s ease calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) - 0.15s);
+  transition: opacity 0.12s ease var(--hud-t-ring);
 }
 
-.jarvis-hud--open .jarvis-hud__beam-pulse {
+.jarvis-hud--open .jarvis-hud__assembly {
+  width: calc(var(--hud-stem-length) + var(--hud-panel-w));
   opacity: 1;
+  pointer-events: auto;
+}
+
+.jarvis-hud__outline {
+  position: absolute;
+  left: 0;
+  top: 0;
+  width: calc(var(--hud-stem-length) + var(--hud-panel-w));
+  height: var(--hud-panel-h);
+  overflow: visible;
+  pointer-events: none;
+  z-index: 3;
+}
+
+.jarvis-hud__trace {
+  fill: none;
+  stroke: var(--jarvis-green);
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+  vector-effect: non-scaling-stroke;
+  filter: drop-shadow(0 0 5px var(--jarvis-glow));
+  stroke-dasharray: 1;
+  stroke-dashoffset: 1;
+}
+
+.jarvis-hud--open .jarvis-hud__trace--stem {
+  animation: jarvis-trace-draw var(--hud-t-stem) linear var(--hud-draw-delay) forwards;
+}
+
+.jarvis-hud--open .jarvis-hud__trace--upper {
+  animation: jarvis-trace-draw var(--hud-t-upper) linear var(--hud-draw-split) forwards;
+}
+
+.jarvis-hud--open .jarvis-hud__trace--lower {
+  animation: jarvis-trace-draw var(--hud-t-lower) linear var(--hud-draw-split) forwards;
+}
+
+@keyframes jarvis-trace-draw {
+  to {
+    stroke-dashoffset: 0;
+  }
 }
 
 .jarvis-hud__window {
-  width: 0;
-  height: 0;
-  opacity: 0;
-  overflow: hidden;
-  flex-shrink: 0;
-  transform-origin: left center;
-  transition:
-    width var(--jarvis-t-window) var(--jarvis-ease) calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) * 0.55),
-    height var(--jarvis-t-window) var(--jarvis-ease) calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) * 0.55),
-    opacity 0.35s ease calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) + 0.15s);
-}
-
-.jarvis-hud--open .jarvis-hud__window {
-  width: min(92vw, 22.5rem);
-  height: auto;
-  min-height: 21rem;
-  opacity: 1;
+  position: absolute;
+  left: var(--hud-stem-length);
+  top: 0;
+  width: var(--hud-panel-w);
+  height: var(--hud-panel-h);
+  z-index: 1;
 }
 
 .jarvis-hud__window-frame {
-  width: min(92vw, 22.5rem);
-  min-height: 21rem;
+  width: 100%;
+  height: 100%;
   padding: 1.15rem 1.2rem 1.25rem;
-  border: 1px solid var(--jarvis-green-soft);
+  border: none;
   border-radius: 22px;
-  background: var(--jarvis-panel-bg);
-  box-shadow:
-    0 0 40px rgba(61, 255, 151, 0.14),
-    inset 0 0 0 1px rgba(61, 255, 151, 0.08);
-  transform-origin: left center;
-  transform: scaleX(0.02) scaleY(0.12);
-  transition: transform var(--jarvis-t-window) var(--jarvis-ease) calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) * 0.55);
+  background: transparent;
+  clip-path: inset(0 100% 0 0 round 22px);
 }
 
 .jarvis-hud--open .jarvis-hud__window-frame {
-  transform: scaleX(1) scaleY(1);
+  animation: jarvis-panel-unveil calc(var(--hud-t-upper) + var(--hud-t-stem)) linear var(--hud-draw-delay) forwards;
+}
+
+@keyframes jarvis-panel-unveil {
+  to {
+    clip-path: inset(0 0 0 0 round 22px);
+    background: var(--jarvis-panel-bg);
+    box-shadow:
+      0 0 40px rgba(61, 255, 151, 0.12),
+      inset 0 0 0 1px rgba(61, 255, 151, 0.06);
+  }
 }
 
 .jarvis-hud__window-header {
@@ -312,11 +335,16 @@
 
 .jarvis-hud__window-body {
   opacity: 0;
-  transition: opacity 0.45s ease calc(var(--jarvis-t-ring) + var(--jarvis-t-beam) + var(--jarvis-t-window) * 0.45);
 }
 
 .jarvis-hud--open .jarvis-hud__window-body {
-  opacity: 1;
+  animation: jarvis-form-fade 0.35s ease var(--hud-fill-reveal) forwards;
+}
+
+@keyframes jarvis-form-fade {
+  to {
+    opacity: 1;
+  }
 }
 
 .jarvis-login__form {
@@ -398,41 +426,58 @@
 }
 
 @media (max-width: 720px) {
+  :root {
+    --hud-stem-length: 2.5rem;
+    --hud-panel-w: min(92vw, 22.5rem);
+  }
+
   .jarvis-hud--open {
     flex-direction: column;
     transform: translateX(0);
-    gap: 0.75rem;
+    gap: 0.5rem;
   }
 
-  .jarvis-hud__beam {
-    width: 0 !important;
-    height: 0;
+  .jarvis-hud__assembly {
+    margin-left: 0;
+    height: auto;
   }
 
-  .jarvis-hud--open .jarvis-hud__beam {
-    width: 2.5rem !important;
-    height: 2px;
-    transform: rotate(90deg);
-    transition-delay: var(--jarvis-t-ring);
+  .jarvis-hud--open .jarvis-hud__assembly {
+    width: var(--hud-panel-w);
   }
 
-  .jarvis-hud--open .jarvis-hud__window {
-    width: min(100%, 22.5rem);
+  .jarvis-hud__outline {
+    display: none;
+  }
+
+  .jarvis-hud__window {
+    position: relative;
+    left: 0;
+    width: var(--hud-panel-w);
+  }
+
+  .jarvis-hud--open .jarvis-hud__window-frame {
+    animation: jarvis-form-fade 0.35s ease 0.2s forwards;
+    clip-path: none;
+    background: var(--jarvis-panel-bg);
+    border: 1px solid var(--jarvis-green-soft);
   }
 }
 
 @media (prefers-reduced-motion: reduce) {
   .jarvis-hud,
-  .jarvis-hud__beam,
-  .jarvis-hud__window,
-  .jarvis-hud__window-frame,
-  .jarvis-hud__window-body,
-  .jarvis-hud__beam-pulse {
+  .jarvis-hud__assembly {
     transition-duration: 0.01ms !important;
     transition-delay: 0ms !important;
   }
 
-  .jarvis-hud--open .jarvis-hud__window-frame {
-    transform: none;
+  .jarvis-hud__trace,
+  .jarvis-hud__window-frame,
+  .jarvis-hud__window-body {
+    animation: none !important;
+    stroke-dashoffset: 0;
+    clip-path: inset(0 0 0 0 round 22px);
+    opacity: 1;
+    background: var(--jarvis-panel-bg);
   }
 }

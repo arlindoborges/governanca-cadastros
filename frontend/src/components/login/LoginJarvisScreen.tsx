@@ -13,6 +13,9 @@ type Props = {
   onSubmit: (event: FormEvent) => void;
 };
 
+/** Tempo até o contorno do painel fechar (ms), para foco no e-mail */
+const FORM_REVEAL_MS = 1450;
+
 export function LoginJarvisScreen({
   email,
   password,
@@ -27,7 +30,7 @@ export function LoginJarvisScreen({
 
   useEffect(() => {
     if (open) {
-      const t = window.setTimeout(() => emailRef.current?.focus(), 1650);
+      const t = window.setTimeout(() => emailRef.current?.focus(), FORM_REVEAL_MS);
       return () => window.clearTimeout(t);
     }
   }, [open]);
@@ -98,64 +101,87 @@ export function LoginJarvisScreen({
             </div>
           </div>
 
-          <div className="jarvis-hud__beam" aria-hidden={!open}>
-            <span className="jarvis-hud__beam-line" />
-            <span className="jarvis-hud__beam-pulse" />
-          </div>
+          <div className="jarvis-hud__assembly" aria-hidden={!open}>
+            <svg
+              className="jarvis-hud__outline"
+              viewBox="0 0 290 210"
+              preserveAspectRatio="none"
+              aria-hidden="true"
+            >
+              {/* Linha horizontal saindo do círculo (65 = 6,5rem no viewBox) */}
+              <path
+                className="jarvis-hud__trace jarvis-hud__trace--stem"
+                pathLength={1}
+                d="M 0 105 L 65 105"
+              />
+              {/* Ramo superior: sobe e percorre o topo */}
+              <path
+                className="jarvis-hud__trace jarvis-hud__trace--upper"
+                pathLength={1}
+                d="M 65 105 L 65 14 L 276 14"
+              />
+              {/* Ramo inferior: desce, base e sobe pela direita para fechar */}
+              <path
+                className="jarvis-hud__trace jarvis-hud__trace--lower"
+                pathLength={1}
+                d="M 65 105 L 65 196 L 276 196 L 276 14"
+              />
+            </svg>
 
-          <div className="jarvis-hud__window" aria-hidden={!open}>
-            <div className="jarvis-hud__window-frame">
-              <div className="jarvis-hud__window-header">
-                <span className="jarvis-hud__window-tag">Acesso ao sistema</span>
-                <button
-                  type="button"
-                  className="jarvis-hud__back"
-                  onClick={closeHud}
-                  disabled={submitting}
-                  aria-label="Voltar ao início"
-                >
-                  Voltar
-                </button>
-              </div>
-
-              <div className="jarvis-hud__window-body">
-                <form className="jarvis-login__form" onSubmit={onSubmit}>
-                  <label className="jarvis-field">
-                    <span className="jarvis-field__label">E-mail</span>
-                    <input
-                      ref={emailRef}
-                      type="email"
-                      autoComplete="email"
-                      value={email}
-                      onChange={(e) => onEmailChange(e.target.value)}
-                      required
-                      disabled={submitting || !open}
-                      className="jarvis-field__input"
-                      placeholder="seu@email.com"
-                    />
-                  </label>
-                  <label className="jarvis-field">
-                    <span className="jarvis-field__label">Senha</span>
-                    <input
-                      type="password"
-                      autoComplete="current-password"
-                      value={password}
-                      onChange={(e) => onPasswordChange(e.target.value)}
-                      required
-                      disabled={submitting || !open}
-                      className="jarvis-field__input"
-                      placeholder="••••••••"
-                    />
-                  </label>
-                  {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
-                  <button type="submit" className="jarvis-login__submit" disabled={submitting || !open}>
-                    {submitting ? "Validando credenciais..." : "Entrar no sistema"}
+            <div className="jarvis-hud__window">
+              <div className="jarvis-hud__window-frame">
+                <div className="jarvis-hud__window-header">
+                  <span className="jarvis-hud__window-tag">Acesso ao sistema</span>
+                  <button
+                    type="button"
+                    className="jarvis-hud__back"
+                    onClick={closeHud}
+                    disabled={submitting}
+                    aria-label="Voltar ao início"
+                  >
+                    Voltar
                   </button>
-                </form>
+                </div>
 
-                <p className="jarvis-login__signup">
-                  Não tem conta? <Link href="/cadastro">Criar cadastro</Link>
-                </p>
+                <div className="jarvis-hud__window-body">
+                  <form className="jarvis-login__form" onSubmit={onSubmit}>
+                    <label className="jarvis-field">
+                      <span className="jarvis-field__label">E-mail</span>
+                      <input
+                        ref={emailRef}
+                        type="email"
+                        autoComplete="email"
+                        value={email}
+                        onChange={(e) => onEmailChange(e.target.value)}
+                        required
+                        disabled={submitting || !open}
+                        className="jarvis-field__input"
+                        placeholder="seu@email.com"
+                      />
+                    </label>
+                    <label className="jarvis-field">
+                      <span className="jarvis-field__label">Senha</span>
+                      <input
+                        type="password"
+                        autoComplete="current-password"
+                        value={password}
+                        onChange={(e) => onPasswordChange(e.target.value)}
+                        required
+                        disabled={submitting || !open}
+                        className="jarvis-field__input"
+                        placeholder="••••••••"
+                      />
+                    </label>
+                    {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
+                    <button type="submit" className="jarvis-login__submit" disabled={submitting || !open}>
+                      {submitting ? "Validando credenciais..." : "Entrar no sistema"}
+                    </button>
+                  </form>
+
+                  <p className="jarvis-login__signup">
+                    Não tem conta? <Link href="/cadastro">Criar cadastro</Link>
+                  </p>
+                </div>
               </div>
             </div>
           </div>
