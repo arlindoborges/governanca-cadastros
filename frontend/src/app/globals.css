@@ -120,16 +120,35 @@ h3 {
 }
 
 .app--login-reveal {
-  animation: app-login-enter 0.85s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  clip-path: polygon(
+    var(--login-reveal-x, 0px) 0,
+    var(--login-reveal-x, 0px) 0,
+    var(--login-reveal-x, 0px) 100%,
+    var(--login-reveal-x, 0px) 100%
+  );
 }
 
-@keyframes app-login-enter {
+.app--login-reveal:not(.app--login-reveal-wipe) {
+  visibility: hidden;
+}
+
+.app--login-reveal-wipe {
+  visibility: visible;
+  animation: app-login-wipe-right 1.05s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes app-login-wipe-right {
   from {
-    opacity: 0;
+    clip-path: polygon(
+      var(--login-reveal-x) 0,
+      var(--login-reveal-x) 0,
+      var(--login-reveal-x) 100%,
+      var(--login-reveal-x) 100%
+    );
   }
 
   to {
-    opacity: 1;
+    clip-path: polygon(var(--login-reveal-x) 0, 100% 0, 100% 100%, var(--login-reveal-x) 100%);
   }
 }
 
@@ -138,9 +157,13 @@ h3 {
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .app--login-reveal {
+  .app--login-reveal:not(.app--login-reveal-wipe) {
+    visibility: visible;
+  }
+
+  .app--login-reveal-wipe {
     animation: none;
-    opacity: 1;
+    clip-path: none;
   }
 }
 

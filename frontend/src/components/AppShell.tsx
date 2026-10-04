@@ -2,7 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
 import { useLoginReveal } from "@/contexts/LoginRevealContext";
 
@@ -93,15 +93,22 @@ function isActive(pathname: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { homeRevealActive } = useLoginReveal();
+  const { homeRevealActive, revealWipeActive, revealOrigin } = useLoginReveal();
+
+  const revealStyle: CSSProperties | undefined = revealOrigin
+    ? ({ "--login-reveal-x": `${revealOrigin.x}px` } as CSSProperties)
+    : undefined;
 
   return (
-    <div className={`app${homeRevealActive ? " app--login-reveal" : ""}`}>
+    <div
+      className={`app${homeRevealActive ? " app--login-reveal" : ""}${revealWipeActive ? " app--login-reveal-wipe" : ""}`}
+      style={revealStyle}
+    >
       <div className="app__backdrop" aria-hidden="true" />
       <aside className="sidebar glass">
         <div className="brand">
           <span
-            className={`brand__mark${homeRevealActive ? " brand__mark--handoff-hidden" : ""}`}
+            className={`brand__mark${homeRevealActive && !revealWipeActive ? " brand__mark--handoff-hidden" : ""}`}
             data-brand-handoff-target
             aria-hidden="true"
           >

@@ -14,10 +14,20 @@ import {
   type ReactNode,
 } from "react";
 
-const BRAND_FLY_MS = 880;
+const BRAND_FLY_MS = 920;
+const REVEAL_WIPE_MS = 1050;
+
+export type LoginRevealOrigin = {
+  x: number;
+  y: number;
+  width: number;
+  height: number;
+};
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
+  revealWipeActive: boolean;
+  revealOrigin: LoginRevealOrigin | null;
   startPostLoginReveal: (fromRect: DOMRect) => void;
 };
 
@@ -28,9 +38,18 @@ function motionMs(base: number) {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;
 }
 
-function BrandHandoffOverlay({ fromRect, onDone }: { fromRect: DOMRect; onDone: () => void }) {
+function BrandHandoffOverlay({
+  fromRect,
+  onArrived,
+  onDone,
+}: {
+  fromRect: DOMRect;
+  onArrived: (target: DOMRect) => void;
+  onDone: () => void;
+}) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
   const [fly, setFly] = useState(false);
+  const [reveal, setReveal] = useState(false);
 
   useLayoutEffect(() => {
     let attempts = 0;
@@ -57,10 +76,20 @@ function BrandHandoffOverlay({ fromRect, onDone }: { fromRect: DOMRect; onDone: 
   }, [onDone]);
 
   useEffect(() => {
-    if (!fly) return;
-    const t = window.setTimeout(onDone, motionMs(BRAND_FLY_MS) + 80);
+    if (!fly || !targetRect) return;
+    const flyMs = motionMs(BRAND_FLY_MS);
+    const t = window.setTimeout(() => {
+      onArrived(targetRect);
+      setReveal(true);
+    }, flyMs);
     return () => window.clearTimeout(t);
-  }, [fly, onDone]);
+  }, [fly, targetRect, onArrived]);
+
+  useEffect(() => {
+    if (!reveal) return;
+    const t = window.setTimeout(onDone, motionMs(REVEAL_WIPE_MS) + 60);
+    return () => window.clearTimeout(t);
+  }, [reveal, onDone]);
 
   const markStyle: CSSProperties = {
     top: fly && targetRect ? targetRect.top : fromRect.top,
@@ -71,9 +100,9 @@ function BrandHandoffOverlay({ fromRect, onDone }: { fromRect: DOMRect; onDone: 
 
   return (
     <div className="jarvis-handoff-overlay" aria-hidden="true">
-      <div className={`jarvis-handoff-overlay__scrim${fly ? " is-fading" : ""}`} />
+      <div className={`jarvis-handoff-overlay__scrim${reveal ? " is-revealing" : ""}`} />
       <span
-        className={`jarvis-handoff-overlay__mark brand__mark${fly ? " is-flying" : ""}${fly && targetRect ? " is-arrived" : ""}`}
+        className={`jarvis-handoff-overlay__mark brand__mark${fly ? " is-flying" : ""}${reveal ? " is-arrived" : ""}`}
         style={markStyle}
       >
         GC
@@ -84,27 +113,50 @@ function BrandHandoffOverlay({ fromRect, onDone }: { fromRect: DOMRect; onDone: 
 
 export function LoginRevealProvider({ children }: { children: ReactNode }) {
   const [homeRevealActive, setHomeRevealActive] = useState(false);
+  const [revealWipeActive, setRevealWipeActive] = useState(false);
+  const [revealOrigin, setRevealOrigin] = useState<LoginRevealOrigin | null>(null);
   const [fromRect, setFromRect] = useState<DOMRect | null>(null);
 
   const startPostLoginReveal = useCallback((rect: DOMRect) => {
     setHomeRevealActive(true);
+    setRevealWipeActive(false);
+    setRevealOrigin(null);
     setFromRect(rect);
+  }, []);
+
+  const handleArrived = useCallback((target: DOMRect) => {
+    setRevealOrigin({
+      x: target.left,
+      y: target.top,
+      width: target.width,
+      height: target.height,
+    });
+    setRevealWipeActive(true);
   }, []);
 
   const finishReveal = useCallback(() => {
     setFromRect(null);
+    setRevealWipeActive(false);
+    setRevealOrigin(null);
     setHomeRevealActive(false);
   }, []);
 
   const value = useMemo(
-    () => ({ homeRevealActive, startPostLoginReveal }),
-    [homeRevealActive, startPostLoginReveal],
+    () => ({
+      homeRevealActive,
+      revealWipeActive,
+      revealOrigin,
+      startPostLoginReveal,
+    }),
+    [homeRevealActive, revealWipeActive, revealOrigin, startPostLoginReveal],
   );
 
   return (
     <LoginRevealContext.Provider value={value}>
       {children}
-      {fromRect ? <BrandHandoffOverlay fromRect={fromRect} onDone={finishReveal} /> : null}
+      {fromRect ? (
+        <BrandHandoffOverlay fromRect={fromRect} onArrived={handleArrived} onDone={finishReveal} />
+      ) : null}
     </LoginRevealContext.Provider>
   );
 }
