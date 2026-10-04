@@ -1353,30 +1353,19 @@ textarea:focus {
   font-size: 0.88rem;
 }
 
-.classification-create__picker-options {
-  display: flex;
-  flex-wrap: wrap;
-  gap: 0.45rem;
-}
-
-.classification-create__picker-option {
-  padding: 0.4rem 0.7rem;
-  border-radius: 8px;
-  border: 1px solid var(--border);
-  background: var(--ios-bg);
-  color: inherit;
-  cursor: pointer;
+.classification-create__picker-field {
+  gap: 0.35rem;
   font-size: 0.88rem;
-  font-weight: 600;
+  font-weight: 500;
 }
 
-.classification-create__picker-option:hover {
-  border-color: color-mix(in srgb, var(--ios-accent) 45%, var(--border));
+.classification-create__picker-filter {
+  width: 100%;
 }
 
-.classification-create__picker-option.is-selected {
-  border-color: var(--ios-accent);
-  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ios-accent) 18%, transparent);
+.classification-create__picker-select {
+  width: 100%;
+  cursor: pointer;
 }
 
 .classification-flow__paths {

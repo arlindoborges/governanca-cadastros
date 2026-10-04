@@ -213,6 +213,85 @@ function CreateNodeForm({ targetLevel, ancestorPath, parentId, canSubmit, onSave
   );
 }
 
+type AncestorLevelPickerProps = {
+  level: number;
+  parentName?: string;
+  options: ProductClassificationNode[];
+  selectedId?: string;
+  onSelect: (node: ProductClassificationNode) => void;
+};
+
+function AncestorLevelPicker({ level, parentName, options, selectedId, onSelect }: AncestorLevelPickerProps) {
+  const [filter, setFilter] = useState("");
+
+  useEffect(() => {
+    setFilter("");
+  }, [level, parentName, options.length]);
+
+  const filteredOptions = useMemo(() => {
+    const query = filter.trim().toLowerCase();
+    if (!query) return options;
+    return options.filter(
+      (node) =>
+        node.name.toLowerCase().includes(query) ||
+        (node.description?.toLowerCase().includes(query) ?? false),
+    );
+  }, [filter, options]);
+
+  if (options.length === 0) {
+    return (
+      <div className="classification-create__picker stack">
+        <p className="classification-create__picker-label">
+          Escolha o item do <strong>nível {level}</strong>
+          {parentName ? ` (abaixo de “${parentName}”)` : ""}:
+        </p>
+        <p className="muted">Nenhum cadastro neste nível ainda. Cadastre o nível anterior primeiro.</p>
+      </div>
+    );
+  }
+
+  return (
+    <div className="classification-create__picker stack">
+      <p className="classification-create__picker-label">
+        Escolha o item do <strong>nível {level}</strong>
+        {parentName ? ` (abaixo de “${parentName}”)` : ""}:
+      </p>
+      <label className="classification-create__picker-field stack">
+        Filtrar cadastros
+        <input
+          type="search"
+          className="classification-create__picker-filter"
+          placeholder="Digite para filtrar..."
+          value={filter}
+          onChange={(e) => setFilter(e.target.value)}
+          autoComplete="off"
+        />
+      </label>
+      <label className="classification-create__picker-field stack">
+        Classificação
+        <select
+          className="classification-create__picker-select"
+          value={selectedId ?? ""}
+          onChange={(e) => {
+            const node = options.find((item) => item.id === e.target.value);
+            if (node) onSelect(node);
+          }}
+        >
+          <option value="">Selecione um item cadastrado</option>
+          {filteredOptions.map((node) => (
+            <option key={node.id} value={node.id}>
+              {node.name}
+            </option>
+          ))}
+        </select>
+      </label>
+      {filter.trim() && filteredOptions.length === 0 ? (
+        <p className="muted">Nenhum resultado para “{filter.trim()}”.</p>
+      ) : null}
+    </div>
+  );
+}
+
 type CreateClassificationPanelProps = {
   tree: ProductClassificationNode[];
   depthLevels: number;
@@ -306,33 +385,13 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
       />
 
       {targetLevel > 1 && activePickLevel !== null && activePickLevel < targetLevel ? (
-        <div className="classification-create__picker stack">
-          <p className="classification-create__picker-label">
-            Escolha o item do <strong>nível {activePickLevel}</strong>
-            {activePickLevel > 1 && ancestorPath[activePickLevel - 2]
-              ? ` (abaixo de “${ancestorPath[activePickLevel - 2].name}”)`
-              : ""}
-            :
-          </p>
-          {pickOptions.length > 0 ? (
-            <div className="classification-create__picker-options">
-              {pickOptions.map((node) => (
-                <button
-                  key={node.id}
-                  type="button"
-                  className={`classification-create__picker-option${
-                    ancestorPath[activePickLevel - 1]?.id === node.id ? " is-selected" : ""
-                  }`}
-                  onClick={() => chooseAncestor(node)}
-                >
-                  {node.name}
-                </button>
-              ))}
-            </div>
-          ) : (
-            <p className="muted">Nenhum cadastro neste nível ainda. Cadastre o nível anterior primeiro.</p>
-          )}
-        </div>
+        <AncestorLevelPicker
+          level={activePickLevel}
+          parentName={activePickLevel > 1 ? ancestorPath[activePickLevel - 2]?.name : undefined}
+          options={pickOptions}
+          selectedId={ancestorPath[activePickLevel - 1]?.id}
+          onSelect={chooseAncestor}
+        />
       ) : null}
 
       <CreateNodeForm
