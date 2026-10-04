@@ -6,7 +6,8 @@
   --jarvis-text: #d8ffe8;
   --jarvis-muted: #5f8f72;
   --jarvis-glow: rgba(61, 255, 151, 0.45);
-  --jarvis-panel-bg: rgba(4, 12, 8, 0.92);
+  --jarvis-panel-bg: rgba(4, 12, 8, 0.94);
+  --jarvis-morph: 0.65s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .jarvis-login {
@@ -64,16 +65,15 @@
 
 .jarvis-login__system {
   margin: 0;
-  font-size: 0.72rem;
-  letter-spacing: 0.14em;
+  font-size: 0.95rem;
   color: var(--jarvis-green);
   font-weight: 700;
+  letter-spacing: 0.02em;
 }
 
 .jarvis-login__status {
-  margin: 0.15rem 0 0;
-  font-size: 0.65rem;
-  letter-spacing: 0.12em;
+  margin: 0.2rem 0 0;
+  font-size: 0.72rem;
   color: var(--jarvis-muted);
   font-family: ui-monospace, monospace;
 }
@@ -85,172 +85,187 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 0;
   padding: 1rem 1.5rem 2rem;
-  transition: gap 0.55s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
-.jarvis-login__stage--open {
-  gap: clamp(0.5rem, 3vw, 2rem);
-}
-
-.jarvis-login__ring-wrap {
+/* Portal: círculo → rotação → quadrado */
+.jarvis-portal {
   position: relative;
-  width: min(72vw, 20rem);
-  height: min(72vw, 20rem);
-  flex-shrink: 0;
-  transition: transform 0.55s cubic-bezier(0.22, 1, 0.36, 1);
+  width: min(72vw, 18.5rem);
+  height: min(72vw, 18.5rem);
+  border-radius: 50%;
+  border: 1px solid var(--jarvis-green-soft);
+  background: rgba(2, 8, 5, 0.55);
+  box-shadow:
+    0 0 32px rgba(61, 255, 151, 0.15),
+    inset 0 0 24px rgba(61, 255, 151, 0.06);
+  cursor: pointer;
+  transform: rotate(0deg);
+  transition:
+    width var(--jarvis-morph),
+    height var(--jarvis-morph),
+    border-radius var(--jarvis-morph),
+    transform var(--jarvis-morph),
+    box-shadow var(--jarvis-morph);
+  overflow: hidden;
 }
 
-.jarvis-login__stage--open .jarvis-login__ring-wrap {
-  transform: translateX(-4%);
+.jarvis-portal:focus-visible {
+  outline: 2px solid var(--jarvis-green);
+  outline-offset: 4px;
 }
 
-.jarvis-login__ring {
+.jarvis-portal--open {
+  width: min(92vw, 22.5rem);
+  min-height: 21rem;
+  height: auto;
+  border-radius: 10px;
+  transform: rotate(0deg);
+  cursor: default;
+  animation: jarvis-portal-morph 0.7s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  box-shadow:
+    0 0 48px rgba(61, 255, 151, 0.2),
+    inset 0 0 0 1px rgba(61, 255, 151, 0.12);
+}
+
+@keyframes jarvis-portal-morph {
+  0% {
+    border-radius: 50%;
+    transform: rotate(0deg);
+  }
+
+  35% {
+    transform: rotate(125deg);
+    border-radius: 38%;
+  }
+
+  70% {
+    transform: rotate(220deg);
+    border-radius: 18%;
+  }
+
+  100% {
+    border-radius: 10px;
+    transform: rotate(360deg);
+  }
+}
+
+.jarvis-portal__rings {
+  position: absolute;
+  inset: 0;
+  opacity: 1;
+  transition: opacity 0.35s ease;
+  pointer-events: none;
+}
+
+.jarvis-portal--open .jarvis-portal__rings {
+  opacity: 0;
+}
+
+.jarvis-portal__ring-svg {
   width: 100%;
   height: 100%;
 }
 
-.jarvis-login__ring-outer,
-.jarvis-login__ring-mid,
-.jarvis-login__ring-inner {
+.jarvis-portal__ring-outer,
+.jarvis-portal__ring-mid,
+.jarvis-portal__ring-inner {
   fill: none;
   stroke: var(--jarvis-green-soft);
   stroke-width: 1;
 }
 
-.jarvis-login__ring-outer {
+.jarvis-portal__ring-outer {
   stroke-opacity: 0.35;
 }
 
-.jarvis-login__ring-mid {
+.jarvis-portal__ring-mid {
   stroke-opacity: 0.55;
   stroke-dasharray: 4 10;
 }
 
-.jarvis-login__ring-inner {
+.jarvis-portal__ring-inner {
   stroke: var(--jarvis-green);
   stroke-opacity: 0.75;
 }
 
-.jarvis-login__ring-ticks {
+.jarvis-portal__ring-ticks {
   stroke: var(--jarvis-green);
   stroke-width: 2;
   stroke-opacity: 0.6;
 }
 
-.jarvis-login__ring-core {
-  position: absolute;
-  inset: 0;
+.jarvis-portal__surface {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  min-height: inherit;
   display: flex;
   align-items: center;
   justify-content: center;
+  padding: 1.25rem;
+  transition: transform var(--jarvis-morph);
+}
+
+.jarvis-portal--open .jarvis-portal__surface {
+  align-items: stretch;
+  padding: 1.15rem 1.2rem 1.3rem;
+}
+
+.jarvis-portal__idle {
   text-align: center;
-  padding: 2rem;
+  padding: 0.5rem;
 }
 
-.jarvis-login__activate {
-  background: transparent;
-  border: 1px solid var(--jarvis-green);
-  color: var(--jarvis-green);
-  padding: 0.7rem 1.6rem;
-  font-size: 0.85rem;
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  border-radius: 2px;
-  box-shadow:
-    0 0 24px var(--jarvis-glow),
-    inset 0 0 12px rgba(61, 255, 151, 0.08);
-  cursor: pointer;
-  transition:
-    background 0.2s ease,
-    box-shadow 0.2s ease;
-}
-
-.jarvis-login__activate:hover {
-  background: rgba(61, 255, 151, 0.08);
-  box-shadow:
-    0 0 32px var(--jarvis-glow),
-    inset 0 0 16px rgba(61, 255, 151, 0.12);
-}
-
-.jarvis-login__activate:active {
-  transform: scale(0.98);
-}
-
-.jarvis-login__core-label {
+.jarvis-portal__idle-title {
   margin: 0;
-  font-size: 0.7rem;
-  letter-spacing: 0.2em;
+  font-size: 0.9rem;
+  font-weight: 700;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--jarvis-green);
+}
+
+.jarvis-portal__idle-hint {
+  margin: 0.5rem 0 0;
+  font-size: 0.78rem;
   color: var(--jarvis-muted);
-  font-family: ui-monospace, monospace;
 }
 
-.jarvis-login__panel {
-  width: 0;
-  opacity: 0;
-  overflow: hidden;
-  flex-shrink: 0;
-  transition:
-    width 0.55s cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.35s ease 0.05s;
-  pointer-events: none;
+.jarvis-portal__form-wrap {
+  width: 100%;
 }
 
-.jarvis-login__panel--open {
-  width: min(92vw, 22rem);
-  opacity: 1;
-  pointer-events: auto;
-}
-
-.jarvis-login__panel-inner {
-  width: min(92vw, 22rem);
-  border: 1px solid var(--jarvis-green-soft);
-  background: var(--jarvis-panel-bg);
-  box-shadow:
-    0 0 40px rgba(61, 255, 151, 0.12),
-    inset 0 0 0 1px rgba(61, 255, 151, 0.08);
-  padding: 1.1rem 1.15rem 1.25rem;
-  clip-path: polygon(
-    0 12px,
-    12px 0,
-    100% 0,
-    100% calc(100% - 12px),
-    calc(100% - 12px) 100%,
-    0 100%
-  );
-}
-
-.jarvis-login__panel-header {
+.jarvis-portal__form-header {
   display: flex;
   align-items: center;
   justify-content: space-between;
+  gap: 0.5rem;
   margin-bottom: 1rem;
 }
 
-.jarvis-login__panel-tag {
+.jarvis-portal__form-tag {
   font-size: 0.68rem;
-  letter-spacing: 0.18em;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
   color: var(--jarvis-green);
   font-weight: 700;
 }
 
-.jarvis-login__panel-close {
+.jarvis-portal__back {
   background: transparent;
   border: 1px solid var(--jarvis-green-dim);
   color: var(--jarvis-muted);
-  width: 1.75rem;
-  height: 1.75rem;
+  padding: 0.25rem 0.55rem;
+  font-size: 0.72rem;
   border-radius: 2px;
-  font-size: 1.1rem;
-  line-height: 1;
-  padding: 0;
   cursor: pointer;
   box-shadow: none;
+  letter-spacing: 0.04em;
 }
 
-.jarvis-login__panel-close:hover {
+.jarvis-portal__back:hover {
   color: var(--jarvis-green);
   border-color: var(--jarvis-green-soft);
 }
@@ -268,19 +283,21 @@
 }
 
 .jarvis-field__label {
-  font-size: 0.65rem;
-  letter-spacing: 0.14em;
+  font-size: 0.72rem;
   color: var(--jarvis-muted);
-  font-family: ui-monospace, monospace;
 }
 
 .jarvis-field__input {
   background: rgba(0, 0, 0, 0.55);
   border: 1px solid var(--jarvis-green-dim);
   color: var(--jarvis-text);
-  border-radius: 2px;
+  border-radius: 4px;
   padding: 0.6rem 0.75rem;
   font-size: 0.92rem;
+}
+
+.jarvis-field__input::placeholder {
+  color: #3d5c48;
 }
 
 .jarvis-field__input:focus {
@@ -295,13 +312,13 @@
   border: 1px solid var(--jarvis-green);
   color: var(--jarvis-text);
   font-weight: 700;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  font-size: 0.78rem;
+  font-size: 0.82rem;
   padding: 0.65rem 1rem;
-  border-radius: 2px;
+  border-radius: 4px;
   box-shadow: 0 0 20px var(--jarvis-glow);
   cursor: pointer;
+  text-transform: none;
+  letter-spacing: 0.02em;
 }
 
 .jarvis-login__submit:disabled {
@@ -312,7 +329,7 @@
 .jarvis-login__error {
   margin: 0;
   font-size: 0.85rem;
-  color: #ff6b6b;
+  color: #ff7b7b;
 }
 
 .jarvis-login__signup {
@@ -331,25 +348,14 @@
   text-decoration: underline;
 }
 
-@media (max-width: 720px) {
-  .jarvis-login__stage {
-    flex-direction: column;
-    justify-content: center;
-  }
-
-  .jarvis-login__stage--open .jarvis-login__ring-wrap {
-    transform: translateY(-2%) scale(0.92);
-  }
-
-  .jarvis-login__panel--open {
-    width: min(100%, 22rem);
-  }
-}
-
 @media (prefers-reduced-motion: reduce) {
-  .jarvis-login__stage,
-  .jarvis-login__ring-wrap,
-  .jarvis-login__panel {
+  .jarvis-portal,
+  .jarvis-portal__surface,
+  .jarvis-portal__rings {
     transition-duration: 0.01ms;
+  }
+
+  .jarvis-portal--open {
+    animation: none;
   }
 }

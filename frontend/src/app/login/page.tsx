@@ -36,7 +36,7 @@ export default function LoginPage() {
   if (loading) {
     return (
       <div className="jarvis-login">
-        <p className="jarvis-login__status" style={{ padding: "2rem" }}>Carregando...</p>
+        <p className="jarvis-login__status" style={{ padding: "2rem" }}>Carregando sessão...</p>
       </div>
     );
   }
