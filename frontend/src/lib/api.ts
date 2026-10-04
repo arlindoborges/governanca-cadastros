@@ -490,3 +490,60 @@ export function logoutUser() {
 export function getCurrentUser() {
   return request<AuthUser>("/auth/me");
 }
+
+export type ProductClassificationNode = {
+  id: string;
+  level: number;
+  name: string;
+  description: string | null;
+  sort_order: number;
+  children: ProductClassificationNode[];
+};
+
+export type ProductClassificationState = {
+  depth_levels: number;
+  nodes: Array<{
+    id: string;
+    parent_id: string | null;
+    level: number;
+    name: string;
+    description: string | null;
+    sort_order: number;
+  }>;
+  tree: ProductClassificationNode[];
+};
+
+export function getProductClassifications() {
+  return request<ProductClassificationState>("/product-classifications");
+}
+
+export function setProductClassificationDepth(depthLevels: number) {
+  return request<{ depth_levels: number }>("/product-classifications/config", {
+    method: "PUT",
+    body: JSON.stringify({ depth_levels: depthLevels }),
+  });
+}
+
+export function createProductClassificationNode(
+  name: string,
+  description?: string,
+  parentId?: string,
+) {
+  return request<{ id: string }>("/product-classifications/nodes", {
+    method: "POST",
+    body: JSON.stringify({ name, description: description ?? null, parent_id: parentId ?? null }),
+  });
+}
+
+export function updateProductClassificationNode(nodeId: string, name: string, description?: string) {
+  return request<{ id: string }>(`/product-classifications/nodes/${nodeId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name, description: description ?? null }),
+  });
+}
+
+export function deleteProductClassificationNode(nodeId: string) {
+  return request<{ deleted: boolean }>(`/product-classifications/nodes/${nodeId}`, {
+    method: "DELETE",
+  });
+}

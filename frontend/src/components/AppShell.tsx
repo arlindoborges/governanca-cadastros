@@ -13,6 +13,7 @@ const links = [
   { href: "/analises", label: "Análises", shortLabel: "Análises", icon: "chart" },
   { href: "/de-para", label: "DE/PARA", shortLabel: "DE/PARA", icon: "arrow" },
   { href: "/base-mestre", label: "Base Mestre", shortLabel: "Mestre", icon: "cube" },
+  { href: "/classificacoes", label: "Classificações", shortLabel: "Classif.", icon: "layers" },
 ] as const;
 
 function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
@@ -77,6 +78,13 @@ function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
             strokeLinejoin="round"
           />
           <path d="M12 12 20 7.5M12 12 4 7.5M12 12v9" stroke="currentColor" strokeWidth="1.75" />
+        </svg>
+      );
+    case "layers":
+      return (
+        <svg {...common}>
+          <path d="M12 3 20 8.5 12 13 4 8.5 12 3z" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
+          <path d="M4 13.5 12 18l8-4.5M4 17.5 12 22l8-4.5" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
         </svg>
       );
     default:

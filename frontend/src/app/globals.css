@@ -761,8 +761,8 @@ textarea:focus {
   align-items: center;
   justify-content: center;
   padding: 2rem;
-  background: linear-gradient(145deg, rgba(0, 122, 255, 0.35), rgba(88, 86, 214, 0.45)),
-    linear-gradient(200deg, rgba(52, 199, 89, 0.15), transparent 55%);
+  background: linear-gradient(145deg, rgba(52, 199, 89, 0.32), rgba(26, 157, 92, 0.42)),
+    linear-gradient(200deg, rgba(95, 224, 126, 0.18), transparent 55%);
   border-right: 1px solid var(--glass-border);
 }
 
@@ -1152,4 +1152,65 @@ textarea:focus {
   .content {
     padding: 0.5rem 0.5rem 0.25rem;
   }
+}
+
+.classification-tree {
+  gap: 1rem;
+}
+
+.classification-node {
+  border-left: 3px solid color-mix(in srgb, var(--ios-accent) 35%, transparent);
+  padding-left: 0.85rem;
+}
+
+.classification-node--l1 {
+  border-left-color: color-mix(in srgb, var(--ios-accent) 55%, transparent);
+}
+
+.classification-node--l2 {
+  margin-left: 0.5rem;
+}
+
+.classification-node--l3 {
+  margin-left: 1rem;
+}
+
+.classification-node__head {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  margin-bottom: 0.75rem;
+}
+
+.classification-node__head h3 {
+  margin: 0;
+  font-size: 1.05rem;
+}
+
+.classification-node__badge {
+  font-size: 0.68rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.06em;
+  color: var(--ios-accent);
+  background: color-mix(in srgb, var(--ios-accent) 12%, transparent);
+  padding: 0.2rem 0.45rem;
+  border-radius: 6px;
+}
+
+.classification-node__children {
+  margin-top: 1rem;
+  padding-top: 0.75rem;
+  border-top: 1px solid var(--border);
+}
+
+.classification-form {
+  padding: 0.85rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ios-fill) 65%, transparent);
+}
+
+.classification-form h4 {
+  margin: 0;
+  font-size: 0.9rem;
 }
