@@ -34,6 +34,7 @@ type HandoffPhase = "idle" | "flying" | "reveal";
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
   revealWipeActive: boolean;
+  handoffFlyComplete: boolean;
   revealOrigin: LoginRevealOrigin | null;
   startPostLoginReveal: () => void;
 };
@@ -60,15 +61,28 @@ function placeMark(el: HTMLElement, rect: DOMRect) {
   el.style.height = `${rect.height}px`;
 }
 
+function rectToOrigin(rect: DOMRect): LoginRevealOrigin {
+  return {
+    x: rect.left,
+    y: rect.top,
+    width: rect.width,
+    height: rect.height,
+  };
+}
+
 function BrandHandoffOverlay({
   startRect,
   phase,
-  onArrived,
+  dashboardRevealing,
+  onStartDashboardReveal,
+  onFlyComplete,
   onDone,
 }: {
   startRect: DOMRect;
   phase: HandoffPhase;
-  onArrived: (target: DOMRect) => void;
+  dashboardRevealing: boolean;
+  onStartDashboardReveal: (target: DOMRect) => void;
+  onFlyComplete: (target: DOMRect) => void;
   onDone: () => void;
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
@@ -86,6 +100,9 @@ function BrandHandoffOverlay({
     if (phase !== "flying" || flyStartedRef.current) return;
 
     let cancelled = false;
+    let revealTimer = 0;
+    let fallbackId = 0;
+    let revealAttempts = 0;
 
     const beginFly = (toRect: DOMRect) => {
       const el = markRef.current;
@@ -120,28 +137,47 @@ function BrandHandoffOverlay({
 
       animationRef.current = animation;
 
-      const startReveal = () => {
+      const startDashboardReveal = (rect: DOMRect) => {
         if (cancelled || revealStartedRef.current) return;
         revealStartedRef.current = true;
-        onArrived(toRect);
+        onStartDashboardReveal(rect);
       };
 
-      const endFly = () => {
+      const tryStartDashboardReveal = () => {
+        if (cancelled || revealStartedRef.current) return;
+        revealAttempts += 1;
+        const target = document.querySelector("[data-brand-handoff-target]");
+        const measured = target?.getBoundingClientRect();
+        if (measured && measured.width > 1 && measured.height > 1) {
+          startDashboardReveal(measured);
+          return;
+        }
+        if (revealAttempts < 300) {
+          requestAnimationFrame(tryStartDashboardReveal);
+          return;
+        }
+        startDashboardReveal(toRect);
+      };
+
+      const finishFly = () => {
         if (cancelled) return;
         placeMark(el, toRect);
-        startReveal();
+        if (!revealStartedRef.current) {
+          startDashboardReveal(toRect);
+        }
+        onFlyComplete(toRect);
       };
 
-      const revealTimer = window.setTimeout(
-        startReveal,
+      revealTimer = window.setTimeout(
+        tryStartDashboardReveal,
         motionMs(LOGIN_EXIT_TIMELINE.flyRevealLeadMs),
       );
-      const fallbackId = window.setTimeout(endFly, durationMs + 120);
+      fallbackId = window.setTimeout(finishFly, durationMs + 120);
 
       animation.onfinish = () => {
         window.clearTimeout(fallbackId);
-        placeMark(el, toRect);
-        startReveal();
+        window.clearTimeout(revealTimer);
+        finishFly();
       };
     };
 
@@ -160,9 +196,11 @@ function BrandHandoffOverlay({
 
     return () => {
       cancelled = true;
+      window.clearTimeout(revealTimer);
+      window.clearTimeout(fallbackId);
       animationRef.current?.cancel();
     };
-  }, [phase, startRect, onArrived]);
+  }, [phase, startRect, onStartDashboardReveal, onFlyComplete]);
 
   useEffect(() => {
     if (phase !== "reveal") return;
@@ -170,17 +208,17 @@ function BrandHandoffOverlay({
     return () => window.clearTimeout(t);
   }, [phase, onDone]);
 
-  const revealing = phase === "reveal";
   const flying = phase === "flying";
+  const markArrived = phase === "reveal";
 
   return (
     <div className={`jarvis-handoff-overlay${flying ? " is-flying" : ""}`} aria-hidden="true">
       <div
-        className={`jarvis-handoff-overlay__scrim${flying ? " is-during-fly" : ""}${revealing ? " is-revealing" : ""}`}
+        className={`jarvis-handoff-overlay__scrim${flying ? " is-during-fly" : ""}${dashboardRevealing ? " is-revealing" : ""}`}
       />
       <span
         ref={markRef}
-        className={`jarvis-handoff-overlay__mark brand__mark${phase === "flying" ? " is-flying" : ""}${revealing ? " is-arrived" : ""}`}
+        className={`jarvis-handoff-overlay__mark brand__mark${flying ? " is-flying" : ""}${markArrived ? " is-arrived" : ""}`}
       >
         GC
       </span>
@@ -192,27 +230,30 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
   const router = useRouter();
   const [homeRevealActive, setHomeRevealActive] = useState(false);
   const [revealWipeActive, setRevealWipeActive] = useState(false);
+  const [handoffFlyComplete, setHandoffFlyComplete] = useState(false);
   const [revealOrigin, setRevealOrigin] = useState<LoginRevealOrigin | null>(null);
   const [startRect, setStartRect] = useState<DOMRect | null>(null);
   const [phase, setPhase] = useState<HandoffPhase>("idle");
 
   const startPostLoginReveal = useCallback(() => {
+    const estimated = estimateBrandMarkRect();
     setHomeRevealActive(true);
     setRevealWipeActive(false);
-    setRevealOrigin(null);
+    setHandoffFlyComplete(false);
+    setRevealOrigin(rectToOrigin(estimated));
     setStartRect(handoffStartRect());
     setPhase("flying");
     router.replace("/");
   }, [router]);
 
-  const handleArrived = useCallback((target: DOMRect) => {
-    setRevealOrigin({
-      x: target.left,
-      y: target.top,
-      width: target.width,
-      height: target.height,
-    });
+  const handleStartDashboardReveal = useCallback((target: DOMRect) => {
+    setRevealOrigin(rectToOrigin(target));
     setRevealWipeActive(true);
+  }, []);
+
+  const handleFlyComplete = useCallback((target: DOMRect) => {
+    setRevealOrigin(rectToOrigin(target));
+    setHandoffFlyComplete(true);
     setPhase("reveal");
   }, []);
 
@@ -220,6 +261,7 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
     setStartRect(null);
     setRevealWipeActive(false);
     setRevealOrigin(null);
+    setHandoffFlyComplete(false);
     setHomeRevealActive(false);
     setPhase("idle");
   }, []);
@@ -228,10 +270,11 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
     () => ({
       homeRevealActive,
       revealWipeActive,
+      handoffFlyComplete,
       revealOrigin,
       startPostLoginReveal,
     }),
-    [homeRevealActive, revealWipeActive, revealOrigin, startPostLoginReveal],
+    [homeRevealActive, revealWipeActive, handoffFlyComplete, revealOrigin, startPostLoginReveal],
   );
 
   return (
@@ -241,7 +284,9 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
         <BrandHandoffOverlay
           startRect={startRect}
           phase={phase}
-          onArrived={handleArrived}
+          dashboardRevealing={revealWipeActive}
+          onStartDashboardReveal={handleStartDashboardReveal}
+          onFlyComplete={handleFlyComplete}
           onDone={finishReveal}
         />
       ) : null}

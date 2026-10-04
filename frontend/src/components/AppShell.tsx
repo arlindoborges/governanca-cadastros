@@ -93,7 +93,7 @@ function isActive(pathname: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
-  const { homeRevealActive, revealWipeActive, revealOrigin } = useLoginReveal();
+  const { homeRevealActive, revealWipeActive, handoffFlyComplete, revealOrigin } = useLoginReveal();
 
   const revealStyle: CSSProperties | undefined = revealOrigin
     ? ({ "--login-reveal-x": `${revealOrigin.x}px` } as CSSProperties)
@@ -108,7 +108,7 @@ export function AppShell({ children }: { children: ReactNode }) {
       <aside className="sidebar glass">
         <div className="brand">
           <span
-            className={`brand__mark${homeRevealActive && !revealWipeActive ? " brand__mark--handoff-hidden" : ""}`}
+            className={`brand__mark${homeRevealActive && !handoffFlyComplete ? " brand__mark--handoff-hidden" : ""}`}
             data-brand-handoff-target
             aria-hidden="true"
           >

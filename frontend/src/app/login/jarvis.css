@@ -24,7 +24,7 @@
   --hud-t-lower: 0.95s;
   --ring-travel: calc((var(--hud-stem-gap) + var(--hud-panel-w)) / 2);
   --jarvis-handoff-fly: var(--hud-t-ring-move);
-  --jarvis-handoff-reveal: 0.88s;
+  --jarvis-handoff-reveal: 0.72s;
 }
 
 .jarvis-login {
