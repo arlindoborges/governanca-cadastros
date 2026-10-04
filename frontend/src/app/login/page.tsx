@@ -1,8 +1,9 @@
 "use client";
 
-import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { LoginFormFields } from "@/components/login/LoginFormFields";
+import { LoginLayoutClassic } from "@/components/login/layouts/LoginLayoutClassic";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -12,6 +13,7 @@ export default function LoginPage() {
   useEffect(() => {
     if (!loading && user) router.replace("/");
   }, [loading, user, router]);
+
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
@@ -31,47 +33,23 @@ export default function LoginPage() {
   }
 
   return (
-    <div className="auth-screen">
-      <div className="auth-card glass stack">
-        <div className="auth-card__brand">
-          <span className="brand__mark" aria-hidden="true">GC</span>
-          <div>
-            <h1>Entrar</h1>
-            <p className="muted">Acesse o Governança de Cadastros</p>
-          </div>
+    <LoginLayoutClassic>
+      <div className="auth-card__brand">
+        <span className="brand__mark" aria-hidden="true">GC</span>
+        <div>
+          <h1>Entrar</h1>
+          <p className="muted">Acesse o Governança de Cadastros</p>
         </div>
-
-        <form className="stack" onSubmit={onSubmit}>
-          <label>
-            E-mail
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={submitting}
-            />
-          </label>
-          <label>
-            Senha
-            <input
-              type="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              required
-              disabled={submitting}
-            />
-          </label>
-          {error ? <p className="auth-error">{error}</p> : null}
-          <button type="submit" disabled={submitting}>{submitting ? "Entrando..." : "Entrar"}</button>
-        </form>
-
-        <p className="muted auth-card__footer">
-          Não tem conta? <Link href="/cadastro">Cadastre-se</Link>
-        </p>
       </div>
-    </div>
+      <LoginFormFields
+        email={email}
+        password={password}
+        error={error}
+        submitting={submitting}
+        onEmailChange={setEmail}
+        onPasswordChange={setPassword}
+        onSubmit={onSubmit}
+      />
+    </LoginLayoutClassic>
   );
 }
