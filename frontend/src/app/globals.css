@@ -1170,6 +1170,24 @@ textarea:focus {
   gap: 1.25rem;
 }
 
+.classification-depth-row {
+  align-items: flex-end;
+}
+
+.classification-depth-row__field {
+  flex: 1;
+  min-width: min(100%, 12rem);
+}
+
+.classification-depth-row__field input {
+  max-width: 6rem;
+}
+
+.classification-depth-row__submit {
+  flex-shrink: 0;
+  white-space: nowrap;
+}
+
 .classification-workspace__create {
   padding-top: 0.25rem;
   border-top: 1px solid var(--border);

@@ -530,18 +530,22 @@ export default function ClassificacoesPage() {
 
           <form className="stack" onSubmit={saveDepth}>
             <h3 className="classification-workspace__subhead">Configuração de níveis</h3>
-            <label>
-              Quantidade de níveis
-              <input
-                type="number"
-                min={1}
-                max={5}
-                value={draftDepth}
-                onChange={(e) => setDraftDepth(Number(e.target.value))}
-                required
-              />
-            </label>
-            <button type="submit">Salvar quantidade de níveis</button>
+            <div className="classification-depth-row row">
+              <label className="classification-depth-row__field">
+                Quantidade de níveis
+                <input
+                  type="number"
+                  min={1}
+                  max={5}
+                  value={draftDepth}
+                  onChange={(e) => setDraftDepth(Number(e.target.value))}
+                  required
+                />
+              </label>
+              <button type="submit" className="classification-depth-row__submit">
+                Salvar quantidade de níveis
+              </button>
+            </div>
             <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
           </form>
 
