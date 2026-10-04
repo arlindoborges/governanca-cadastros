@@ -4,7 +4,7 @@ export const LOGIN_EXIT_TIMELINE = {
   /** Morph visual anel → ícone GC no HUD. */
   brandMorph: 360,
   /** Inicia o voo antes do morph terminar (continuidade). */
-  morphFlyOverlap: 140,
+  morphFlyOverlap: 300,
   /** Revela o dashboard antes do ícone encostar no canto. */
   flyRevealOverlap: 0.12,
   revealWipe: 880,

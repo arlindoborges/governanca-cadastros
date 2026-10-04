@@ -21,7 +21,6 @@ import {
   type ReactNode,
 } from "react";
 
-const TARGET_WAIT_MS = 120;
 
 export type LoginRevealOrigin = {
   x: number;
