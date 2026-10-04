@@ -5,7 +5,7 @@ import "@/app/login/jarvis.css";
 import { createContext, useCallback, useContext, useEffect, useMemo, useState, type ReactNode } from "react";
 import { JarvisRingGraphic } from "@/components/login/JarvisRingGraphic";
 
-const REVEAL_MS = 1150;
+const REVEAL_MS = 2650;
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;

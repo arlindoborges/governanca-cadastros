@@ -120,7 +120,7 @@ h3 {
 }
 
 .app--login-reveal {
-  animation: app-login-ppt-reveal 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: app-login-ppt-reveal 2.65s cubic-bezier(0.12, 0.82, 0.22, 1) forwards;
 }
 
 @keyframes app-login-ppt-reveal {
