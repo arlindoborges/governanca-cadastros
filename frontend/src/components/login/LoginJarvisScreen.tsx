@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { JarvisRingGraphic } from "@/components/login/JarvisRingGraphic";
+import { useLoginReveal } from "@/contexts/LoginRevealContext";
 
 type Props = {
   email: string;
@@ -55,6 +56,7 @@ export function LoginJarvisScreen({
   const [phase, setPhase] = useState<HudPhase>("idle");
   const emailRef = useRef<HTMLInputElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const { homeRevealActive } = useLoginReveal();
 
   const sessionActive = phase !== "idle";
 
@@ -137,7 +139,7 @@ export function LoginJarvisScreen({
     successExit;
 
   return (
-    <div className="jarvis-login">
+    <div className={`jarvis-login${homeRevealActive ? " jarvis-login--handoff" : ""}`}>
       <div className="jarvis-login__backdrop" aria-hidden="true">
         <div className="jarvis-login__grid" />
         <div className="jarvis-login__vignette" />

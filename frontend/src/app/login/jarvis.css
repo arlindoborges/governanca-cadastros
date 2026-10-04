@@ -799,6 +799,11 @@
   text-shadow: none;
 }
 
+.jarvis-login--handoff .jarvis-hud,
+.jarvis-login--handoff .jarvis-login__top {
+  visibility: hidden;
+}
+
 .jarvis-handoff-overlay {
   position: fixed;
   inset: 0;
@@ -820,8 +825,11 @@
 
 .jarvis-handoff-overlay__mark {
   position: fixed;
+  top: 0;
+  left: 0;
   z-index: 10001;
   margin: 0;
+  box-sizing: border-box;
 }
 
 .jarvis-handoff-overlay__mark.is-flying:not(.is-arrived) {

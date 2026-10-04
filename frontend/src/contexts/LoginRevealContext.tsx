@@ -3,6 +3,7 @@
 import "@/app/login/jarvis.css";
 
 import { handoffFlyDurationMs, handoffStartRect } from "@/lib/login-handoff-rect";
+import { useRouter } from "next/navigation";
 import {
   createContext,
   useCallback,
@@ -12,7 +13,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 
@@ -24,6 +24,8 @@ export type LoginRevealOrigin = {
   width: number;
   height: number;
 };
+
+type HandoffPhase = "idle" | "preflight" | "flying" | "reveal";
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
@@ -39,89 +41,113 @@ function motionMs(base: number) {
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;
 }
 
+function applyRect(el: HTMLElement, rect: DOMRect) {
+  el.style.top = `${rect.top}px`;
+  el.style.left = `${rect.left}px`;
+  el.style.width = `${rect.width}px`;
+  el.style.height = `${rect.height}px`;
+}
+
 function BrandHandoffOverlay({
-  fromRect,
+  startRect,
+  phase,
   onArrived,
   onDone,
 }: {
-  fromRect: DOMRect;
+  startRect: DOMRect;
+  phase: HandoffPhase;
   onArrived: (target: DOMRect) => void;
   onDone: () => void;
 }) {
-  const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [flyReady, setFlyReady] = useState(false);
-  const [moveToTarget, setMoveToTarget] = useState(false);
-  const [reveal, setReveal] = useState(false);
-  const flyDurationMsRef = useRef(550);
+  const markRef = useRef<HTMLSpanElement>(null);
+  const flyStartedRef = useRef(false);
 
   useLayoutEffect(() => {
+    const el = markRef.current;
+    if (!el) return;
+    applyRect(el, startRect);
+  }, [startRect]);
+
+  useLayoutEffect(() => {
+    if (phase !== "flying" || flyStartedRef.current) return;
+    const el = markRef.current;
+    if (!el) return;
+
     let attempts = 0;
-    const resolveTarget = () => {
-      const target = document.querySelector("[data-brand-handoff-target]");
-      if (target) {
-        const rect = target.getBoundingClientRect();
-        const resolved =
-          rect.width > 1 && rect.height > 1 ? rect : new DOMRect(20, 20, 40, 40);
-        setTargetRect(resolved);
-        flyDurationMsRef.current = handoffFlyDurationMs(fromRect, resolved);
-        setFlyReady(true);
+    let cancelled = false;
+
+    const runFly = () => {
+      if (cancelled) return;
+      const targetEl = document.querySelector("[data-brand-handoff-target]");
+      if (!targetEl) {
+        attempts += 1;
+        if (attempts < 40) {
+          requestAnimationFrame(runFly);
+          return;
+        }
+        onDone();
         return;
       }
-      attempts += 1;
-      if (attempts < 24) {
-        requestAnimationFrame(resolveTarget);
-      } else {
-        onDone();
-      }
-    };
-    resolveTarget();
-  }, [fromRect, onDone]);
 
-  useLayoutEffect(() => {
-    if (!flyReady || !targetRect) return;
-    setMoveToTarget(false);
-    let moveId = 0;
-    const startId = requestAnimationFrame(() => {
-      moveId = requestAnimationFrame(() => setMoveToTarget(true));
-    });
+      const toRect =
+        targetEl.getBoundingClientRect().width > 1
+          ? targetEl.getBoundingClientRect()
+          : new DOMRect(20, 20, 40, 40);
+
+      flyStartedRef.current = true;
+      applyRect(el, startRect);
+
+      const flyMs = motionMs(handoffFlyDurationMs(startRect, toRect));
+      const animation = el.animate(
+        [
+          {
+            top: `${startRect.top}px`,
+            left: `${startRect.left}px`,
+            width: `${startRect.width}px`,
+            height: `${startRect.height}px`,
+          },
+          {
+            top: `${toRect.top}px`,
+            left: `${toRect.left}px`,
+            width: `${toRect.width}px`,
+            height: `${toRect.height}px`,
+          },
+        ],
+        {
+          duration: flyMs,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "forwards",
+        },
+      );
+
+      animation.onfinish = () => {
+        if (cancelled) return;
+        applyRect(el, toRect);
+        onArrived(toRect);
+      };
+    };
+
+    requestAnimationFrame(runFly);
+
     return () => {
-      cancelAnimationFrame(startId);
-      if (moveId) cancelAnimationFrame(moveId);
+      cancelled = true;
     };
-  }, [flyReady, targetRect]);
+  }, [phase, startRect, onArrived, onDone]);
 
   useEffect(() => {
-    if (!moveToTarget || !targetRect) return;
-    const flyMs = motionMs(flyDurationMsRef.current);
-    const t = window.setTimeout(() => {
-      onArrived(targetRect);
-      setReveal(true);
-    }, flyMs);
-    return () => window.clearTimeout(t);
-  }, [moveToTarget, targetRect, onArrived]);
-
-  useEffect(() => {
-    if (!reveal) return;
+    if (phase !== "reveal") return;
     const t = window.setTimeout(onDone, motionMs(REVEAL_WIPE_MS) + 60);
     return () => window.clearTimeout(t);
-  }, [reveal, onDone]);
+  }, [phase, onDone]);
 
-  const atTarget = moveToTarget && targetRect;
-
-  const markStyle: CSSProperties = {
-    top: atTarget ? targetRect.top : fromRect.top,
-    left: atTarget ? targetRect.left : fromRect.left,
-    width: atTarget ? targetRect.width : fromRect.width,
-    height: atTarget ? targetRect.height : fromRect.height,
-    ["--jarvis-handoff-fly" as string]: `${flyDurationMsRef.current}ms`,
-  };
+  const revealing = phase === "reveal";
 
   return (
     <div className="jarvis-handoff-overlay" aria-hidden="true">
-      <div className={`jarvis-handoff-overlay__scrim${reveal ? " is-revealing" : ""}`} />
+      <div className={`jarvis-handoff-overlay__scrim${revealing ? " is-revealing" : ""}`} />
       <span
-        className={`jarvis-handoff-overlay__mark brand__mark${flyReady ? " is-flying" : ""}${reveal ? " is-arrived" : ""}`}
-        style={markStyle}
+        ref={markRef}
+        className={`jarvis-handoff-overlay__mark brand__mark${phase === "flying" ? " is-flying" : ""}${revealing ? " is-arrived" : ""}`}
       >
         GC
       </span>
@@ -130,17 +156,35 @@ function BrandHandoffOverlay({
 }
 
 export function LoginRevealProvider({ children }: { children: ReactNode }) {
+  const router = useRouter();
   const [homeRevealActive, setHomeRevealActive] = useState(false);
   const [revealWipeActive, setRevealWipeActive] = useState(false);
   const [revealOrigin, setRevealOrigin] = useState<LoginRevealOrigin | null>(null);
-  const [fromRect, setFromRect] = useState<DOMRect | null>(null);
+  const [startRect, setStartRect] = useState<DOMRect | null>(null);
+  const [phase, setPhase] = useState<HandoffPhase>("idle");
 
   const startPostLoginReveal = useCallback((rect: DOMRect) => {
     setHomeRevealActive(true);
     setRevealWipeActive(false);
     setRevealOrigin(null);
-    setFromRect(handoffStartRect(rect));
+    setStartRect(handoffStartRect(rect));
+    setPhase("preflight");
   }, []);
+
+  useEffect(() => {
+    if (phase !== "preflight") return;
+    let navId = 0;
+    const startId = requestAnimationFrame(() => {
+      navId = requestAnimationFrame(() => {
+        router.replace("/");
+        setPhase("flying");
+      });
+    });
+    return () => {
+      cancelAnimationFrame(startId);
+      if (navId) cancelAnimationFrame(navId);
+    };
+  }, [phase, router]);
 
   const handleArrived = useCallback((target: DOMRect) => {
     setRevealOrigin({
@@ -150,13 +194,15 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
       height: target.height,
     });
     setRevealWipeActive(true);
+    setPhase("reveal");
   }, []);
 
   const finishReveal = useCallback(() => {
-    setFromRect(null);
+    setStartRect(null);
     setRevealWipeActive(false);
     setRevealOrigin(null);
     setHomeRevealActive(false);
+    setPhase("idle");
   }, []);
 
   const value = useMemo(
@@ -172,8 +218,13 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
   return (
     <LoginRevealContext.Provider value={value}>
       {children}
-      {fromRect ? (
-        <BrandHandoffOverlay fromRect={fromRect} onArrived={handleArrived} onDone={finishReveal} />
+      {startRect && phase !== "idle" ? (
+        <BrandHandoffOverlay
+          startRect={startRect}
+          phase={phase}
+          onArrived={handleArrived}
+          onDone={finishReveal}
+        />
       ) : null}
     </LoginRevealContext.Provider>
   );

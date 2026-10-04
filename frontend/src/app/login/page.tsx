@@ -36,9 +36,8 @@ export default function LoginPage() {
   const handleSuccessBrandReady = useCallback(
     (ringRect: DOMRect) => {
       startPostLoginReveal(ringRect);
-      router.replace("/");
     },
-    [router, startPostLoginReveal],
+    [startPostLoginReveal],
   );
 
   async function onSubmit(event: FormEvent) {
