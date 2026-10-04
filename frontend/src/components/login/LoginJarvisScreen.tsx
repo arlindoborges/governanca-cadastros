@@ -27,12 +27,12 @@ export function LoginJarvisScreen({
 
   useEffect(() => {
     if (open) {
-      const t = window.setTimeout(() => emailRef.current?.focus(), 2400);
+      const t = window.setTimeout(() => emailRef.current?.focus(), 1650);
       return () => window.clearTimeout(t);
     }
   }, [open]);
 
-  function handlePortalKeyDown(event: React.KeyboardEvent) {
+  function handleRingKeyDown(event: React.KeyboardEvent) {
     if (open || submitting) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
@@ -40,9 +40,14 @@ export function LoginJarvisScreen({
     }
   }
 
-  function closePortal() {
+  function closeHud() {
     if (submitting) return;
     setOpen(false);
+  }
+
+  function startSession() {
+    if (submitting || open) return;
+    setOpen(true);
   }
 
   return (
@@ -63,52 +68,58 @@ export function LoginJarvisScreen({
       </header>
 
       <div className="jarvis-login__stage">
-        <div
-          className={`jarvis-portal${open ? " jarvis-portal--open" : ""}`}
-          role={open ? undefined : "button"}
-          tabIndex={open ? undefined : 0}
-          aria-label={open ? undefined : "Iniciar sessão: toque no anel"}
-          onClick={!open && !submitting ? () => setOpen(true) : undefined}
-          onKeyDown={handlePortalKeyDown}
-        >
-          <div className="jarvis-portal__rings" aria-hidden={open}>
-            <svg className="jarvis-portal__ring-svg" viewBox="0 0 320 320">
-              <circle className="jarvis-portal__ring-outer" cx="160" cy="160" r="148" />
-              <circle className="jarvis-portal__ring-mid" cx="160" cy="160" r="118" />
-              <circle className="jarvis-portal__ring-inner" cx="160" cy="160" r="88" />
+        <div className={`jarvis-hud${open ? " jarvis-hud--open" : ""}`}>
+          <div
+            className="jarvis-hud__ring"
+            role={open ? undefined : "button"}
+            tabIndex={open ? undefined : 0}
+            aria-label={open ? undefined : "Iniciar sessão"}
+            onClick={startSession}
+            onKeyDown={handleRingKeyDown}
+          >
+            <svg className="jarvis-hud__ring-svg" viewBox="0 0 320 320" aria-hidden="true">
+              <circle className="jarvis-hud__ring-outer" cx="160" cy="160" r="148" />
+              <circle className="jarvis-hud__ring-mid" cx="160" cy="160" r="118" />
+              <circle className="jarvis-hud__ring-inner" cx="160" cy="160" r="88" />
               <path
-                className="jarvis-portal__ring-ticks"
+                className="jarvis-hud__ring-ticks"
                 d="M160 12 L160 28 M160 292 L160 308 M12 160 L28 160 M292 160 L308 160"
               />
             </svg>
+            <div className="jarvis-hud__ring-center">
+              {!open ? (
+                <>
+                  <p className="jarvis-hud__ring-title">Iniciar sessão</p>
+                  <p className="jarvis-hud__ring-hint">Toque para continuar</p>
+                </>
+              ) : (
+                <p className="jarvis-hud__ring-active">GC</p>
+              )}
+            </div>
           </div>
 
-          <div className="jarvis-portal__surface">
-            {!open ? (
-              <div className="jarvis-portal__idle">
-                <p className="jarvis-portal__idle-title">Iniciar sessão</p>
-                <p className="jarvis-portal__idle-hint">Toque no anel para continuar</p>
-              </div>
-            ) : (
-              <div className="jarvis-portal__form-wrap">
-                <div className="jarvis-portal__form-header">
-                  <span className="jarvis-portal__form-tag">Acesso ao sistema</span>
-                  <button
-                    type="button"
-                    className="jarvis-portal__back"
-                    onClick={closePortal}
-                    disabled={submitting}
-                    aria-label="Voltar ao anel inicial"
-                  >
-                    Voltar
-                  </button>
-                </div>
+          <div className="jarvis-hud__beam" aria-hidden={!open}>
+            <span className="jarvis-hud__beam-line" />
+            <span className="jarvis-hud__beam-pulse" />
+          </div>
 
-                <form
-                  className="jarvis-login__form"
-                  onSubmit={onSubmit}
-                  onClick={(e) => e.stopPropagation()}
+          <div className="jarvis-hud__window" aria-hidden={!open}>
+            <div className="jarvis-hud__window-frame">
+              <div className="jarvis-hud__window-header">
+                <span className="jarvis-hud__window-tag">Acesso ao sistema</span>
+                <button
+                  type="button"
+                  className="jarvis-hud__back"
+                  onClick={closeHud}
+                  disabled={submitting}
+                  aria-label="Voltar ao início"
                 >
+                  Voltar
+                </button>
+              </div>
+
+              <div className="jarvis-hud__window-body">
+                <form className="jarvis-login__form" onSubmit={onSubmit}>
                   <label className="jarvis-field">
                     <span className="jarvis-field__label">E-mail</span>
                     <input
@@ -118,7 +129,7 @@ export function LoginJarvisScreen({
                       value={email}
                       onChange={(e) => onEmailChange(e.target.value)}
                       required
-                      disabled={submitting}
+                      disabled={submitting || !open}
                       className="jarvis-field__input"
                       placeholder="seu@email.com"
                     />
@@ -131,15 +142,13 @@ export function LoginJarvisScreen({
                       value={password}
                       onChange={(e) => onPasswordChange(e.target.value)}
                       required
-                      disabled={submitting}
+                      disabled={submitting || !open}
                       className="jarvis-field__input"
                       placeholder="••••••••"
                     />
                   </label>
-                  {error ? (
-                    <p className="jarvis-login__error" role="alert">{error}</p>
-                  ) : null}
-                  <button type="submit" className="jarvis-login__submit" disabled={submitting}>
+                  {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
+                  <button type="submit" className="jarvis-login__submit" disabled={submitting || !open}>
                     {submitting ? "Validando credenciais..." : "Entrar no sistema"}
                   </button>
                 </form>
@@ -148,7 +157,7 @@ export function LoginJarvisScreen({
                   Não tem conta? <Link href="/cadastro">Criar cadastro</Link>
                 </p>
               </div>
-            )}
+            </div>
           </div>
         </div>
       </div>
