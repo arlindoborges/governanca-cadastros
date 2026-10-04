@@ -23,7 +23,7 @@
   --hud-t-upper: 0.65s;
   --hud-t-lower: 0.95s;
   --ring-travel: calc((var(--hud-stem-gap) + var(--hud-panel-w)) / 2);
-  --jarvis-handoff-fly: 0.92s;
+  --jarvis-handoff-fly: var(--hud-t-ring-move);
   --jarvis-handoff-reveal: 1.05s;
 }
 
@@ -822,12 +822,14 @@
   position: fixed;
   z-index: 10001;
   margin: 0;
+}
+
+.jarvis-handoff-overlay__mark.is-flying:not(.is-arrived) {
   transition:
-    top var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
-    left var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
-    width var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
-    height var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
-    opacity 0.2s ease 0.05s;
+    top var(--jarvis-handoff-fly) var(--jarvis-ease-smooth),
+    left var(--jarvis-handoff-fly) var(--jarvis-ease-smooth),
+    width var(--jarvis-handoff-fly) var(--jarvis-ease-smooth),
+    height var(--jarvis-handoff-fly) var(--jarvis-ease-smooth);
 }
 
 .jarvis-handoff-overlay__mark.is-arrived {

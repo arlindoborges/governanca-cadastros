@@ -2,6 +2,7 @@
 
 import "@/app/login/jarvis.css";
 
+import { handoffFlyDurationMs, handoffStartRect } from "@/lib/login-handoff-rect";
 import {
   createContext,
   useCallback,
@@ -9,12 +10,12 @@ import {
   useEffect,
   useLayoutEffect,
   useMemo,
+  useRef,
   useState,
   type CSSProperties,
   type ReactNode,
 } from "react";
 
-const BRAND_FLY_MS = 920;
 const REVEAL_WIPE_MS = 1050;
 
 export type LoginRevealOrigin = {
@@ -48,8 +49,10 @@ function BrandHandoffOverlay({
   onDone: () => void;
 }) {
   const [targetRect, setTargetRect] = useState<DOMRect | null>(null);
-  const [fly, setFly] = useState(false);
+  const [flyReady, setFlyReady] = useState(false);
+  const [moveToTarget, setMoveToTarget] = useState(false);
   const [reveal, setReveal] = useState(false);
+  const flyDurationMsRef = useRef(550);
 
   useLayoutEffect(() => {
     let attempts = 0;
@@ -57,12 +60,11 @@ function BrandHandoffOverlay({
       const target = document.querySelector("[data-brand-handoff-target]");
       if (target) {
         const rect = target.getBoundingClientRect();
-        if (rect.width > 1 && rect.height > 1) {
-          setTargetRect(rect);
-        } else {
-          setTargetRect(new DOMRect(20, 20, 40, 40));
-        }
-        requestAnimationFrame(() => setFly(true));
+        const resolved =
+          rect.width > 1 && rect.height > 1 ? rect : new DOMRect(20, 20, 40, 40);
+        setTargetRect(resolved);
+        flyDurationMsRef.current = handoffFlyDurationMs(fromRect, resolved);
+        setFlyReady(true);
         return;
       }
       attempts += 1;
@@ -73,17 +75,30 @@ function BrandHandoffOverlay({
       }
     };
     resolveTarget();
-  }, [onDone]);
+  }, [fromRect, onDone]);
+
+  useLayoutEffect(() => {
+    if (!flyReady || !targetRect) return;
+    setMoveToTarget(false);
+    let moveId = 0;
+    const startId = requestAnimationFrame(() => {
+      moveId = requestAnimationFrame(() => setMoveToTarget(true));
+    });
+    return () => {
+      cancelAnimationFrame(startId);
+      if (moveId) cancelAnimationFrame(moveId);
+    };
+  }, [flyReady, targetRect]);
 
   useEffect(() => {
-    if (!fly || !targetRect) return;
-    const flyMs = motionMs(BRAND_FLY_MS);
+    if (!moveToTarget || !targetRect) return;
+    const flyMs = motionMs(flyDurationMsRef.current);
     const t = window.setTimeout(() => {
       onArrived(targetRect);
       setReveal(true);
     }, flyMs);
     return () => window.clearTimeout(t);
-  }, [fly, targetRect, onArrived]);
+  }, [moveToTarget, targetRect, onArrived]);
 
   useEffect(() => {
     if (!reveal) return;
@@ -91,18 +106,21 @@ function BrandHandoffOverlay({
     return () => window.clearTimeout(t);
   }, [reveal, onDone]);
 
+  const atTarget = moveToTarget && targetRect;
+
   const markStyle: CSSProperties = {
-    top: fly && targetRect ? targetRect.top : fromRect.top,
-    left: fly && targetRect ? targetRect.left : fromRect.left,
-    width: fly && targetRect ? targetRect.width : fromRect.width,
-    height: fly && targetRect ? targetRect.height : fromRect.height,
+    top: atTarget ? targetRect.top : fromRect.top,
+    left: atTarget ? targetRect.left : fromRect.left,
+    width: atTarget ? targetRect.width : fromRect.width,
+    height: atTarget ? targetRect.height : fromRect.height,
+    ["--jarvis-handoff-fly" as string]: `${flyDurationMsRef.current}ms`,
   };
 
   return (
     <div className="jarvis-handoff-overlay" aria-hidden="true">
       <div className={`jarvis-handoff-overlay__scrim${reveal ? " is-revealing" : ""}`} />
       <span
-        className={`jarvis-handoff-overlay__mark brand__mark${fly ? " is-flying" : ""}${reveal ? " is-arrived" : ""}`}
+        className={`jarvis-handoff-overlay__mark brand__mark${flyReady ? " is-flying" : ""}${reveal ? " is-arrived" : ""}`}
         style={markStyle}
       >
         GC
@@ -121,7 +139,7 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
     setHomeRevealActive(true);
     setRevealWipeActive(false);
     setRevealOrigin(null);
-    setFromRect(rect);
+    setFromRect(handoffStartRect(rect));
   }, []);
 
   const handleArrived = useCallback((target: DOMRect) => {
