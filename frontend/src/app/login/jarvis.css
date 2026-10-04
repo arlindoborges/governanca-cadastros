@@ -7,7 +7,7 @@
   --jarvis-muted: #5f8f72;
   --jarvis-glow: rgba(61, 255, 151, 0.45);
   --jarvis-panel-bg: rgba(4, 12, 8, 0.94);
-  --jarvis-morph: 0.65s cubic-bezier(0.22, 1, 0.36, 1);
+  --jarvis-morph: 1.15s cubic-bezier(0.22, 1, 0.36, 1);
 }
 
 .jarvis-login {
