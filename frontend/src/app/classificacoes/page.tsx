@@ -187,29 +187,31 @@ export default function ClassificacoesPage() {
         </p>
       </div>
 
-      <form className="panel stack" onSubmit={saveDepth}>
-        <h2>Configuração de níveis</h2>
-        <label>
-          Quantidade de níveis
-          <input
-            type="number"
-            min={1}
-            max={5}
-            value={draftDepth}
-            onChange={(e) => setDraftDepth(Number(e.target.value))}
-            required
-          />
-        </label>
-        <button type="submit">Salvar quantidade de níveis</button>
-        <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
-      </form>
+      <div className="classification-setup-grid">
+        <form className="panel stack classification-setup-card" onSubmit={saveDepth}>
+          <h2>Configuração de níveis</h2>
+          <label>
+            Quantidade de níveis
+            <input
+              type="number"
+              min={1}
+              max={5}
+              value={draftDepth}
+              onChange={(e) => setDraftDepth(Number(e.target.value))}
+              required
+            />
+          </label>
+          <button type="submit">Salvar quantidade de níveis</button>
+          <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
+        </form>
 
-      <div className="panel stack">
-        <h2>Classificações (nível 1)</h2>
-        <p className="muted">
-          Exemplo: Frios → Congelado → Bovino. Cada nível 2 e 3 pode ter vários cadastros sob o mesmo pai.
-        </p>
-        <NodeForm title="Nova classificação de nível 1" onSaved={onChanged} />
+        <div className="panel stack classification-setup-card">
+          <h2>Classificações (nível 1)</h2>
+          <p className="muted">
+            Exemplo: Frios → Congelado → Bovino. Cada nível 2 e 3 pode ter vários cadastros sob o mesmo pai.
+          </p>
+          <NodeForm title="Nova classificação de nível 1" onSaved={onChanged} />
+        </div>
       </div>
 
       <div className="classification-tree stack">
