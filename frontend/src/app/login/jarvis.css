@@ -379,10 +379,14 @@
 }
 
 .jarvis-hud[data-phase="ring-out"] .jarvis-hud__lane {
-  width: 0;
-  min-width: 0;
-  margin-left: 0;
   opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.jarvis-hud[data-phase="idle"] .jarvis-hud__ring {
+  transform: translateX(0);
+  animation: none;
 }
 
 .jarvis-hud__stem {
