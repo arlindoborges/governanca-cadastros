@@ -7,10 +7,12 @@ import { JarvisRingGraphic } from "@/components/login/JarvisRingGraphic";
 type Props = {
   email: string;
   password: string;
+  rememberUser: boolean;
   error: string | null;
   submitting: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
+  onRememberUserChange: (value: boolean) => void;
   onSubmit: (event: FormEvent) => void;
 };
 
@@ -36,10 +38,12 @@ function motionMs(base: number) {
 export function LoginJarvisScreen({
   email,
   password,
+  rememberUser,
   error,
   submitting,
   onEmailChange,
   onPasswordChange,
+  onRememberUserChange,
   onSubmit,
 }: Props) {
   const [phase, setPhase] = useState<HudPhase>("idle");
@@ -206,6 +210,15 @@ export function LoginJarvisScreen({
                         className="jarvis-field__input"
                         placeholder="••••••••"
                       />
+                    </label>
+                    <label className="jarvis-login__remember">
+                      <input
+                        type="checkbox"
+                        checked={rememberUser}
+                        onChange={(e) => onRememberUserChange(e.target.checked)}
+                        disabled={submitting || phase !== "ready" || closing}
+                      />
+                      <span>Lembrar usuário</span>
                     </label>
                     {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
                     <button
