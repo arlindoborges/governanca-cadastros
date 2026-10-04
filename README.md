@@ -17,6 +17,12 @@ Reimplementação do zero do MVP de saneamento e governança cadastral.
 
 ## Subir ambiente
 
+### Cloud Agent (automático)
+
+Com `.cursor/environment.json`, cada boot do agente executa `install` (dependências) e `start` (Postgres, API e Next). A API é acessada via proxy em `/api/v1` — basta encaminhar a porta **3000** no Cursor.
+
+### Local (manual)
+
 ```bash
 cp .env.example .env
 docker compose up -d
@@ -30,6 +36,8 @@ Em outro terminal:
 ```bash
 cd frontend && npm install && npm run dev
 ```
+
+Ou use `bash scripts/dev.sh` para subir o banco e ver os comandos do backend/frontend.
 
 ## Validação
 

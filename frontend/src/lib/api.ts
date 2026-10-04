@@ -2,8 +2,23 @@ function resolveApiBase(): string {
   const fromEnv =
     process.env.NEXT_PUBLIC_API_URL ??
     (typeof window === "undefined" ? process.env.API_URL : undefined);
-  const base = (fromEnv ?? "http://127.0.0.1:8000").replace(/\/$/, "");
-  return base.endsWith("/api/v1") ? base : `${base}/api/v1`;
+
+  if (fromEnv) {
+    const trimmed = fromEnv.replace(/\/$/, "");
+    if (trimmed.startsWith("/")) {
+      return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+    }
+    return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+  }
+
+  // Browser (porta 3000 encaminhada): API via proxy do Next.
+  if (typeof window !== "undefined") {
+    return "/api/v1";
+  }
+
+  // Server Components: passa pelo Next local para usar o mesmo proxy.
+  const port = process.env.PORT ?? "3000";
+  return `http://127.0.0.1:${port}/api/v1`;
 }
 
 const API_BASE = resolveApiBase();
