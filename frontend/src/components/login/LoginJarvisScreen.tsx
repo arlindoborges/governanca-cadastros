@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { FormEvent, useEffect, useRef, useState } from "react";
+import { JarvisRingGraphic } from "@/components/login/JarvisRingGraphic";
 
 type Props = {
   email: string;
@@ -80,23 +81,16 @@ export function LoginJarvisScreen({
             onClick={startSession}
             onKeyDown={handleRingKeyDown}
           >
-            <svg className="jarvis-hud__ring-svg" viewBox="0 0 320 320" aria-hidden="true">
-              <circle className="jarvis-hud__ring-outer" cx="160" cy="160" r="148" />
-              <circle className="jarvis-hud__ring-mid" cx="160" cy="160" r="118" />
-              <circle className="jarvis-hud__ring-inner" cx="160" cy="160" r="88" />
-              <path
-                className="jarvis-hud__ring-ticks"
-                d="M160 12 L160 28 M160 292 L160 308 M12 160 L28 160 M292 160 L308 160"
-              />
-            </svg>
+            <JarvisRingGraphic />
             <div className="jarvis-hud__ring-center">
+              <p className="jarvis-hud__ring-brand">G·C</p>
               {!open ? (
                 <>
                   <p className="jarvis-hud__ring-title">Iniciar sessão</p>
                   <p className="jarvis-hud__ring-hint">Toque para continuar</p>
                 </>
               ) : (
-                <p className="jarvis-hud__ring-active">GC</p>
+                <p className="jarvis-hud__ring-active">Canal ativo</p>
               )}
             </div>
           </div>
