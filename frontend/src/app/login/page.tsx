@@ -33,12 +33,9 @@ export default function LoginPage() {
     if (saved.email) setEmail(saved.email);
   }, []);
 
-  const handleSuccessBrandReady = useCallback(
-    (ringRect: DOMRect) => {
-      startPostLoginReveal(ringRect);
-    },
-    [startPostLoginReveal],
-  );
+  const handleSuccessBrandReady = useCallback(() => {
+    startPostLoginReveal();
+  }, [startPostLoginReveal]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();

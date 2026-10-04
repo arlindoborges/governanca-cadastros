@@ -16,7 +16,7 @@ type Props = {
   onPasswordChange: (value: string) => void;
   onRememberUserChange: (value: boolean) => void;
   onSubmit: (event: FormEvent) => void;
-  onSuccessBrandReady?: (ringRect: DOMRect) => void;
+  onSuccessBrandReady?: () => void;
 };
 
 type HudPhase =
@@ -96,8 +96,7 @@ export function LoginJarvisScreen({
     if (phase !== "brand-morph" || handoffStartedRef.current || !onSuccessBrandReady) return;
     handoffStartedRef.current = true;
     const frameId = requestAnimationFrame(() => {
-      const rect = ringRef.current?.getBoundingClientRect();
-      onSuccessBrandReady(rect ?? new DOMRect(0, 0, 40, 40));
+      onSuccessBrandReady();
     });
     return () => cancelAnimationFrame(frameId);
   }, [phase, onSuccessBrandReady]);

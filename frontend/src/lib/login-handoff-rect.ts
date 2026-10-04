@@ -1,12 +1,18 @@
-/** Posição inicial do ícone no centro da viewport (após morph). */
-export function handoffStartRect(iconRect: DOMRect): DOMRect {
-  const width = iconRect.width > 1 ? iconRect.width : 40;
-  const height = iconRect.height > 1 ? iconRect.height : 40;
+/** Mesmo tamanho do `brand__mark` na sidebar (2.5rem). */
+export function brandMarkSizePx(): number {
+  if (typeof window === "undefined") return 40;
+  const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
+  return 2.5 * root;
+}
+
+/** Posição inicial do ícone no centro da viewport (tamanho final do GC, não o anel). */
+export function handoffStartRect(): DOMRect {
+  const size = brandMarkSizePx();
   return new DOMRect(
-    window.innerWidth / 2 - width / 2,
-    window.innerHeight / 2 - height / 2,
-    width,
-    height,
+    window.innerWidth / 2 - size / 2,
+    window.innerHeight / 2 - size / 2,
+    size,
+    size,
   );
 }
 
@@ -17,7 +23,7 @@ export function estimateBrandMarkRect(): DOMRect {
   }
 
   const root = parseFloat(getComputedStyle(document.documentElement).fontSize) || 16;
-  const size = 2.5 * root;
+  const size = brandMarkSizePx();
   const left = 0.75 * root + 0.5 * root;
   const top = 0.75 * root + 0.35 * root;
 

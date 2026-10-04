@@ -36,7 +36,7 @@ type LoginRevealContextValue = {
   homeRevealActive: boolean;
   revealWipeActive: boolean;
   revealOrigin: LoginRevealOrigin | null;
-  startPostLoginReveal: (fromRect: DOMRect) => void;
+  startPostLoginReveal: () => void;
 };
 
 const LoginRevealContext = createContext<LoginRevealContextValue | null>(null);
@@ -186,17 +186,14 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
   const [startRect, setStartRect] = useState<DOMRect | null>(null);
   const [phase, setPhase] = useState<HandoffPhase>("idle");
 
-  const startPostLoginReveal = useCallback(
-    (rect: DOMRect) => {
-      setHomeRevealActive(true);
-      setRevealWipeActive(false);
-      setRevealOrigin(null);
-      setStartRect(handoffStartRect(rect));
-      setPhase("flying");
-      router.replace("/");
-    },
-    [router],
-  );
+  const startPostLoginReveal = useCallback(() => {
+    setHomeRevealActive(true);
+    setRevealWipeActive(false);
+    setRevealOrigin(null);
+    setStartRect(handoffStartRect());
+    setPhase("flying");
+    router.replace("/");
+  }, [router]);
 
   const handleArrived = useCallback((target: DOMRect) => {
     setRevealOrigin({
