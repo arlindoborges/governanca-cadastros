@@ -100,7 +100,13 @@ export function AppShell({ children }: { children: ReactNode }) {
       <div className="app__backdrop" aria-hidden="true" />
       <aside className="sidebar glass">
         <div className="brand">
-          <span className="brand__mark" aria-hidden="true">GC</span>
+          <span
+            className={`brand__mark${homeRevealActive ? " brand__mark--handoff-hidden" : ""}`}
+            data-brand-handoff-target
+            aria-hidden="true"
+          >
+            GC
+          </span>
           <div className="brand__text">
             <span className="brand__title">Governança</span>
             <span className="brand__subtitle">Cadastros</span>

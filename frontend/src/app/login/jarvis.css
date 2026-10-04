@@ -23,8 +23,7 @@
   --hud-t-upper: 0.65s;
   --hud-t-lower: 0.95s;
   --ring-travel: calc((var(--hud-stem-gap) + var(--hud-panel-w)) / 2);
-  --jarvis-reveal-duration: 2.65s;
-  --jarvis-reveal-ease: cubic-bezier(0.12, 0.82, 0.22, 1);
+  --jarvis-handoff-fly: 0.88s;
 }
 
 .jarvis-login {
@@ -149,7 +148,8 @@
 .jarvis-hud[data-phase="square"] .jarvis-hud__ring,
 .jarvis-hud[data-phase="ready"] .jarvis-hud__ring,
 .jarvis-hud[data-phase="square-out"] .jarvis-hud__ring,
-.jarvis-hud[data-phase="line-out"] .jarvis-hud__ring {
+.jarvis-hud[data-phase="line-out"] .jarvis-hud__ring,
+.jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring {
   transform: translateX(0);
 }
 
@@ -758,98 +758,79 @@
   }
 }
 
-/* Transição pós-login: anel expande e revela a home */
-.jarvis-reveal-overlay {
+/* Pós-login: anel vira ícone GC e voa até a sidebar */
+.jarvis-hud[data-phase="brand-morph"] .jarvis-hud__lane {
+  width: 0;
+  min-width: 0;
+  margin: 0;
+  opacity: 0;
+  overflow: hidden;
+  pointer-events: none;
+}
+
+.jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring-svg {
+  opacity: 0;
+  transition: opacity 0.32s ease;
+}
+
+.jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring {
+  animation: none;
+  width: 2.5rem;
+  height: 2.5rem;
+  border-radius: 12px;
+  border: none;
+  background: linear-gradient(145deg, #34c759, #30d158 48%, #1a9d5c);
+  box-shadow: 0 6px 16px rgba(52, 199, 89, 0.35);
+  transition:
+    width 0.55s var(--jarvis-ease-smooth),
+    height 0.55s var(--jarvis-ease-smooth),
+    border-radius 0.55s var(--jarvis-ease-smooth),
+    background 0.45s ease,
+    box-shadow 0.45s ease;
+}
+
+.jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring-brand {
+  font-family: ui-sans-serif, system-ui, -apple-system, sans-serif;
+  font-size: 0.8rem;
+  font-weight: 800;
+  letter-spacing: -0.04em;
+  color: #fff;
+  text-shadow: none;
+}
+
+.jarvis-handoff-overlay {
   position: fixed;
   inset: 0;
   z-index: 10000;
   pointer-events: none;
 }
 
-.jarvis-reveal-overlay__scrim {
+.jarvis-handoff-overlay__scrim {
   position: absolute;
   inset: 0;
   background: var(--jarvis-bg);
-  animation: jarvis-reveal-scrim var(--jarvis-reveal-duration) var(--jarvis-reveal-ease) forwards;
+  opacity: 1;
+  transition: opacity 0.85s ease 0.1s;
 }
 
-.jarvis-reveal-overlay__ring {
-  position: absolute;
-  left: 50%;
-  top: 42%;
-  width: min(72vw, var(--hud-ring-size));
-  height: min(72vw, var(--hud-ring-size));
-  transform: translate(-50%, -50%) scale(1);
-  border-radius: 50%;
-  border: 1px solid var(--jarvis-green-soft);
-  background: radial-gradient(circle at 42% 38%, rgba(8, 32, 20, 0.55), rgba(2, 8, 5, 0.94) 68%);
-  box-shadow:
-    0 0 36px rgba(61, 255, 151, 0.2),
-    0 0 72px rgba(26, 157, 92, 0.12),
-    inset 0 0 28px rgba(61, 255, 151, 0.08);
-  overflow: visible;
-  animation: jarvis-reveal-ring-grow var(--jarvis-reveal-duration) var(--jarvis-reveal-ease) forwards;
-  will-change: transform, opacity, box-shadow;
+.jarvis-handoff-overlay__scrim.is-fading {
+  opacity: 0;
 }
 
-@keyframes jarvis-reveal-scrim {
-  from {
-    -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 0px, #000 0px);
-    mask-image: radial-gradient(circle at 50% 42%, transparent 0px, #000 0px);
-  }
-
-  to {
-    -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 120vmax, #000 120vmax);
-    mask-image: radial-gradient(circle at 50% 42%, transparent 120vmax, #000 120vmax);
-  }
+.jarvis-handoff-overlay__mark {
+  position: fixed;
+  z-index: 10001;
+  margin: 0;
+  transition:
+    top var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
+    left var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
+    width var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
+    height var(--jarvis-handoff-fly) cubic-bezier(0.22, 1, 0.36, 1),
+    opacity 0.16s ease 0.76s;
 }
 
-@keyframes jarvis-reveal-ring-grow {
-  0% {
-    transform: translate(-50%, -50%) scale(1);
-    opacity: 1;
-    box-shadow:
-      0 0 36px rgba(61, 255, 151, 0.2),
-      0 0 72px rgba(26, 157, 92, 0.12),
-      inset 0 0 28px rgba(61, 255, 151, 0.08);
-  }
-
-  20% {
-    transform: translate(-50%, -50%) scale(1.65);
-    opacity: 1;
-  }
-
-  45% {
-    transform: translate(-50%, -50%) scale(3.8);
-    opacity: 1;
-    box-shadow:
-      0 0 48px rgba(61, 255, 151, 0.35),
-      0 0 120px rgba(26, 157, 92, 0.22),
-      inset 0 0 36px rgba(61, 255, 151, 0.12);
-  }
-
-  72% {
-    transform: translate(-50%, -50%) scale(8);
-    opacity: 0.92;
-    box-shadow:
-      0 0 64px rgba(61, 255, 151, 0.45),
-      0 0 160px rgba(26, 157, 92, 0.28),
-      inset 0 0 42px rgba(61, 255, 151, 0.1);
-  }
-
-  88% {
-    transform: translate(-50%, -50%) scale(12);
-    opacity: 0.55;
-  }
-
-  100% {
-    transform: translate(-50%, -50%) scale(16);
-    opacity: 0;
-    box-shadow:
-      0 0 80px rgba(61, 255, 151, 0.15),
-      0 0 200px rgba(26, 157, 92, 0.1),
-      inset 0 0 48px rgba(61, 255, 151, 0.05);
-  }
+.jarvis-handoff-overlay__mark.is-arrived {
+  opacity: 0;
 }
 
 @media (prefers-reduced-motion: reduce) {
@@ -876,17 +857,13 @@
     background: var(--jarvis-panel-bg);
   }
 
-  .jarvis-reveal-overlay__scrim,
-  .jarvis-reveal-overlay__ring {
-    animation-duration: 0.01ms !important;
-    animation-delay: 0s !important;
-  }
-
-  .jarvis-reveal-overlay__scrim {
+  .jarvis-handoff-overlay__scrim {
     opacity: 0;
+    transition: none;
   }
 
-  .jarvis-reveal-overlay__ring {
+  .jarvis-handoff-overlay__mark {
+    transition: none;
     opacity: 0;
   }
 }

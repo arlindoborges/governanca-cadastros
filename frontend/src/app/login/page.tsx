@@ -33,10 +33,13 @@ export default function LoginPage() {
     if (saved.email) setEmail(saved.email);
   }, []);
 
-  const handleSuccessRingCentered = useCallback(() => {
-    startPostLoginReveal();
-    router.replace("/");
-  }, [router, startPostLoginReveal]);
+  const handleSuccessBrandReady = useCallback(
+    (ringRect: DOMRect) => {
+      startPostLoginReveal(ringRect);
+      router.replace("/");
+    },
+    [router, startPostLoginReveal],
+  );
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
@@ -73,7 +76,7 @@ export default function LoginPage() {
       onPasswordChange={setPassword}
       onRememberUserChange={setRememberUser}
       onSubmit={onSubmit}
-      onSuccessRingCentered={handleSuccessRingCentered}
+      onSuccessBrandReady={handleSuccessBrandReady}
     />
   );
 }

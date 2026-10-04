@@ -15,7 +15,7 @@ type Props = {
   onPasswordChange: (value: string) => void;
   onRememberUserChange: (value: boolean) => void;
   onSubmit: (event: FormEvent) => void;
-  onSuccessRingCentered?: () => void;
+  onSuccessBrandReady?: (ringRect: DOMRect) => void;
 };
 
 type HudPhase =
@@ -26,11 +26,13 @@ type HudPhase =
   | "ready"
   | "square-out"
   | "line-out"
-  | "ring-out";
+  | "ring-out"
+  | "brand-morph";
 
 const RING_MS = 550;
 const LINE_MS = 550;
 const SQUARE_MS = 950;
+const BRAND_MORPH_MS = 580;
 
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
@@ -48,10 +50,11 @@ export function LoginJarvisScreen({
   onRememberUserChange,
   onSubmit,
   successExit,
-  onSuccessRingCentered,
+  onSuccessBrandReady,
 }: Props) {
   const [phase, setPhase] = useState<HudPhase>("idle");
   const emailRef = useRef<HTMLInputElement>(null);
+  const ringRef = useRef<HTMLDivElement>(null);
 
   const sessionActive = phase !== "idle";
 
@@ -78,15 +81,24 @@ export function LoginJarvisScreen({
     }
     if (phase === "ring-out") {
       const t = window.setTimeout(() => {
-        if (successExit && onSuccessRingCentered) {
-          onSuccessRingCentered();
+        if (successExit) {
+          setPhase("brand-morph");
           return;
         }
         setPhase("idle");
       }, motionMs(RING_MS));
       return () => window.clearTimeout(t);
     }
-  }, [phase, successExit, onSuccessRingCentered]);
+    if (phase === "brand-morph") {
+      const t = window.setTimeout(() => {
+        const rect = ringRef.current?.getBoundingClientRect();
+        if (rect && onSuccessBrandReady) {
+          onSuccessBrandReady(rect);
+        }
+      }, motionMs(BRAND_MORPH_MS));
+      return () => window.clearTimeout(t);
+    }
+  }, [phase, successExit, onSuccessBrandReady]);
 
   useEffect(() => {
     if (!successExit || phase !== "ready") return;
@@ -117,7 +129,12 @@ export function LoginJarvisScreen({
     setPhase("ring");
   }
 
-  const closing = phase === "square-out" || phase === "line-out" || phase === "ring-out" || successExit;
+  const closing =
+    phase === "square-out" ||
+    phase === "line-out" ||
+    phase === "ring-out" ||
+    phase === "brand-morph" ||
+    successExit;
 
   return (
     <div className="jarvis-login">
@@ -139,6 +156,7 @@ export function LoginJarvisScreen({
       <div className="jarvis-login__stage">
         <div className="jarvis-hud" data-phase={phase}>
           <div
+            ref={ringRef}
             className="jarvis-hud__ring"
             role={sessionActive ? undefined : "button"}
             tabIndex={sessionActive ? undefined : 0}
@@ -148,8 +166,8 @@ export function LoginJarvisScreen({
           >
             <JarvisRingGraphic />
             <div className="jarvis-hud__ring-center">
-              <p className="jarvis-hud__ring-brand">G·C</p>
-              {!sessionActive ? (
+              <p className="jarvis-hud__ring-brand">{phase === "brand-morph" ? "GC" : "G·C"}</p>
+              {phase === "brand-morph" ? null : !sessionActive ? (
                 <>
                   <p className="jarvis-hud__ring-title">Iniciar sessão</p>
                   <p className="jarvis-hud__ring-hint">Toque para continuar</p>
