@@ -1,9 +1,10 @@
 "use client";
 
+import "./jarvis.css";
+
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
-import { LoginFormFields } from "@/components/login/LoginFormFields";
-import { LoginLayoutClassic } from "@/components/login/layouts/LoginLayoutClassic";
+import { LoginJarvisScreen } from "@/components/login/LoginJarvisScreen";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function LoginPage() {
@@ -32,24 +33,23 @@ export default function LoginPage() {
     }
   }
 
-  return (
-    <LoginLayoutClassic>
-      <div className="auth-card__brand">
-        <span className="brand__mark" aria-hidden="true">GC</span>
-        <div>
-          <h1>Entrar</h1>
-          <p className="muted">Acesse o Governança de Cadastros</p>
-        </div>
+  if (loading) {
+    return (
+      <div className="jarvis-login">
+        <p className="jarvis-login__status" style={{ padding: "2rem" }}>Carregando...</p>
       </div>
-      <LoginFormFields
-        email={email}
-        password={password}
-        error={error}
-        submitting={submitting}
-        onEmailChange={setEmail}
-        onPasswordChange={setPassword}
-        onSubmit={onSubmit}
-      />
-    </LoginLayoutClassic>
+    );
+  }
+
+  return (
+    <LoginJarvisScreen
+      email={email}
+      password={password}
+      error={error}
+      submitting={submitting}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onSubmit={onSubmit}
+    />
   );
 }
