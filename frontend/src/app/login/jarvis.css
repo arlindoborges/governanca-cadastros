@@ -830,27 +830,7 @@
   z-index: 10001;
   margin: 0;
   box-sizing: border-box;
-  transform: translate(var(--handoff-from-x, 0px), var(--handoff-from-y, 0px));
-  width: var(--handoff-from-w, 2.5rem);
-  height: var(--handoff-from-h, 2.5rem);
-}
-
-.jarvis-handoff-overlay__mark.is-animating {
-  animation: jarvis-handoff-mark-fly var(--handoff-fly-ms, 850ms) var(--jarvis-ease-smooth) forwards;
-}
-
-@keyframes jarvis-handoff-mark-fly {
-  from {
-    transform: translate(var(--handoff-from-x), var(--handoff-from-y));
-    width: var(--handoff-from-w);
-    height: var(--handoff-from-h);
-  }
-
-  to {
-    transform: translate(var(--handoff-to-x), var(--handoff-to-y));
-    width: var(--handoff-to-w);
-    height: var(--handoff-to-h);
-  }
+  will-change: transform, width, height;
 }
 
 .jarvis-handoff-overlay__mark.is-arrived {

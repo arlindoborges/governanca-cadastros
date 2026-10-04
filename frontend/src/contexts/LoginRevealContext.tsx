@@ -17,7 +17,6 @@ import {
   useMemo,
   useRef,
   useState,
-  type CSSProperties,
   type ReactNode,
 } from "react";
 
@@ -32,18 +31,6 @@ export type LoginRevealOrigin = {
 };
 
 type HandoffPhase = "idle" | "preflight" | "flying" | "reveal";
-
-type FlyVars = {
-  fromX: number;
-  fromY: number;
-  fromW: number;
-  fromH: number;
-  toX: number;
-  toY: number;
-  toW: number;
-  toH: number;
-  durationMs: number;
-};
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
@@ -62,6 +49,16 @@ function motionMs(base: number) {
   return base;
 }
 
+function placeMark(el: HTMLElement, rect: DOMRect) {
+  el.style.position = "fixed";
+  el.style.top = "0";
+  el.style.left = "0";
+  el.style.margin = "0";
+  el.style.transform = `translate3d(${rect.left}px, ${rect.top}px, 0)`;
+  el.style.width = `${rect.width}px`;
+  el.style.height = `${rect.height}px`;
+}
+
 function BrandHandoffOverlay({
   startRect,
   phase,
@@ -75,8 +72,14 @@ function BrandHandoffOverlay({
 }) {
   const markRef = useRef<HTMLSpanElement>(null);
   const flyStartedRef = useRef(false);
-  const [flyVars, setFlyVars] = useState<FlyVars | null>(null);
-  const [animating, setAnimating] = useState(false);
+  const arrivedRef = useRef(false);
+  const animationRef = useRef<Animation | null>(null);
+
+  useLayoutEffect(() => {
+    const el = markRef.current;
+    if (!el) return;
+    placeMark(el, startRect);
+  }, [startRect]);
 
   useLayoutEffect(() => {
     if (phase !== "flying" || flyStartedRef.current) return;
@@ -85,21 +88,50 @@ function BrandHandoffOverlay({
     let cancelled = false;
 
     const beginFly = (toRect: DOMRect) => {
-      if (cancelled || flyStartedRef.current) return;
+      const el = markRef.current;
+      if (!el || cancelled || flyStartedRef.current) return;
       flyStartedRef.current = true;
+
+      placeMark(el, startRect);
+      void el.offsetWidth;
+
       const durationMs = motionMs(handoffFlyDurationMs(startRect, toRect));
-      setFlyVars({
-        fromX: startRect.left,
-        fromY: startRect.top,
-        fromW: startRect.width,
-        fromH: startRect.height,
-        toX: toRect.left,
-        toY: toRect.top,
-        toW: toRect.width,
-        toH: toRect.height,
-        durationMs,
-      });
-      requestAnimationFrame(() => setAnimating(true));
+      animationRef.current?.cancel();
+
+      const animation = el.animate(
+        [
+          {
+            transform: `translate3d(${startRect.left}px, ${startRect.top}px, 0)`,
+            width: `${startRect.width}px`,
+            height: `${startRect.height}px`,
+          },
+          {
+            transform: `translate3d(${toRect.left}px, ${toRect.top}px, 0)`,
+            width: `${toRect.width}px`,
+            height: `${toRect.height}px`,
+          },
+        ],
+        {
+          duration: durationMs,
+          easing: "cubic-bezier(0.22, 1, 0.36, 1)",
+          fill: "forwards",
+        },
+      );
+
+      animationRef.current = animation;
+
+      const finish = () => {
+        if (cancelled || arrivedRef.current) return;
+        arrivedRef.current = true;
+        placeMark(el, toRect);
+        onArrived(toRect);
+      };
+
+      const fallbackId = window.setTimeout(finish, durationMs + 200);
+      animation.onfinish = () => {
+        window.clearTimeout(fallbackId);
+        finish();
+      };
     };
 
     const waitForTarget = () => {
@@ -121,48 +153,15 @@ function BrandHandoffOverlay({
 
     return () => {
       cancelled = true;
+      animationRef.current?.cancel();
     };
-  }, [phase, startRect]);
-
-  const arrivedRef = useRef(false);
-
-  const handleAnimationEnd = useCallback(() => {
-    if (!flyVars || arrivedRef.current || phase === "reveal") return;
-    arrivedRef.current = true;
-    const target = new DOMRect(flyVars.toX, flyVars.toY, flyVars.toW, flyVars.toH);
-    onArrived(target);
-  }, [flyVars, onArrived, phase]);
-
-  useEffect(() => {
-    if (!animating || !flyVars) return;
-    const t = window.setTimeout(() => handleAnimationEnd(), flyVars.durationMs + 120);
-    return () => window.clearTimeout(t);
-  }, [animating, flyVars, handleAnimationEnd]);
+  }, [phase, startRect, onArrived]);
 
   useEffect(() => {
     if (phase !== "reveal") return;
     const t = window.setTimeout(onDone, motionMs(REVEAL_WIPE_MS) + 60);
     return () => window.clearTimeout(t);
   }, [phase, onDone]);
-
-  const markStyle: CSSProperties | undefined = flyVars
-    ? ({
-        "--handoff-from-x": `${flyVars.fromX}px`,
-        "--handoff-from-y": `${flyVars.fromY}px`,
-        "--handoff-from-w": `${flyVars.fromW}px`,
-        "--handoff-from-h": `${flyVars.fromH}px`,
-        "--handoff-to-x": `${flyVars.toX}px`,
-        "--handoff-to-y": `${flyVars.toY}px`,
-        "--handoff-to-w": `${flyVars.toW}px`,
-        "--handoff-to-h": `${flyVars.toH}px`,
-        "--handoff-fly-ms": `${flyVars.durationMs}ms`,
-      } as CSSProperties)
-    : ({
-        top: `${startRect.top}px`,
-        left: `${startRect.left}px`,
-        width: `${startRect.width}px`,
-        height: `${startRect.height}px`,
-      } as CSSProperties);
 
   const revealing = phase === "reveal";
 
@@ -171,9 +170,7 @@ function BrandHandoffOverlay({
       <div className={`jarvis-handoff-overlay__scrim${revealing ? " is-revealing" : ""}`} />
       <span
         ref={markRef}
-        className={`jarvis-handoff-overlay__mark brand__mark${animating ? " is-animating" : ""}${revealing ? " is-arrived" : ""}`}
-        style={markStyle}
-        onAnimationEnd={animating ? handleAnimationEnd : undefined}
+        className={`jarvis-handoff-overlay__mark brand__mark${revealing ? " is-arrived" : ""}`}
       >
         GC
       </span>

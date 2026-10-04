@@ -45,5 +45,5 @@ export function handoffFlyDurationMs(from: DOMRect, to: DOMRect): number {
   const ringTravel = Math.max(window.innerWidth * 0.22, 220);
   const baseMs = 550;
   const scaled = Math.round((distance / ringTravel) * baseMs);
-  return Math.min(1400, Math.max(850, scaled));
+  return Math.min(1600, Math.max(950, scaled));
 }
