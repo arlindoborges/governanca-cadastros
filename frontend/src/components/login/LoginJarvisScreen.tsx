@@ -33,8 +33,6 @@ type HudPhase =
 const RING_MS = 550;
 const LINE_MS = 550;
 const SQUARE_MS = 950;
-const BRAND_MORPH_MS = 580;
-
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;
@@ -56,6 +54,7 @@ export function LoginJarvisScreen({
   const [phase, setPhase] = useState<HudPhase>("idle");
   const emailRef = useRef<HTMLInputElement>(null);
   const ringRef = useRef<HTMLDivElement>(null);
+  const handoffStartedRef = useRef(false);
   const { homeRevealActive } = useLoginReveal();
 
   const sessionActive = phase !== "idle";
@@ -91,16 +90,17 @@ export function LoginJarvisScreen({
       }, motionMs(RING_MS));
       return () => window.clearTimeout(t);
     }
-    if (phase === "brand-morph") {
-      const t = window.setTimeout(() => {
-        const rect = ringRef.current?.getBoundingClientRect();
-        if (rect && onSuccessBrandReady) {
-          onSuccessBrandReady(rect);
-        }
-      }, motionMs(BRAND_MORPH_MS));
-      return () => window.clearTimeout(t);
-    }
-  }, [phase, successExit, onSuccessBrandReady]);
+  }, [phase, successExit]);
+
+  useEffect(() => {
+    if (phase !== "brand-morph" || handoffStartedRef.current || !onSuccessBrandReady) return;
+    handoffStartedRef.current = true;
+    const frameId = requestAnimationFrame(() => {
+      const rect = ringRef.current?.getBoundingClientRect();
+      onSuccessBrandReady(rect ?? new DOMRect(0, 0, 40, 40));
+    });
+    return () => cancelAnimationFrame(frameId);
+  }, [phase, onSuccessBrandReady]);
 
   useEffect(() => {
     if (!successExit || phase !== "ready") return;

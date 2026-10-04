@@ -43,7 +43,7 @@ export function resolveBrandMarkTarget(): DOMRect {
 export function handoffFlyDurationMs(from: DOMRect, to: DOMRect): number {
   const distance = Math.hypot(to.left - from.left, to.top - from.top);
   const ringTravel = Math.max(window.innerWidth * 0.22, 220);
-  const baseMs = 550;
+  const baseMs = 480;
   const scaled = Math.round((distance / ringTravel) * baseMs);
-  return Math.min(1600, Math.max(950, scaled));
+  return Math.min(1100, Math.max(620, scaled));
 }

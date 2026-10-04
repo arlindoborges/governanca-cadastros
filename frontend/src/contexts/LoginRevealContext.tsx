@@ -30,7 +30,7 @@ export type LoginRevealOrigin = {
   height: number;
 };
 
-type HandoffPhase = "idle" | "preflight" | "flying" | "reveal";
+type HandoffPhase = "idle" | "flying" | "reveal";
 
 type LoginRevealContextValue = {
   homeRevealActive: boolean;
@@ -186,28 +186,17 @@ export function LoginRevealProvider({ children }: { children: ReactNode }) {
   const [startRect, setStartRect] = useState<DOMRect | null>(null);
   const [phase, setPhase] = useState<HandoffPhase>("idle");
 
-  const startPostLoginReveal = useCallback((rect: DOMRect) => {
-    setHomeRevealActive(true);
-    setRevealWipeActive(false);
-    setRevealOrigin(null);
-    setStartRect(handoffStartRect(rect));
-    setPhase("preflight");
-  }, []);
-
-  useEffect(() => {
-    if (phase !== "preflight") return;
-    let navId = 0;
-    const startId = requestAnimationFrame(() => {
-      navId = requestAnimationFrame(() => {
-        router.replace("/");
-        setPhase("flying");
-      });
-    });
-    return () => {
-      cancelAnimationFrame(startId);
-      if (navId) cancelAnimationFrame(navId);
-    };
-  }, [phase, router]);
+  const startPostLoginReveal = useCallback(
+    (rect: DOMRect) => {
+      setHomeRevealActive(true);
+      setRevealWipeActive(false);
+      setRevealOrigin(null);
+      setStartRect(handoffStartRect(rect));
+      setPhase("flying");
+      router.replace("/");
+    },
+    [router],
+  );
 
   const handleArrived = useCallback((target: DOMRect) => {
     setRevealOrigin({
