@@ -27,7 +27,7 @@ export function LoginJarvisScreen({
 
   useEffect(() => {
     if (open) {
-      const t = window.setTimeout(() => emailRef.current?.focus(), 1200);
+      const t = window.setTimeout(() => emailRef.current?.focus(), 1950);
       return () => window.clearTimeout(t);
     }
   }, [open]);
