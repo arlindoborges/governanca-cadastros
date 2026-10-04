@@ -1154,72 +1154,154 @@ textarea:focus {
   }
 }
 
-.classification-setup-grid {
+.classification-workspace {
   display: grid;
-  grid-template-columns: repeat(2, minmax(0, 1fr));
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1.15fr);
   gap: 1rem;
-  align-items: stretch;
+  align-items: start;
 }
 
-.classification-setup-card {
-  height: 100%;
-  min-width: 0;
+.classification-workspace__subhead {
+  margin: 0;
+  font-size: 0.95rem;
 }
 
-@media (max-width: 900px) {
-  .classification-setup-grid {
+.classification-workspace__form {
+  gap: 1.25rem;
+}
+
+.classification-workspace__create {
+  padding-top: 0.25rem;
+  border-top: 1px solid var(--border);
+}
+
+.classification-editor {
+  padding: 0.85rem 0;
+  border-top: 1px solid var(--border);
+  border-bottom: 1px solid var(--border);
+}
+
+.classification-editor h3 {
+  margin: 0;
+  font-size: 0.95rem;
+}
+
+@media (max-width: 960px) {
+  .classification-workspace {
     grid-template-columns: 1fr;
   }
 }
 
-.classification-tree {
-  gap: 1rem;
-}
-
-.classification-node {
-  border-left: 3px solid color-mix(in srgb, var(--ios-accent) 35%, transparent);
-  padding-left: 0.85rem;
-}
-
-.classification-node--l1 {
-  border-left-color: color-mix(in srgb, var(--ios-accent) 55%, transparent);
-}
-
-.classification-node--l2 {
-  margin-left: 0.5rem;
-}
-
-.classification-node--l3 {
-  margin-left: 1rem;
-}
-
-.classification-node__head {
+.classification-flow {
   display: flex;
+  flex-direction: column;
+  gap: 1rem;
+  min-height: 8rem;
+}
+
+.classification-flow--empty {
+  justify-content: center;
+}
+
+.classification-flow__legend {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.5rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ios-fill) 55%, transparent);
+  border: 1px dashed color-mix(in srgb, var(--ios-accent) 25%, var(--border));
+}
+
+.classification-flow__legend-item {
+  display: inline-flex;
   align-items: center;
   gap: 0.5rem;
-  margin-bottom: 0.75rem;
 }
 
-.classification-node__head h3 {
+.classification-flow__legend-pill {
+  font-size: 0.72rem;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ios-accent);
+}
+
+.classification-flow__paths {
+  list-style: none;
   margin: 0;
-  font-size: 1.05rem;
+  padding: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 0.65rem;
 }
 
-.classification-node__badge {
-  font-size: 0.68rem;
+.classification-flow__path {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 0.35rem 0.25rem;
+  padding: 0.65rem 0.75rem;
+  border-radius: var(--radius-md);
+  background: color-mix(in srgb, var(--ios-fill) 40%, transparent);
+  border: 1px solid var(--border);
+}
+
+.classification-flow__segment {
+  display: inline-flex;
+  align-items: center;
+  gap: 0.35rem;
+}
+
+.classification-flow__arrow {
+  color: color-mix(in srgb, var(--ios-accent) 70%, var(--text-muted));
+  font-weight: 700;
+  font-size: 1rem;
+  line-height: 1;
+  user-select: none;
+}
+
+.classification-flow__step {
+  display: inline-flex;
+  flex-direction: column;
+  align-items: flex-start;
+  gap: 0.1rem;
+  padding: 0.45rem 0.65rem;
+  border-radius: 10px;
+  border: 1px solid var(--border);
+  background: var(--ios-bg);
+  color: inherit;
+  cursor: pointer;
+  text-align: left;
+  transition: border-color 0.15s ease, box-shadow 0.15s ease;
+}
+
+.classification-flow__step:hover {
+  border-color: color-mix(in srgb, var(--ios-accent) 45%, var(--border));
+}
+
+.classification-flow__step.is-selected {
+  border-color: var(--ios-accent);
+  box-shadow: 0 0 0 2px color-mix(in srgb, var(--ios-accent) 22%, transparent);
+}
+
+.classification-flow__step-level {
+  font-size: 0.62rem;
   font-weight: 700;
   text-transform: uppercase;
   letter-spacing: 0.06em;
   color: var(--ios-accent);
-  background: color-mix(in srgb, var(--ios-accent) 12%, transparent);
-  padding: 0.2rem 0.45rem;
-  border-radius: 6px;
 }
 
-.classification-node__children {
-  margin-top: 1rem;
-  padding-top: 0.75rem;
-  border-top: 1px solid var(--border);
+.classification-flow__step-name {
+  font-size: 0.92rem;
+  font-weight: 600;
+}
+
+.classification-flow__clear {
+  align-self: flex-start;
+  font-size: 0.85rem;
 }
 
 .classification-form {

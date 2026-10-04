@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
 import {
   createProductClassificationNode,
   deleteProductClassificationNode,
@@ -50,13 +50,111 @@ function NodeForm({ title, parentId, onSaved }: NodeFormProps) {
   );
 }
 
-type NodeBlockProps = {
-  node: ProductClassificationNode;
+function findNode(nodes: ProductClassificationNode[], id: string): ProductClassificationNode | null {
+  for (const node of nodes) {
+    if (node.id === id) return node;
+    const child = findNode(node.children, id);
+    if (child) return child;
+  }
+  return null;
+}
+
+function collectPaths(nodes: ProductClassificationNode[]): ProductClassificationNode[][] {
+  const paths: ProductClassificationNode[][] = [];
+
+  function walk(node: ProductClassificationNode, prefix: ProductClassificationNode[]) {
+    const path = [...prefix, node];
+    if (node.children.length === 0) {
+      paths.push(path);
+      return;
+    }
+    for (const child of node.children) {
+      walk(child, path);
+    }
+  }
+
+  for (const root of nodes) {
+    walk(root, []);
+  }
+
+  return paths;
+}
+
+type ClassificationFlowProps = {
+  paths: ProductClassificationNode[][];
   depthLevels: number;
-  onChanged: () => Promise<void>;
+  selectedId: string | null;
+  onSelect: (id: string | null) => void;
 };
 
-function NodeBlock({ node, depthLevels, onChanged }: NodeBlockProps) {
+function ClassificationFlow({ paths, depthLevels, selectedId, onSelect }: ClassificationFlowProps) {
+  const levelLabels = useMemo(
+    () => Array.from({ length: depthLevels }, (_, i) => `Nível ${i + 1}`),
+    [depthLevels],
+  );
+
+  if (paths.length === 0) {
+    return (
+      <div className="classification-flow classification-flow--empty">
+        <p className="muted">Nenhuma classificação cadastrada. Use o painel à esquerda para começar no nível 1.</p>
+        <div className="classification-flow__legend" aria-hidden>
+          {levelLabels.map((label, index) => (
+            <span key={label} className="classification-flow__legend-item">
+              {index > 0 ? <span className="classification-flow__arrow">→</span> : null}
+              <span className="classification-flow__legend-pill">{label}</span>
+            </span>
+          ))}
+        </div>
+      </div>
+    );
+  }
+
+  return (
+    <div className="classification-flow">
+      <div className="classification-flow__legend" aria-hidden>
+        {levelLabels.map((label, index) => (
+          <span key={label} className="classification-flow__legend-item">
+            {index > 0 ? <span className="classification-flow__arrow">→</span> : null}
+            <span className="classification-flow__legend-pill">{label}</span>
+          </span>
+        ))}
+      </div>
+      <ul className="classification-flow__paths">
+        {paths.map((path, pathIndex) => (
+          <li key={path.map((n) => n.id).join("-") || pathIndex} className="classification-flow__path">
+            {path.map((node, index) => (
+              <span key={node.id} className="classification-flow__segment">
+                {index > 0 ? <span className="classification-flow__arrow" aria-hidden>→</span> : null}
+                <button
+                  type="button"
+                  className={`classification-flow__step${selectedId === node.id ? " is-selected" : ""}`}
+                  onClick={() => onSelect(node.id)}
+                  aria-pressed={selectedId === node.id}
+                >
+                  <span className="classification-flow__step-level">Nível {node.level}</span>
+                  <span className="classification-flow__step-name">{node.name}</span>
+                </button>
+              </span>
+            ))}
+          </li>
+        ))}
+      </ul>
+      {selectedId ? (
+        <button type="button" className="classification-flow__clear secondary" onClick={() => onSelect(null)}>
+          Limpar seleção
+        </button>
+      ) : null}
+    </div>
+  );
+}
+
+type NodeEditorProps = {
+  node: ProductClassificationNode;
+  onChanged: () => Promise<void>;
+  onDeleted: () => Promise<void>;
+};
+
+function NodeEditor({ node, onChanged, onDeleted }: NodeEditorProps) {
   const [name, setName] = useState(node.name);
   const [description, setDescription] = useState(node.description ?? "");
   const [busy, setBusy] = useState(false);
@@ -82,49 +180,28 @@ function NodeBlock({ node, depthLevels, onChanged }: NodeBlockProps) {
     setBusy(true);
     try {
       await deleteProductClassificationNode(node.id);
-      await onChanged();
+      await onDeleted();
     } finally {
       setBusy(false);
     }
   }
 
-  const childLevel = node.level + 1;
-  const canHaveChildren = childLevel <= depthLevels;
-
   return (
-    <article className={`classification-node classification-node--l${node.level}`}>
-      <div className="classification-node__head">
-        <span className="classification-node__badge">Nível {node.level}</span>
-        <h3>{node.name}</h3>
+    <div className="classification-editor stack">
+      <h3>Editar — nível {node.level}</h3>
+      <label>
+        Nome
+        <input value={name} onChange={(e) => setName(e.target.value)} disabled={busy} />
+      </label>
+      <label>
+        Descrição
+        <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} disabled={busy} />
+      </label>
+      <div className="row">
+        <button type="button" onClick={saveNode} disabled={busy}>Salvar alterações</button>
+        <button type="button" className="secondary" onClick={removeNode} disabled={busy}>Excluir</button>
       </div>
-      <div className="stack">
-        <label>
-          Nome
-          <input value={name} onChange={(e) => setName(e.target.value)} disabled={busy} />
-        </label>
-        <label>
-          Descrição
-          <textarea value={description} onChange={(e) => setDescription(e.target.value)} rows={2} disabled={busy} />
-        </label>
-        <div className="row">
-          <button type="button" onClick={saveNode} disabled={busy}>Salvar</button>
-          <button type="button" className="secondary" onClick={removeNode} disabled={busy}>Excluir</button>
-        </div>
-      </div>
-
-      {canHaveChildren ? (
-        <div className="classification-node__children stack">
-          {node.children.map((child) => (
-            <NodeBlock key={child.id} node={child} depthLevels={depthLevels} onChanged={onChanged} />
-          ))}
-          <NodeForm
-            title={`Novo nível ${childLevel}`}
-            parentId={node.id}
-            onSaved={onChanged}
-          />
-        </div>
-      ) : null}
-    </article>
+    </div>
   );
 }
 
@@ -132,6 +209,7 @@ export default function ClassificacoesPage() {
   const [depthLevels, setDepthLevels] = useState(3);
   const [draftDepth, setDraftDepth] = useState(3);
   const [tree, setTree] = useState<ProductClassificationNode[]>([]);
+  const [selectedNodeId, setSelectedNodeId] = useState<string | null>(null);
   const [error, setError] = useState<string | null>(null);
   const [loading, setLoading] = useState(true);
 
@@ -140,6 +218,7 @@ export default function ClassificacoesPage() {
     setDepthLevels(data.depth_levels);
     setDraftDepth(data.depth_levels);
     setTree(data.tree);
+    setSelectedNodeId((id) => (id && !findNode(data.tree, id) ? null : id));
   }, []);
 
   useEffect(() => {
@@ -147,6 +226,15 @@ export default function ClassificacoesPage() {
       .catch((err) => setError(err instanceof Error ? err.message : "Erro ao carregar classificações"))
       .finally(() => setLoading(false));
   }, [reload]);
+
+  const paths = useMemo(() => collectPaths(tree), [tree]);
+  const selectedNode = useMemo(
+    () => (selectedNodeId ? findNode(tree, selectedNodeId) : null),
+    [tree, selectedNodeId],
+  );
+
+  const canAddChild = selectedNode !== null && selectedNode.level < depthLevels;
+  const addChildLevel = selectedNode ? selectedNode.level + 1 : 1;
 
   async function saveDepth(event: FormEvent) {
     event.preventDefault();
@@ -168,6 +256,11 @@ export default function ClassificacoesPage() {
     }
   }, [reload]);
 
+  async function onDeleted() {
+    setSelectedNodeId(null);
+    await onChanged();
+  }
+
   if (loading) {
     return (
       <section className="stack">
@@ -182,45 +275,66 @@ export default function ClassificacoesPage() {
       <div>
         <h1>Classificações de Produtos</h1>
         <p className="muted">
-          Defina quantos níveis a hierarquia terá. No nível 1 cadastre as classificações principais (ex.: Frios,
-          Secos). Nos níveis abaixo, adicione quantos itens precisar para cada pai.
+          À esquerda configure a hierarquia e cadastre novos itens. À direita, acompanhe o fluxo partindo do nível 1
+          até os demais níveis.
         </p>
       </div>
 
-      <div className="classification-setup-grid">
-        <form className="panel stack classification-setup-card" onSubmit={saveDepth}>
-          <h2>Configuração de níveis</h2>
-          <label>
-            Quantidade de níveis
-            <input
-              type="number"
-              min={1}
-              max={5}
-              value={draftDepth}
-              onChange={(e) => setDraftDepth(Number(e.target.value))}
-              required
+      <div className="classification-workspace">
+        <div className="panel stack classification-workspace__form">
+          <h2>Cadastro</h2>
+
+          <form className="stack" onSubmit={saveDepth}>
+            <h3 className="classification-workspace__subhead">Configuração de níveis</h3>
+            <label>
+              Quantidade de níveis
+              <input
+                type="number"
+                min={1}
+                max={5}
+                value={draftDepth}
+                onChange={(e) => setDraftDepth(Number(e.target.value))}
+                required
+              />
+            </label>
+            <button type="submit">Salvar quantidade de níveis</button>
+            <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
+          </form>
+
+          {selectedNode ? (
+            <NodeEditor node={selectedNode} onChanged={onChanged} onDeleted={onDeleted} />
+          ) : null}
+
+          <div className="classification-workspace__create stack">
+            <h3 className="classification-workspace__subhead">Nova classificação</h3>
+            {canAddChild ? (
+              <p className="muted">
+                Será adicionada como nível {addChildLevel}, abaixo de <strong>{selectedNode.name}</strong>.
+              </p>
+            ) : (
+              <p className="muted">Cadastre uma classificação principal (nível 1).</p>
+            )}
+            <NodeForm
+              title={canAddChild ? `Nível ${addChildLevel} sob “${selectedNode!.name}”` : "Nova classificação de nível 1"}
+              parentId={canAddChild ? selectedNode!.id : undefined}
+              onSaved={onChanged}
             />
-          </label>
-          <button type="submit">Salvar quantidade de níveis</button>
-          <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
-        </form>
-
-        <div className="panel stack classification-setup-card">
-          <h2>Classificações (nível 1)</h2>
-          <p className="muted">
-            Exemplo: Frios → Congelado → Bovino. Cada nível 2 e 3 pode ter vários cadastros sob o mesmo pai.
-          </p>
-          <NodeForm title="Nova classificação de nível 1" onSaved={onChanged} />
-        </div>
-      </div>
-
-      <div className="classification-tree stack">
-        {tree.map((root) => (
-          <div key={root.id} className="panel">
-            <NodeBlock node={root} depthLevels={depthLevels} onChanged={onChanged} />
+            {canAddChild ? (
+              <NodeForm title="Outra classificação de nível 1" onSaved={onChanged} />
+            ) : null}
           </div>
-        ))}
-        {tree.length === 0 ? <p className="muted">Nenhuma classificação cadastrada ainda.</p> : null}
+        </div>
+
+        <div className="panel stack classification-workspace__flow-panel">
+          <h2>Fluxo da hierarquia</h2>
+          <p className="muted">Cada linha mostra um caminho do nível 1 em diante. Clique em um nome para editar.</p>
+          <ClassificationFlow
+            paths={paths}
+            depthLevels={depthLevels}
+            selectedId={selectedNodeId}
+            onSelect={setSelectedNodeId}
+          />
+        </div>
       </div>
 
       {error ? <p className="auth-error">{error}</p> : null}
