@@ -1354,13 +1354,9 @@ textarea:focus {
 }
 
 .classification-create__picker-field {
-  gap: 0.35rem;
+  gap: 0.45rem;
   font-size: 0.88rem;
   font-weight: 500;
-}
-
-.classification-create__picker-filter {
-  width: 100%;
 }
 
 .classification-create__picker-select {
