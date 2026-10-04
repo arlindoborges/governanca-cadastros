@@ -1171,20 +1171,34 @@ textarea:focus {
 }
 
 .classification-depth-row {
-  align-items: flex-end;
+  display: flex;
+  flex-direction: column;
+  gap: 0.4rem;
 }
 
-.classification-depth-row__field {
-  flex: 1;
-  min-width: min(100%, 12rem);
+.classification-depth-row__label {
+  font-size: 0.9rem;
+  font-weight: 500;
 }
 
-.classification-depth-row__field input {
-  max-width: 6rem;
+.classification-depth-row__controls {
+  display: flex;
+  flex-wrap: nowrap;
+  align-items: center;
+  gap: 0.65rem;
+}
+
+.classification-depth-row__input {
+  width: 3.25rem;
+  min-width: 3.25rem;
+  flex: 0 0 auto;
+  padding-left: 0.45rem;
+  padding-right: 0.45rem;
+  text-align: center;
 }
 
 .classification-depth-row__submit {
-  flex-shrink: 0;
+  flex: 0 1 auto;
   white-space: nowrap;
 }
 
