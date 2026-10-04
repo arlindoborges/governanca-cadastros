@@ -119,6 +119,27 @@ h3 {
   isolation: isolate;
 }
 
+.app--login-reveal {
+  animation: app-login-ppt-reveal 1.15s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+}
+
+@keyframes app-login-ppt-reveal {
+  from {
+    clip-path: circle(0% at 50% 42%);
+  }
+
+  to {
+    clip-path: circle(145% at 50% 42%);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .app--login-reveal {
+    animation: none;
+    clip-path: none;
+  }
+}
+
 .app__backdrop {
   position: fixed;
   inset: 0;

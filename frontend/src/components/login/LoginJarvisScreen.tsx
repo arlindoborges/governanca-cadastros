@@ -10,10 +10,12 @@ type Props = {
   rememberUser: boolean;
   error: string | null;
   submitting: boolean;
+  successExit: boolean;
   onEmailChange: (value: string) => void;
   onPasswordChange: (value: string) => void;
   onRememberUserChange: (value: boolean) => void;
   onSubmit: (event: FormEvent) => void;
+  onSuccessRingCentered?: () => void;
 };
 
 type HudPhase =
@@ -45,6 +47,8 @@ export function LoginJarvisScreen({
   onPasswordChange,
   onRememberUserChange,
   onSubmit,
+  successExit,
+  onSuccessRingCentered,
 }: Props) {
   const [phase, setPhase] = useState<HudPhase>("idle");
   const emailRef = useRef<HTMLInputElement>(null);
@@ -73,10 +77,21 @@ export function LoginJarvisScreen({
       return () => window.clearTimeout(t);
     }
     if (phase === "ring-out") {
-      const t = window.setTimeout(() => setPhase("idle"), motionMs(RING_MS));
+      const t = window.setTimeout(() => {
+        if (successExit && onSuccessRingCentered) {
+          onSuccessRingCentered();
+          return;
+        }
+        setPhase("idle");
+      }, motionMs(RING_MS));
       return () => window.clearTimeout(t);
     }
-  }, [phase]);
+  }, [phase, successExit, onSuccessRingCentered]);
+
+  useEffect(() => {
+    if (!successExit || phase !== "ready") return;
+    setPhase("square-out");
+  }, [successExit, phase]);
 
   useEffect(() => {
     if (phase !== "ready") return;
@@ -102,7 +117,7 @@ export function LoginJarvisScreen({
     setPhase("ring");
   }
 
-  const closing = phase === "square-out" || phase === "line-out" || phase === "ring-out";
+  const closing = phase === "square-out" || phase === "line-out" || phase === "ring-out" || successExit;
 
   return (
     <div className="jarvis-login">

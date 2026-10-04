@@ -756,6 +756,67 @@
   }
 }
 
+/* Transição pós-login: anel expande e revela a home */
+.jarvis-reveal-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 10000;
+  pointer-events: none;
+}
+
+.jarvis-reveal-overlay__scrim {
+  position: absolute;
+  inset: 0;
+  background: var(--jarvis-bg);
+  animation: jarvis-reveal-scrim 1.15s var(--jarvis-ease-smooth) forwards;
+}
+
+.jarvis-reveal-overlay__ring {
+  position: absolute;
+  left: 50%;
+  top: 42%;
+  width: min(72vw, var(--hud-ring-size));
+  height: min(72vw, var(--hud-ring-size));
+  transform: translate(-50%, -50%) scale(1);
+  border-radius: 50%;
+  border: 1px solid var(--jarvis-green-soft);
+  background: radial-gradient(circle at 42% 38%, rgba(8, 32, 20, 0.55), rgba(2, 8, 5, 0.94) 68%);
+  box-shadow:
+    0 0 36px rgba(61, 255, 151, 0.2),
+    0 0 72px rgba(26, 157, 92, 0.12),
+    inset 0 0 28px rgba(61, 255, 151, 0.08);
+  overflow: visible;
+  animation: jarvis-reveal-ring-grow 1.15s var(--jarvis-ease-smooth) forwards;
+}
+
+@keyframes jarvis-reveal-scrim {
+  from {
+    -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 0px, #000 0px);
+    mask-image: radial-gradient(circle at 50% 42%, transparent 0px, #000 0px);
+  }
+
+  to {
+    -webkit-mask-image: radial-gradient(circle at 50% 42%, transparent 120vmax, #000 120vmax);
+    mask-image: radial-gradient(circle at 50% 42%, transparent 120vmax, #000 120vmax);
+  }
+}
+
+@keyframes jarvis-reveal-ring-grow {
+  from {
+    transform: translate(-50%, -50%) scale(1);
+    opacity: 1;
+  }
+
+  65% {
+    opacity: 1;
+  }
+
+  to {
+    transform: translate(-50%, -50%) scale(14);
+    opacity: 0;
+  }
+}
+
 @media (prefers-reduced-motion: reduce) {
   .jarvis-hud__ring-layer--spin-slow,
   .jarvis-hud__ring-layer--spin-reverse,
@@ -778,5 +839,19 @@
     clip-path: inset(0 0 0 0 round 22px);
     opacity: 1;
     background: var(--jarvis-panel-bg);
+  }
+
+  .jarvis-reveal-overlay__scrim,
+  .jarvis-reveal-overlay__ring {
+    animation-duration: 0.01ms !important;
+    animation-delay: 0s !important;
+  }
+
+  .jarvis-reveal-overlay__scrim {
+    opacity: 0;
+  }
+
+  .jarvis-reveal-overlay__ring {
+    opacity: 0;
   }
 }

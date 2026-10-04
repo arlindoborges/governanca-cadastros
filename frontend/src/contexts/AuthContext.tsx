@@ -47,15 +47,11 @@ export function AuthProvider({ children }: { children: ReactNode }) {
     refresh().finally(() => setLoading(false));
   }, [refresh]);
 
-  const login = useCallback(
-    async (email: string, password: string) => {
-      const result = await loginUser(email, password);
-      setStoredToken(result.access_token);
-      setUser(result.user);
-      router.replace("/");
-    },
-    [router],
-  );
+  const login = useCallback(async (email: string, password: string) => {
+    const result = await loginUser(email, password);
+    setStoredToken(result.access_token);
+    setUser(result.user);
+  }, []);
 
   const register = useCallback(
     async (email: string, password: string, fullName?: string) => {

@@ -4,6 +4,7 @@ import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
 import { useAuth } from "@/contexts/AuthContext";
+import { useLoginReveal } from "@/contexts/LoginRevealContext";
 
 const links = [
   { href: "/", label: "Dashboard", shortLabel: "Início", icon: "grid" },
@@ -92,9 +93,10 @@ function isActive(pathname: string, href: string) {
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
   const { user, logout } = useAuth();
+  const { homeRevealActive } = useLoginReveal();
 
   return (
-    <div className="app">
+    <div className={`app${homeRevealActive ? " app--login-reveal" : ""}`}>
       <div className="app__backdrop" aria-hidden="true" />
       <aside className="sidebar glass">
         <div className="brand">
