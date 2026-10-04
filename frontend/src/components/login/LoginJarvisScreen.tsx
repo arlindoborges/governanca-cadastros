@@ -76,17 +76,17 @@ export function LoginJarvisScreen({
       return () => window.clearTimeout(t);
     }
     if (phase === "line-out") {
+      const t = window.setTimeout(() => setPhase("ring-out"), motionMs(LINE_MS));
+      return () => window.clearTimeout(t);
+    }
+    if (phase === "ring-out") {
       const t = window.setTimeout(() => {
         if (successExit) {
           setPhase("brand-morph");
           return;
         }
-        setPhase("ring-out");
-      }, motionMs(LINE_MS));
-      return () => window.clearTimeout(t);
-    }
-    if (phase === "ring-out") {
-      const t = window.setTimeout(() => setPhase("idle"), motionMs(RING_MS));
+        setPhase("idle");
+      }, motionMs(RING_MS));
       return () => window.clearTimeout(t);
     }
     if (phase === "brand-morph") {

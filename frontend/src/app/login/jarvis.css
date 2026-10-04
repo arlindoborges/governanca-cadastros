@@ -766,7 +766,6 @@
   opacity: 0;
   overflow: hidden;
   pointer-events: none;
-  transition: opacity 0.25s ease, width 0.35s var(--jarvis-ease-smooth);
 }
 
 .jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring-svg {
