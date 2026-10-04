@@ -85,7 +85,6 @@ function BrandHandoffOverlay({
   useLayoutEffect(() => {
     if (phase !== "flying" || flyStartedRef.current) return;
 
-    const startedAt = performance.now();
     let cancelled = false;
 
     const beginFly = (toRect: DOMRect) => {
@@ -133,34 +132,31 @@ function BrandHandoffOverlay({
         startReveal();
       };
 
-      const revealLeadMs = Math.round(durationMs * LOGIN_EXIT_TIMELINE.flyRevealOverlap);
-      const revealAt = Math.max(0, durationMs - revealLeadMs);
-      const revealTimer = window.setTimeout(startReveal, revealAt);
+      const revealTimer = window.setTimeout(
+        startReveal,
+        motionMs(LOGIN_EXIT_TIMELINE.flyRevealLeadMs),
+      );
       const fallbackId = window.setTimeout(endFly, durationMs + 120);
 
       animation.onfinish = () => {
         window.clearTimeout(fallbackId);
-        window.clearTimeout(revealTimer);
-        endFly();
+        placeMark(el, toRect);
+        startReveal();
       };
     };
 
-    const waitForTarget = () => {
-      if (cancelled || flyStartedRef.current) return;
+    const resolveFlyTarget = (): DOMRect => {
       const target = document.querySelector("[data-brand-handoff-target]");
       const rect = target?.getBoundingClientRect();
       if (rect && rect.width > 1 && rect.height > 1) {
-        beginFly(rect);
-        return;
+        return rect;
       }
-      if (performance.now() - startedAt < TARGET_WAIT_MS) {
-        requestAnimationFrame(waitForTarget);
-        return;
-      }
-      beginFly(estimateBrandMarkRect());
+      return estimateBrandMarkRect();
     };
 
-    requestAnimationFrame(waitForTarget);
+    requestAnimationFrame(() => {
+      if (!cancelled) beginFly(resolveFlyTarget());
+    });
 
     return () => {
       cancelled = true;
@@ -175,10 +171,13 @@ function BrandHandoffOverlay({
   }, [phase, onDone]);
 
   const revealing = phase === "reveal";
+  const flying = phase === "flying";
 
   return (
-    <div className="jarvis-handoff-overlay" aria-hidden="true">
-      <div className={`jarvis-handoff-overlay__scrim${revealing ? " is-revealing" : ""}`} />
+    <div className={`jarvis-handoff-overlay${flying ? " is-flying" : ""}`} aria-hidden="true">
+      <div
+        className={`jarvis-handoff-overlay__scrim${flying ? " is-during-fly" : ""}${revealing ? " is-revealing" : ""}`}
+      />
       <span
         ref={markRef}
         className={`jarvis-handoff-overlay__mark brand__mark${phase === "flying" ? " is-flying" : ""}${revealing ? " is-arrived" : ""}`}

@@ -134,7 +134,7 @@ h3 {
 
 .app--login-reveal-wipe {
   visibility: visible;
-  animation: app-login-wipe-right 0.88s cubic-bezier(0.22, 1, 0.36, 1) forwards;
+  animation: app-login-wipe-right 0.72s cubic-bezier(0.22, 1, 0.36, 1) forwards;
 }
 
 @keyframes app-login-wipe-right {

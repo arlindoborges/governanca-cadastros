@@ -821,6 +821,10 @@
   transition: opacity var(--jarvis-handoff-reveal) var(--jarvis-ease-smooth);
 }
 
+.jarvis-handoff-overlay__scrim.is-during-fly {
+  opacity: 0.25;
+}
+
 .jarvis-handoff-overlay__scrim.is-revealing {
   opacity: 0;
 }
