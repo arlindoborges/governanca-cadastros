@@ -14,11 +14,24 @@ type Props = {
   onSubmit: (event: FormEvent) => void;
 };
 
-/** Deslocamento do anel antes de desenhar linha/painel (sincronizado com CSS) */
-const RING_MOVE_MS = 550;
+type HudPhase =
+  | "idle"
+  | "ring"
+  | "line"
+  | "square"
+  | "ready"
+  | "square-out"
+  | "line-out"
+  | "ring-out";
 
-/** Tempo até o contorno do painel fechar (ms), para foco no campo e-mail */
-const FORM_REVEAL_MS = RING_MOVE_MS + 1850;
+const RING_MS = 550;
+const LINE_MS = 550;
+const SQUARE_MS = 950;
+
+function motionMs(base: number) {
+  if (typeof window === "undefined") return base;
+  return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;
+}
 
 export function LoginJarvisScreen({
   email,
@@ -29,46 +42,63 @@ export function LoginJarvisScreen({
   onPasswordChange,
   onSubmit,
 }: Props) {
-  const [open, setOpen] = useState(false);
-  const [drawReady, setDrawReady] = useState(false);
+  const [phase, setPhase] = useState<HudPhase>("idle");
   const emailRef = useRef<HTMLInputElement>(null);
 
+  const sessionActive = phase !== "idle";
+
   useEffect(() => {
-    if (!open) {
-      setDrawReady(false);
-      return;
+    if (phase === "ring") {
+      const t = window.setTimeout(() => setPhase("line"), motionMs(RING_MS));
+      return () => window.clearTimeout(t);
     }
-
-    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
-    const ringMs = reduceMotion ? 0 : RING_MOVE_MS;
-    const drawTimer = window.setTimeout(() => setDrawReady(true), ringMs);
-    return () => window.clearTimeout(drawTimer);
-  }, [open]);
+    if (phase === "line") {
+      const t = window.setTimeout(() => setPhase("square"), motionMs(LINE_MS));
+      return () => window.clearTimeout(t);
+    }
+    if (phase === "square") {
+      const t = window.setTimeout(() => setPhase("ready"), motionMs(SQUARE_MS));
+      return () => window.clearTimeout(t);
+    }
+    if (phase === "square-out") {
+      const t = window.setTimeout(() => setPhase("line-out"), motionMs(SQUARE_MS));
+      return () => window.clearTimeout(t);
+    }
+    if (phase === "line-out") {
+      const t = window.setTimeout(() => setPhase("ring-out"), motionMs(LINE_MS));
+      return () => window.clearTimeout(t);
+    }
+    if (phase === "ring-out") {
+      const t = window.setTimeout(() => setPhase("idle"), motionMs(RING_MS));
+      return () => window.clearTimeout(t);
+    }
+  }, [phase]);
 
   useEffect(() => {
-    if (!drawReady) return;
-    const t = window.setTimeout(() => emailRef.current?.focus(), FORM_REVEAL_MS - RING_MOVE_MS);
+    if (phase !== "ready") return;
+    const t = window.setTimeout(() => emailRef.current?.focus(), 80);
     return () => window.clearTimeout(t);
-  }, [drawReady]);
+  }, [phase]);
 
   function handleRingKeyDown(event: React.KeyboardEvent) {
-    if (open || submitting) return;
+    if (sessionActive || submitting) return;
     if (event.key === "Enter" || event.key === " ") {
       event.preventDefault();
-      setOpen(true);
+      setPhase("ring");
     }
   }
 
   function closeHud() {
-    if (submitting) return;
-    setDrawReady(false);
-    setOpen(false);
+    if (submitting || phase !== "ready") return;
+    setPhase("square-out");
   }
 
   function startSession() {
-    if (submitting || open) return;
-    setOpen(true);
+    if (submitting || phase !== "idle") return;
+    setPhase("ring");
   }
+
+  const closing = phase === "square-out" || phase === "line-out" || phase === "ring-out";
 
   return (
     <div className="jarvis-login">
@@ -82,27 +112,25 @@ export function LoginJarvisScreen({
         <div>
           <p className="jarvis-login__system">Governança de Cadastros</p>
           <p className="jarvis-login__status">
-            {open ? "Autenticação · canal seguro" : "Sistema pronto · aguardando início"}
+            {sessionActive ? "Autenticação · canal seguro" : "Sistema pronto · aguardando início"}
           </p>
         </div>
       </header>
 
       <div className="jarvis-login__stage">
-        <div
-          className={`jarvis-hud${open ? " jarvis-hud--open" : ""}${drawReady ? " jarvis-hud--draw" : ""}`}
-        >
+        <div className="jarvis-hud" data-phase={phase}>
           <div
             className="jarvis-hud__ring"
-            role={open ? undefined : "button"}
-            tabIndex={open ? undefined : 0}
-            aria-label={open ? undefined : "Iniciar sessão"}
+            role={sessionActive ? undefined : "button"}
+            tabIndex={sessionActive ? undefined : 0}
+            aria-label={sessionActive ? undefined : "Iniciar sessão"}
             onClick={startSession}
             onKeyDown={handleRingKeyDown}
           >
             <JarvisRingGraphic />
             <div className="jarvis-hud__ring-center">
               <p className="jarvis-hud__ring-brand">G·C</p>
-              {!open ? (
+              {!sessionActive ? (
                 <>
                   <p className="jarvis-hud__ring-title">Iniciar sessão</p>
                   <p className="jarvis-hud__ring-hint">Toque para continuar</p>
@@ -113,7 +141,7 @@ export function LoginJarvisScreen({
             </div>
           </div>
 
-          <div className="jarvis-hud__lane" aria-hidden={!open}>
+          <div className="jarvis-hud__lane" aria-hidden={!sessionActive}>
             <div className="jarvis-hud__stem" aria-hidden="true">
               <span className="jarvis-hud__stem-line" />
             </div>
@@ -143,7 +171,7 @@ export function LoginJarvisScreen({
                     type="button"
                     className="jarvis-hud__back"
                     onClick={closeHud}
-                    disabled={submitting}
+                    disabled={submitting || phase !== "ready"}
                     aria-label="Voltar ao início"
                   >
                     Voltar
@@ -161,7 +189,7 @@ export function LoginJarvisScreen({
                         value={email}
                         onChange={(e) => onEmailChange(e.target.value)}
                         required
-                        disabled={submitting || !open}
+                        disabled={submitting || phase !== "ready" || closing}
                         className="jarvis-field__input"
                         placeholder="seu@email.com"
                       />
@@ -174,13 +202,17 @@ export function LoginJarvisScreen({
                         value={password}
                         onChange={(e) => onPasswordChange(e.target.value)}
                         required
-                        disabled={submitting || !open}
+                        disabled={submitting || phase !== "ready" || closing}
                         className="jarvis-field__input"
                         placeholder="••••••••"
                       />
                     </label>
                     {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
-                    <button type="submit" className="jarvis-login__submit" disabled={submitting || !open}>
+                    <button
+                      type="submit"
+                      className="jarvis-login__submit"
+                      disabled={submitting || phase !== "ready" || closing}
+                    >
                       {submitting ? "Validando credenciais..." : "Entrar no sistema"}
                     </button>
                   </form>
