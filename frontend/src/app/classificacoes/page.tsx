@@ -548,7 +548,6 @@ export default function ClassificacoesPage() {
                 </button>
               </div>
             </label>
-            <p className="muted">Atual: {depthLevels} nível{depthLevels === 1 ? "" : "is"}.</p>
           </form>
 
           {selectedNode ? (
