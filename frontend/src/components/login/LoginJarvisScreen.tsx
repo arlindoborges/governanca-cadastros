@@ -14,8 +14,11 @@ type Props = {
   onSubmit: (event: FormEvent) => void;
 };
 
-/** Tempo até o contorno do painel fechar (ms), para foco no e-mail */
-const FORM_REVEAL_MS = 1950;
+/** Deslocamento do anel antes de desenhar linha/painel (sincronizado com CSS) */
+const RING_MOVE_MS = 550;
+
+/** Tempo até o contorno do painel fechar (ms), para foco no campo e-mail */
+const FORM_REVEAL_MS = RING_MOVE_MS + 1850;
 
 export function LoginJarvisScreen({
   email,
@@ -27,14 +30,26 @@ export function LoginJarvisScreen({
   onSubmit,
 }: Props) {
   const [open, setOpen] = useState(false);
+  const [drawReady, setDrawReady] = useState(false);
   const emailRef = useRef<HTMLInputElement>(null);
 
   useEffect(() => {
-    if (open) {
-      const t = window.setTimeout(() => emailRef.current?.focus(), FORM_REVEAL_MS);
-      return () => window.clearTimeout(t);
+    if (!open) {
+      setDrawReady(false);
+      return;
     }
+
+    const reduceMotion = window.matchMedia("(prefers-reduced-motion: reduce)").matches;
+    const ringMs = reduceMotion ? 0 : RING_MOVE_MS;
+    const drawTimer = window.setTimeout(() => setDrawReady(true), ringMs);
+    return () => window.clearTimeout(drawTimer);
   }, [open]);
+
+  useEffect(() => {
+    if (!drawReady) return;
+    const t = window.setTimeout(() => emailRef.current?.focus(), FORM_REVEAL_MS - RING_MOVE_MS);
+    return () => window.clearTimeout(t);
+  }, [drawReady]);
 
   function handleRingKeyDown(event: React.KeyboardEvent) {
     if (open || submitting) return;
@@ -46,6 +61,7 @@ export function LoginJarvisScreen({
 
   function closeHud() {
     if (submitting) return;
+    setDrawReady(false);
     setOpen(false);
   }
 
@@ -72,7 +88,9 @@ export function LoginJarvisScreen({
       </header>
 
       <div className="jarvis-login__stage">
-        <div className={`jarvis-hud${open ? " jarvis-hud--open" : ""}`}>
+        <div
+          className={`jarvis-hud${open ? " jarvis-hud--open" : ""}${drawReady ? " jarvis-hud--draw" : ""}`}
+        >
           <div
             className="jarvis-hud__ring"
             role={open ? undefined : "button"}

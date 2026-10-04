@@ -18,12 +18,13 @@
     0.75rem,
     calc((100vw - var(--hud-ring-size) - var(--hud-panel-w) - 2 * var(--hud-edge-pad) - 0.2rem) / 2)
   );
-  --hud-t-ring: 1.15s;
+  --hud-t-ring-move: 0.55s;
   --hud-t-stem: 0.55s;
   --hud-t-upper: 0.65s;
   --hud-t-lower: 0.95s;
-  --hud-draw-delay: 0s;
-  --hud-draw-split: 0.48s;
+  --ring-travel: calc((var(--hud-stem-gap) + var(--hud-panel-w)) / 2);
+  --hud-draw-delay: var(--hud-t-ring-move);
+  --hud-draw-split: calc(var(--hud-t-ring-move) + var(--hud-t-stem));
   --hud-fill-reveal: calc(var(--hud-draw-split) + var(--hud-t-lower) * 0.9);
 }
 
@@ -120,7 +121,6 @@
   height: min(72vw, var(--hud-ring-size));
   flex-shrink: 0;
   transform: translateX(0);
-  transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
   border-radius: 50%;
   border: 1px solid var(--jarvis-green-soft);
   background: radial-gradient(circle at 42% 38%, rgba(8, 32, 20, 0.55), rgba(2, 8, 5, 0.94) 68%);
@@ -140,6 +140,17 @@
 
 .jarvis-hud--open .jarvis-hud__ring {
   cursor: default;
+  animation: jarvis-ring-travel var(--hud-t-ring-move) var(--jarvis-ease-smooth) forwards;
+}
+
+@keyframes jarvis-ring-travel {
+  from {
+    transform: translateX(var(--ring-travel));
+  }
+
+  to {
+    transform: translateX(0);
+  }
 }
 
 .jarvis-hud__ring-svg {
@@ -327,10 +338,16 @@
   width: calc(var(--hud-stem-gap) + var(--hud-panel-w));
   min-width: calc(var(--hud-stem-gap) + var(--hud-panel-w));
   margin-left: 0.08rem;
+  overflow: hidden;
+  opacity: 0;
+  pointer-events: none;
+}
+
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__lane {
   overflow: visible;
   opacity: 1;
   pointer-events: auto;
-  transition: opacity 0.2s ease;
+  transition: opacity 0.12s ease;
 }
 
 .jarvis-hud__stem {
@@ -355,8 +372,8 @@
   box-shadow: 0 0 10px var(--jarvis-glow);
 }
 
-.jarvis-hud--open .jarvis-hud__stem-line {
-  animation: jarvis-stem-grow var(--hud-t-stem) var(--jarvis-ease-smooth) var(--hud-draw-delay) forwards;
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__stem-line {
+  animation: jarvis-stem-grow var(--hud-t-stem) linear var(--hud-draw-delay) forwards;
 }
 
 @keyframes jarvis-stem-grow {
@@ -387,11 +404,11 @@
   stroke-dashoffset: 1;
 }
 
-.jarvis-hud--open .jarvis-hud__trace--upper {
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__trace--upper {
   animation: jarvis-trace-draw var(--hud-t-upper) linear var(--hud-draw-split) forwards;
 }
 
-.jarvis-hud--open .jarvis-hud__trace--lower {
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__trace--lower {
   animation: jarvis-trace-draw var(--hud-t-lower) linear var(--hud-draw-split) forwards;
 }
 
@@ -419,7 +436,7 @@
   clip-path: inset(0 100% 0 0 round 22px);
 }
 
-.jarvis-hud--open .jarvis-hud__window-frame {
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__window-frame {
   animation: jarvis-panel-unveil calc(var(--hud-t-stem) + var(--hud-t-upper) + 0.15s) linear
     var(--hud-draw-delay) forwards;
 }
@@ -470,7 +487,7 @@
   opacity: 0;
 }
 
-.jarvis-hud--open .jarvis-hud__window-body {
+.jarvis-hud--open.jarvis-hud--draw .jarvis-hud__window-body {
   animation: jarvis-form-fade 0.35s ease var(--hud-fill-reveal) forwards;
 }
 
@@ -561,7 +578,7 @@
 @media (max-width: 720px) {
   :root {
     --hud-panel-w: min(92vw, 22.5rem);
-    --hud-t-ring: 0.85s;
+    --hud-t-ring-move: 0.45s;
   }
 
   .jarvis-hud--open {
@@ -594,7 +611,7 @@
     margin-right: auto;
   }
 
-  .jarvis-hud--open .jarvis-hud__window-frame {
+  .jarvis-hud--open.jarvis-hud--draw .jarvis-hud__window-frame {
     animation: jarvis-form-fade 0.35s ease 0.35s forwards;
     clip-path: none;
     background: var(--jarvis-panel-bg);
@@ -609,8 +626,8 @@
     animation: none !important;
   }
 
-  .jarvis-hud__ring {
-    transition-duration: 0.01ms !important;
+  .jarvis-hud--open .jarvis-hud__ring {
+    animation-duration: 0.01ms !important;
   }
 
   .jarvis-hud__stem-line,
