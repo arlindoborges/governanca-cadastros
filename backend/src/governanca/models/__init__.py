@@ -4,15 +4,19 @@ from governanca.models.entities import (
     MatchCandidate,
     MatchGroup,
     Organization,
+    ProductClassificationConfig,
+    ProductClassificationNode,
     ProductMapping,
     SanitizationConfigProfile,
     SanitizationDecision,
     SanitizationProject,
     SourceRecord,
+    User,
 )
 
 __all__ = [
     "Organization",
+    "User",
     "SanitizationConfigProfile",
     "SanitizationProject",
     "ImportBatch",
@@ -21,5 +25,7 @@ __all__ = [
     "MatchCandidate",
     "SanitizationDecision",
     "MasterProduct",
+    "ProductClassificationConfig",
+    "ProductClassificationNode",
     "ProductMapping",
 ]
