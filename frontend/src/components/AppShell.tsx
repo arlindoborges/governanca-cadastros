@@ -3,6 +3,7 @@
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import type { ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
 
 const links = [
   { href: "/", label: "Dashboard", shortLabel: "Início", icon: "grid" },
@@ -90,6 +91,7 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
 
   return (
     <div className="app">
@@ -120,6 +122,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        <div className="sidebar__footer">
+          {user ? (
+            <>
+              <p className="sidebar__user muted" title={user.email}>
+                {user.full_name ?? user.email}
+              </p>
+              <button type="button" className="secondary sidebar__logout" onClick={() => logout()}>
+                Sair
+              </button>
+            </>
+          ) : null}
+        </div>
       </aside>
 
       <nav className="tab-bar glass" aria-label="Principal (mobile)">

@@ -144,6 +144,7 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 0.5rem;
+  min-height: 0;
   position: sticky;
   top: 0.75rem;
   align-self: start;
@@ -194,6 +195,9 @@ h3 {
   display: flex;
   flex-direction: column;
   gap: 0.2rem;
+  flex: 1;
+  min-height: 0;
+  overflow: auto;
 }
 
 .nav-item {
@@ -682,6 +686,68 @@ textarea:focus {
     align-items: stretch;
     gap: 0.4rem;
   }
+}
+
+.auth-screen {
+  min-height: 100dvh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 1.5rem;
+}
+
+.auth-card {
+  width: min(100%, 24rem);
+  padding: 1.5rem 1.35rem;
+  border-radius: var(--radius-xl);
+}
+
+.auth-card__brand {
+  display: flex;
+  gap: 0.75rem;
+  align-items: center;
+}
+
+.auth-card__brand h1 {
+  font-size: 1.5rem;
+  margin: 0;
+}
+
+.auth-card__footer {
+  margin: 0;
+  font-size: 0.9rem;
+  text-align: center;
+}
+
+.auth-hint {
+  margin: -0.35rem 0 0;
+  font-size: 0.82rem;
+}
+
+.auth-error {
+  margin: 0;
+  color: var(--ios-red);
+  font-size: 0.9rem;
+}
+
+.sidebar__footer {
+  margin-top: auto;
+  padding: 0.75rem 0.5rem 0.25rem;
+  display: flex;
+  flex-direction: column;
+  gap: 0.5rem;
+}
+
+.sidebar__user {
+  margin: 0;
+  font-size: 0.8rem;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
+}
+
+.sidebar__logout {
+  width: 100%;
 }
 
 .import-template-hint {
