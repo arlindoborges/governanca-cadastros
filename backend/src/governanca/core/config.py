@@ -12,6 +12,9 @@ class Settings(BaseSettings):
     app_env: str = "local"
     database_url: str = "postgresql+psycopg://governanca:governanca_local_dev@localhost:5432/governanca_cadastros"
     cors_origins: str = "http://localhost:3000"
+    auth_secret_key: str = "change-me-in-production-governanca-local-dev"
+    auth_token_expire_minutes: int = 60 * 24 * 7
+    auth_cookie_name: str = "gc_access_token"
     import_max_bytes: int = 10 * 1024 * 1024
     import_max_rows: int = 300_000
 

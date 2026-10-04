@@ -1,5 +1,6 @@
 import type { Metadata } from "next";
-import { AppShell } from "@/components/AppShell";
+import { ShellRouter } from "@/components/ShellRouter";
+import { AuthProvider } from "@/contexts/AuthContext";
 import "./globals.css";
 
 export const metadata: Metadata = {
@@ -15,7 +16,9 @@ export default function RootLayout({ children }: { children: React.ReactNode }) 
   return (
     <html lang="pt-BR">
       <body>
-        <AppShell>{children}</AppShell>
+        <AuthProvider>
+          <ShellRouter>{children}</ShellRouter>
+        </AuthProvider>
       </body>
     </html>
   );
