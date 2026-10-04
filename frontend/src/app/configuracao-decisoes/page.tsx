@@ -129,7 +129,7 @@ export default function ConfiguracaoDecisoesPage() {
             </div>
             <div className="decision-matrix__decisions">
               {step.decisions.map((decision) => (
-                <div key={decision.key} className="decision-matrix__cell">
+                <div key={decision.key} className="decision-matrix__row">
                   <label className="decision-matrix__label" htmlFor={`${step.code}-${decision.key}`}>
                     {decision.label}
                   </label>

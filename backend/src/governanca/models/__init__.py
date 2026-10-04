@@ -9,10 +9,12 @@ from governanca.models.entities import (
     SanitizationDecision,
     SanitizationProject,
     SourceRecord,
+    User,
 )
 
 __all__ = [
     "Organization",
+    "User",
     "SanitizationConfigProfile",
     "SanitizationProject",
     "ImportBatch",
