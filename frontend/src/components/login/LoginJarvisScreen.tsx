@@ -33,6 +33,9 @@ type HudPhase =
 const RING_MS = 550;
 const LINE_MS = 550;
 const SQUARE_MS = 950;
+/** Tempo para o anel encolher e virar ícone GC (alinha ao CSS do morph). */
+const BRAND_MORPH_MS = 380;
+
 function motionMs(base: number) {
   if (typeof window === "undefined") return base;
   return window.matchMedia("(prefers-reduced-motion: reduce)").matches ? 0 : base;

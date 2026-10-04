@@ -771,7 +771,7 @@
 
 .jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring-svg {
   opacity: 0;
-  transition: opacity 0.32s ease;
+  transition: opacity 0.36s ease;
 }
 
 .jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring {
@@ -783,11 +783,11 @@
   background: linear-gradient(145deg, #34c759, #30d158 48%, #1a9d5c);
   box-shadow: 0 6px 16px rgba(52, 199, 89, 0.35);
   transition:
-    width 0.32s var(--jarvis-ease-smooth),
-    height 0.32s var(--jarvis-ease-smooth),
-    border-radius 0.32s var(--jarvis-ease-smooth),
-    background 0.28s ease,
-    box-shadow 0.28s ease;
+    width 0.36s var(--jarvis-ease-smooth),
+    height 0.36s var(--jarvis-ease-smooth),
+    border-radius 0.36s var(--jarvis-ease-smooth),
+    background 0.34s ease,
+    box-shadow 0.34s ease;
 }
 
 .jarvis-hud[data-phase="brand-morph"] .jarvis-hud__ring-brand {
