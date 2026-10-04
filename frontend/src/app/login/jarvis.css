@@ -9,16 +9,16 @@
   --jarvis-panel-bg: rgba(4, 12, 8, 0.94);
   --jarvis-ease-smooth: cubic-bezier(0.22, 1, 0.36, 1);
   --hud-ring-size: 9.25rem;
-  --hud-stem-length: 6.5rem;
   --hud-panel-w: 22.5rem;
   --hud-panel-h: 21rem;
-  --hud-t-ring: 0.28s;
-  --hud-t-stem: 0.15s;
-  --hud-t-upper: 0.7s;
-  --hud-t-lower: 1.12s;
-  --hud-draw-delay: 0.16s;
-  --hud-draw-split: calc(var(--hud-draw-delay) + var(--hud-t-stem));
-  --hud-fill-reveal: calc(var(--hud-draw-split) + var(--hud-t-lower) * 0.92);
+  --hud-edge-pad: clamp(1rem, 4vw, 2.5rem);
+  --hud-t-ring: 1.15s;
+  --hud-t-stem: 0.55s;
+  --hud-t-upper: 0.65s;
+  --hud-t-lower: 0.95s;
+  --hud-draw-delay: 0s;
+  --hud-draw-split: 0.48s;
+  --hud-fill-reveal: calc(var(--hud-draw-split) + var(--hud-t-lower) * 0.9);
 }
 
 .jarvis-login {
@@ -95,24 +95,16 @@
   min-height: calc(100dvh - 5rem);
   display: flex;
   align-items: center;
-  justify-content: center;
-  padding: 1rem 1.5rem 2rem;
+  justify-content: stretch;
+  padding: 1rem var(--hud-edge-pad) 2rem;
 }
 
-/* HUD: círculo menor → desloca → linha desenha o painel */
+/* HUD: círculo desliza à esquerda enquanto a linha desenha o painel à direita */
 .jarvis-hud {
   display: flex;
   align-items: center;
-  justify-content: center;
   width: 100%;
-  max-width: 52rem;
-  transform: translateX(0);
-  transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
-}
-
-.jarvis-hud--open {
-  justify-content: flex-start;
-  transform: translateX(clamp(-3.5rem, -11vw, -0.75rem));
+  min-height: var(--hud-panel-h);
 }
 
 .jarvis-hud__ring {
@@ -120,6 +112,9 @@
   width: min(42vw, var(--hud-ring-size));
   height: min(42vw, var(--hud-ring-size));
   flex-shrink: 0;
+  --ring-shift: calc(50vw - var(--hud-ring-size) / 2 - var(--hud-edge-pad));
+  transform: translateX(var(--ring-shift));
+  transition: transform var(--hud-t-ring) var(--jarvis-ease-smooth);
   border-radius: 50%;
   border: 1px solid var(--jarvis-green-soft);
   background: rgba(2, 8, 5, 0.55);
@@ -138,6 +133,7 @@
 
 .jarvis-hud--open .jarvis-hud__ring {
   cursor: default;
+  transform: translateX(0);
 }
 
 .jarvis-hud__ring-svg {
@@ -209,30 +205,65 @@
   letter-spacing: 0.18em;
 }
 
-.jarvis-hud__assembly {
+.jarvis-hud__lane {
   position: relative;
-  flex-shrink: 0;
+  flex: 0 0 0;
   width: 0;
   height: var(--hud-panel-h);
-  margin-left: -2px;
-  overflow: visible;
+  margin-left: 0;
+  overflow: hidden;
   pointer-events: none;
   opacity: 0;
-  transition: opacity 0.12s ease var(--hud-t-ring);
 }
 
-.jarvis-hud--open .jarvis-hud__assembly {
-  width: calc(var(--hud-stem-length) + var(--hud-panel-w));
+.jarvis-hud--open .jarvis-hud__lane {
+  flex: 1 1 auto;
+  display: flex;
+  align-items: center;
+  width: auto;
+  min-width: calc(var(--hud-panel-w) + 5rem);
+  margin-left: 0.15rem;
+  overflow: visible;
   opacity: 1;
   pointer-events: auto;
+  transition: opacity 0.2s ease;
+}
+
+.jarvis-hud__stem {
+  flex: 1 1 auto;
+  min-width: 2rem;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  align-self: center;
+  overflow: visible;
+}
+
+.jarvis-hud__stem-line {
+  display: block;
+  width: 100%;
+  height: 2px;
+  transform: scaleX(0);
+  transform-origin: left center;
+  background: linear-gradient(90deg, var(--jarvis-green-soft), var(--jarvis-green));
+  box-shadow: 0 0 10px var(--jarvis-glow);
+}
+
+.jarvis-hud--open .jarvis-hud__stem-line {
+  animation: jarvis-stem-grow var(--hud-t-stem) var(--jarvis-ease-smooth) var(--hud-draw-delay) forwards;
+}
+
+@keyframes jarvis-stem-grow {
+  to {
+    transform: scaleX(1);
+  }
 }
 
 .jarvis-hud__outline {
   position: absolute;
-  left: 0;
-  top: 0;
-  width: calc(var(--hud-stem-length) + var(--hud-panel-w));
-  height: var(--hud-panel-h);
+  inset: 0;
+  width: 100%;
+  height: 100%;
   overflow: visible;
   pointer-events: none;
   z-index: 3;
@@ -250,10 +281,6 @@
   stroke-dashoffset: 1;
 }
 
-.jarvis-hud--open .jarvis-hud__trace--stem {
-  animation: jarvis-trace-draw var(--hud-t-stem) linear var(--hud-draw-delay) forwards;
-}
-
 .jarvis-hud--open .jarvis-hud__trace--upper {
   animation: jarvis-trace-draw var(--hud-t-upper) linear var(--hud-draw-split) forwards;
 }
@@ -269,9 +296,8 @@
 }
 
 .jarvis-hud__window {
-  position: absolute;
-  left: var(--hud-stem-length);
-  top: 0;
+  position: relative;
+  flex-shrink: 0;
   width: var(--hud-panel-w);
   height: var(--hud-panel-h);
   z-index: 1;
@@ -288,7 +314,8 @@
 }
 
 .jarvis-hud--open .jarvis-hud__window-frame {
-  animation: jarvis-panel-unveil calc(var(--hud-t-upper) + var(--hud-t-stem)) linear var(--hud-draw-delay) forwards;
+  animation: jarvis-panel-unveil calc(var(--hud-t-stem) + var(--hud-t-upper) + 0.15s) linear
+    var(--hud-draw-delay) forwards;
 }
 
 @keyframes jarvis-panel-unveil {
@@ -427,23 +454,31 @@
 
 @media (max-width: 720px) {
   :root {
-    --hud-stem-length: 2.5rem;
     --hud-panel-w: min(92vw, 22.5rem);
+    --hud-t-ring: 0.85s;
   }
 
   .jarvis-hud--open {
     flex-direction: column;
-    transform: translateX(0);
+    align-items: stretch;
     gap: 0.5rem;
   }
 
-  .jarvis-hud__assembly {
-    margin-left: 0;
+  .jarvis-hud__ring {
+    --ring-shift: calc(50vw - var(--hud-ring-size) / 2 - var(--hud-edge-pad));
+  }
+
+  .jarvis-hud__lane {
     height: auto;
   }
 
-  .jarvis-hud--open .jarvis-hud__assembly {
-    width: var(--hud-panel-w);
+  .jarvis-hud--open .jarvis-hud__lane {
+    min-width: 0;
+    width: 100%;
+  }
+
+  .jarvis-hud__stem {
+    display: none;
   }
 
   .jarvis-hud__outline {
@@ -451,13 +486,14 @@
   }
 
   .jarvis-hud__window {
-    position: relative;
-    left: 0;
-    width: var(--hud-panel-w);
+    width: 100%;
+    max-width: var(--hud-panel-w);
+    margin-left: auto;
+    margin-right: 0;
   }
 
   .jarvis-hud--open .jarvis-hud__window-frame {
-    animation: jarvis-form-fade 0.35s ease 0.2s forwards;
+    animation: jarvis-form-fade 0.35s ease 0.35s forwards;
     clip-path: none;
     background: var(--jarvis-panel-bg);
     border: 1px solid var(--jarvis-green-soft);
@@ -465,16 +501,16 @@
 }
 
 @media (prefers-reduced-motion: reduce) {
-  .jarvis-hud,
-  .jarvis-hud__assembly {
+  .jarvis-hud__ring {
     transition-duration: 0.01ms !important;
-    transition-delay: 0ms !important;
   }
 
+  .jarvis-hud__stem-line,
   .jarvis-hud__trace,
   .jarvis-hud__window-frame,
   .jarvis-hud__window-body {
     animation: none !important;
+    transform: scaleX(1);
     stroke-dashoffset: 0;
     clip-path: inset(0 0 0 0 round 22px);
     opacity: 1;

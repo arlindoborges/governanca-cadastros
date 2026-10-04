@@ -14,7 +14,7 @@ type Props = {
 };
 
 /** Tempo até o contorno do painel fechar (ms), para foco no e-mail */
-const FORM_REVEAL_MS = 1450;
+const FORM_REVEAL_MS = 1950;
 
 export function LoginJarvisScreen({
   email,
@@ -101,34 +101,29 @@ export function LoginJarvisScreen({
             </div>
           </div>
 
-          <div className="jarvis-hud__assembly" aria-hidden={!open}>
-            <svg
-              className="jarvis-hud__outline"
-              viewBox="0 0 290 210"
-              preserveAspectRatio="none"
-              aria-hidden="true"
-            >
-              {/* Linha horizontal saindo do círculo (65 = 6,5rem no viewBox) */}
-              <path
-                className="jarvis-hud__trace jarvis-hud__trace--stem"
-                pathLength={1}
-                d="M 0 105 L 65 105"
-              />
-              {/* Ramo superior: sobe e percorre o topo */}
-              <path
-                className="jarvis-hud__trace jarvis-hud__trace--upper"
-                pathLength={1}
-                d="M 65 105 L 65 14 L 276 14"
-              />
-              {/* Ramo inferior: desce, base e sobe pela direita para fechar */}
-              <path
-                className="jarvis-hud__trace jarvis-hud__trace--lower"
-                pathLength={1}
-                d="M 65 105 L 65 196 L 276 196 L 276 14"
-              />
-            </svg>
+          <div className="jarvis-hud__lane" aria-hidden={!open}>
+            <div className="jarvis-hud__stem" aria-hidden="true">
+              <span className="jarvis-hud__stem-line" />
+            </div>
 
             <div className="jarvis-hud__window">
+              <svg
+                className="jarvis-hud__outline"
+                viewBox="0 0 100 70"
+                preserveAspectRatio="none"
+                aria-hidden="true"
+              >
+                <path
+                  className="jarvis-hud__trace jarvis-hud__trace--upper"
+                  pathLength={1}
+                  d="M 0 35 L 0 6 L 98 6"
+                />
+                <path
+                  className="jarvis-hud__trace jarvis-hud__trace--lower"
+                  pathLength={1}
+                  d="M 0 35 L 0 64 L 98 64 L 98 6"
+                />
+              </svg>
               <div className="jarvis-hud__window-frame">
                 <div className="jarvis-hud__window-header">
                   <span className="jarvis-hud__window-tag">Acesso ao sistema</span>
