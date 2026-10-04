@@ -149,19 +149,19 @@ export function LoginJarvisScreen({
             <div className="jarvis-hud__window">
               <svg
                 className="jarvis-hud__outline"
-                viewBox="0 0 100 70"
+                viewBox="0 0 225 210"
                 preserveAspectRatio="none"
                 aria-hidden="true"
               >
                 <path
                   className="jarvis-hud__trace jarvis-hud__trace--upper"
                   pathLength={1}
-                  d="M 0 35 L 0 6 L 98 6"
+                  d="M 0 105 L 0 3 L 222 3"
                 />
                 <path
                   className="jarvis-hud__trace jarvis-hud__trace--lower"
                   pathLength={1}
-                  d="M 0 35 L 0 64 L 98 64 L 98 6"
+                  d="M 0 105 L 0 207 L 222 207 L 222 3"
                 />
               </svg>
               <div className="jarvis-hud__window-frame">
