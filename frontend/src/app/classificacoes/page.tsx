@@ -19,27 +19,6 @@ function findNode(nodes: ProductClassificationNode[], id: string): ProductClassi
   return null;
 }
 
-function collectPaths(nodes: ProductClassificationNode[]): ProductClassificationNode[][] {
-  const paths: ProductClassificationNode[][] = [];
-
-  function walk(node: ProductClassificationNode, prefix: ProductClassificationNode[]) {
-    const path = [...prefix, node];
-    if (node.children.length === 0) {
-      paths.push(path);
-      return;
-    }
-    for (const child of node.children) {
-      walk(child, path);
-    }
-  }
-
-  for (const root of nodes) {
-    walk(root, []);
-  }
-
-  return paths;
-}
-
 function pathToNode(tree: ProductClassificationNode[], nodeId: string): ProductClassificationNode[] {
   function walk(nodes: ProductClassificationNode[], trail: ProductClassificationNode[]): ProductClassificationNode[] | null {
     for (const node of nodes) {
@@ -367,15 +346,112 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
   );
 }
 
+type ClassificationTreeBranchProps = {
+  nodes: ProductClassificationNode[];
+  depth: number;
+  expandedIds: Set<string>;
+  selectedId: string | null;
+  onToggleExpand: (id: string) => void;
+  onSelect: (id: string) => void;
+};
+
+function ClassificationTreeBranch({
+  nodes,
+  depth,
+  expandedIds,
+  selectedId,
+  onToggleExpand,
+  onSelect,
+}: ClassificationTreeBranchProps) {
+  return (
+    <ul className="classification-tree__list" role="group">
+      {nodes.map((node) => {
+        const hasChildren = node.children.length > 0;
+        const expanded = expandedIds.has(node.id);
+        const selected = selectedId === node.id;
+
+        return (
+          <li key={node.id} className="classification-tree__item">
+            <div
+              className={`classification-tree__row${selected ? " is-selected" : ""}${hasChildren ? " has-children" : ""}`}
+              style={{ paddingLeft: `${depth * 1.1 + 0.35}rem` }}
+            >
+              <button
+                type="button"
+                className={`classification-tree__caret${hasChildren ? "" : " is-leaf"}`}
+                aria-label={hasChildren ? (expanded ? "Recolher" : "Expandir") : undefined}
+                aria-expanded={hasChildren ? expanded : undefined}
+                disabled={!hasChildren}
+                onClick={(e) => {
+                  e.stopPropagation();
+                  if (hasChildren) onToggleExpand(node.id);
+                }}
+              >
+                {hasChildren ? (expanded ? "▼" : "▶") : "·"}
+              </button>
+              <button
+                type="button"
+                className="classification-tree__label"
+                onClick={() => {
+                  onSelect(node.id);
+                  if (hasChildren && !expanded) onToggleExpand(node.id);
+                }}
+                aria-pressed={selected}
+              >
+                <span className="classification-tree__level">Nível {node.level}</span>
+                <span className="classification-tree__name">{node.name}</span>
+              </button>
+            </div>
+            {hasChildren && expanded ? (
+              <ClassificationTreeBranch
+                nodes={node.children}
+                depth={depth + 1}
+                expandedIds={expandedIds}
+                selectedId={selectedId}
+                onToggleExpand={onToggleExpand}
+                onSelect={onSelect}
+              />
+            ) : null}
+          </li>
+        );
+      })}
+    </ul>
+  );
+}
+
 type ClassificationFlowProps = {
-  paths: ProductClassificationNode[][];
+  tree: ProductClassificationNode[];
   depthLevels: number;
   selectedId: string | null;
   onSelect: (id: string | null) => void;
 };
 
-function ClassificationFlow({ paths, depthLevels, selectedId, onSelect }: ClassificationFlowProps) {
-  if (paths.length === 0) {
+function ClassificationFlow({ tree, depthLevels, selectedId, onSelect }: ClassificationFlowProps) {
+  const [expandedIds, setExpandedIds] = useState<Set<string>>(() => new Set());
+
+  useEffect(() => {
+    if (!selectedId) return;
+    const path = pathToNode(tree, selectedId);
+    if (path.length === 0) return;
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      for (const node of path.slice(0, -1)) {
+        next.add(node.id);
+      }
+      return next;
+    });
+  }, [selectedId, tree]);
+
+  function toggleExpand(id: string) {
+    setExpandedIds((prev) => {
+      const next = new Set(prev);
+      if (next.has(id)) next.delete(id);
+      else next.add(id);
+      return next;
+    });
+  }
+
+  if (tree.length === 0) {
     return (
       <div className="classification-flow classification-flow--empty">
         <p className="muted">Nenhuma classificação cadastrada. Use o painel à esquerda para começar no nível 1.</p>
@@ -385,28 +461,20 @@ function ClassificationFlow({ paths, depthLevels, selectedId, onSelect }: Classi
   }
 
   return (
-    <div className="classification-flow">
-      <LevelFlowIndicator depthLevels={depthLevels} variant="static" />
-      <ul className="classification-flow__paths">
-        {paths.map((path, pathIndex) => (
-          <li key={path.map((n) => n.id).join("-") || pathIndex} className="classification-flow__path">
-            {path.map((node, index) => (
-              <span key={node.id} className="classification-flow__segment">
-                {index > 0 ? <span className="classification-flow__arrow" aria-hidden>→</span> : null}
-                <button
-                  type="button"
-                  className={`classification-flow__step${selectedId === node.id ? " is-selected" : ""}`}
-                  onClick={() => onSelect(node.id)}
-                  aria-pressed={selectedId === node.id}
-                >
-                  <span className="classification-flow__step-level">Nível {node.level}</span>
-                  <span className="classification-flow__step-name">{node.name}</span>
-                </button>
-              </span>
-            ))}
-          </li>
-        ))}
-      </ul>
+    <div className="classification-flow classification-flow--tree">
+      <p className="muted classification-tree__hint">
+        Clique em um nível para expandir os itens vinculados abaixo, como pastas no Explorer.
+      </p>
+      <div className="classification-tree">
+        <ClassificationTreeBranch
+          nodes={tree}
+          depth={0}
+          expandedIds={expandedIds}
+          selectedId={selectedId}
+          onToggleExpand={toggleExpand}
+          onSelect={onSelect}
+        />
+      </div>
       {selectedId ? (
         <button type="button" className="classification-flow__clear secondary" onClick={() => onSelect(null)}>
           Limpar seleção
@@ -495,7 +563,6 @@ export default function ClassificacoesPage() {
       .finally(() => setLoading(false));
   }, [reload]);
 
-  const paths = useMemo(() => collectPaths(tree), [tree]);
   const selectedNode = useMemo(
     () => (selectedNodeId ? findNode(tree, selectedNodeId) : null),
     [tree, selectedNodeId],
@@ -585,9 +652,9 @@ export default function ClassificacoesPage() {
 
         <div className="panel stack classification-workspace__flow-panel">
           <h2>Fluxo da hierarquia</h2>
-          <p className="muted">Cada linha mostra um caminho do nível 1 em diante. Clique em um nome para editar.</p>
+          <p className="muted">Expanda cada nível para ver os cadastros vinculados no nível seguinte.</p>
           <ClassificationFlow
-            paths={paths}
+            tree={tree}
             depthLevels={depthLevels}
             selectedId={selectedNodeId}
             onSelect={setSelectedNodeId}
