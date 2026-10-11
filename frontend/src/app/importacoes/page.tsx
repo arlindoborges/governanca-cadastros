@@ -163,6 +163,23 @@ export default function ImportacoesPage() {
         <p className="muted">Envie a planilha e execute o processamento para saneamento e análise cadastral.</p>
       </div>
 
+      <div className="panel stack import-template-hint">
+        <div className="row import-template-hint__actions">
+          <a
+            className="button secondary"
+            href="/planilha-modelo-importacao.xlsx"
+            download="planilha-modelo-importacao.xlsx"
+          >
+            Baixar planilha modelo (.xlsx)
+          </a>
+        </div>
+        <p className="muted import-template-hint__text">
+          Use a primeira linha como cabeçalho. Colunas esperadas: <strong>codigo</strong> (opcional),{" "}
+          <strong>descricao</strong> (obrigatória) e <strong>unidade</strong> (opcional). Nomes equivalentes como{" "}
+          <em>CODIGO_PRD</em>, <em>DESCRICAO_ORIGINAL</em> e <em>UNIDADE</em> também são reconhecidos na importação.
+        </p>
+      </div>
+
       {!configReady ? (
         <div className="panel">
           <p>

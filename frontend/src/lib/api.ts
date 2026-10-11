@@ -1,4 +1,25 @@
-const API_BASE = process.env.NEXT_PUBLIC_API_URL ?? "http://localhost:8000/api/v1";
+function resolveApiBase(): string {
+  // No browser, só a porta 3000 costuma estar encaminhada (Cloud Agent preview).
+  if (typeof window !== "undefined") {
+    return "/api/v1";
+  }
+
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL;
+
+  if (fromEnv) {
+    const trimmed = fromEnv.replace(/\/$/, "");
+    if (trimmed.startsWith("/")) {
+      return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+    }
+    return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
+  }
+
+  // Server Components: passa pelo Next local para usar o mesmo proxy.
+  const port = process.env.PORT ?? "3000";
+  return `http://127.0.0.1:${port}/api/v1`;
+}
+
+const API_BASE = resolveApiBase();
 
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
   let response: Response;
@@ -413,4 +434,61 @@ export function listMappings() {
       conversion_factor: number;
     }>;
   }>("/mappings");
+}
+
+export type ProductClassificationNode = {
+  id: string;
+  level: number;
+  name: string;
+  description: string | null;
+  sort_order: number;
+  children: ProductClassificationNode[];
+};
+
+export type ProductClassificationState = {
+  depth_levels: number;
+  nodes: Array<{
+    id: string;
+    parent_id: string | null;
+    level: number;
+    name: string;
+    description: string | null;
+    sort_order: number;
+  }>;
+  tree: ProductClassificationNode[];
+};
+
+export function getProductClassifications() {
+  return request<ProductClassificationState>("/product-classifications");
+}
+
+export function setProductClassificationDepth(depthLevels: number) {
+  return request<{ depth_levels: number }>("/product-classifications/config", {
+    method: "PUT",
+    body: JSON.stringify({ depth_levels: depthLevels }),
+  });
+}
+
+export function createProductClassificationNode(
+  name: string,
+  description?: string,
+  parentId?: string,
+) {
+  return request<{ id: string }>("/product-classifications/nodes", {
+    method: "POST",
+    body: JSON.stringify({ name, description: description ?? null, parent_id: parentId ?? null }),
+  });
+}
+
+export function updateProductClassificationNode(nodeId: string, name: string, description?: string) {
+  return request<{ id: string }>(`/product-classifications/nodes/${nodeId}`, {
+    method: "PATCH",
+    body: JSON.stringify({ name, description: description ?? null }),
+  });
+}
+
+export function deleteProductClassificationNode(nodeId: string) {
+  return request<{ deleted: boolean }>(`/product-classifications/nodes/${nodeId}`, {
+    method: "DELETE",
+  });
 }

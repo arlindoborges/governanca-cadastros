@@ -1,0 +1,33 @@
+#!/usr/bin/env bash
+set -euo pipefail
+ROOT="$(cd "$(dirname "$0")/.." && pwd)"
+cd "$ROOT"
+
+if ! command -v uv >/dev/null 2>&1; then
+  curl -LsSf https://astral.sh/uv/install.sh | sh
+fi
+export PATH="${HOME}/.local/bin:${PATH}"
+
+[[ -f .env ]] || cp .env.example .env
+if [[ ! -f frontend/.env.local ]]; then
+  cp frontend/.env.example frontend/.env.local
+elif grep -qE 'NEXT_PUBLIC_API_URL=http://127\.0\.0\.1:8000' frontend/.env.local 2>/dev/null; then
+  sed -i 's|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=/api/v1|' frontend/.env.local
+fi
+
+cd "${ROOT}/backend"
+uv sync --extra dev
+
+cd "${ROOT}/frontend"
+if [[ -f package-lock.json ]]; then
+  npm ci
+else
+  npm install
+fi
+
+if ! command -v docker >/dev/null 2>&1 && ! command -v pg_isready >/dev/null 2>&1; then
+  if command -v sudo >/dev/null 2>&1 && command -v apt-get >/dev/null 2>&1; then
+    sudo DEBIAN_FRONTEND=noninteractive apt-get update -qq
+    sudo DEBIAN_FRONTEND=noninteractive apt-get install -y -qq postgresql postgresql-contrib
+  fi
+fi

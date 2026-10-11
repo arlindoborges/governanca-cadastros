@@ -17,6 +17,21 @@ Reimplementação do zero do MVP de saneamento e governança cadastral.
 
 ## Subir ambiente
 
+### Cloud Agent (automático)
+
+Com `.cursor/environment.json`, cada boot do agente executa `install` (dependências) e `start` (Postgres, API e Next). A API é acessada via proxy em `/api/v1` — no preview só precisa da porta **3000**.
+
+**Preview no Cursor (evitar erro -102):**
+
+1. Não digite `http://127.0.0.1:3000` na barra do painel **Browser**.
+2. No painel do agente, ícone **tomada (plug)** → **Auto-Forward Ports** ligado.
+3. Na porta **3000**, use **Open in internal browser** (ou a porta local que o Cursor mostrar).
+4. A aplicação abre direto no **Dashboard** (`/`).
+
+Se a 3000 no Mac já estiver em uso, o Cursor pode mapear outra porta local — use sempre o link da linha do plug, não `127.0.0.1:3000` fixo.
+
+### Local (manual)
+
 ```bash
 cp .env.example .env
 docker compose up -d
@@ -30,6 +45,8 @@ Em outro terminal:
 ```bash
 cd frontend && npm install && npm run dev
 ```
+
+Ou use `bash scripts/dev.sh` para subir o banco e ver os comandos do backend/frontend.
 
 ## Validação
 

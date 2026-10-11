@@ -1,0 +1,12 @@
+{
+  "remote.autoForwardPorts": true,
+  "remote.portsAttributes": {
+    "3000": {
+      "label": "Governança (web)",
+      "onAutoForward": "notify"
+    },
+    "8000": {
+      "label": "Governança (API)"
+    }
+  }
+}

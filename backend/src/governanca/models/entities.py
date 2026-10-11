@@ -18,6 +18,18 @@ class Organization(Base):
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
 
 
+class User(Base):
+    __tablename__ = "users"
+    __table_args__ = (UniqueConstraint("email", name="uq_users_email"),)
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    email: Mapped[str] = mapped_column(String(320), nullable=False)
+    password_hash: Mapped[str] = mapped_column(String(255), nullable=False)
+    full_name: Mapped[str | None] = mapped_column(String(200), nullable=True)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
 class SanitizationConfigProfile(Base):
     __tablename__ = "sanitization_config_profiles"
 
@@ -127,6 +139,39 @@ class MasterProduct(Base):
     unit: Mapped[str] = mapped_column(String(30), nullable=False)
     status: Mapped[str] = mapped_column(String(30), default="ACTIVE")
     created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+
+class ProductClassificationConfig(Base):
+    __tablename__ = "product_classification_configs"
+
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), primary_key=True)
+    depth_levels: Mapped[int] = mapped_column(Integer, nullable=False, default=3)
+    updated_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), server_default=func.now(), onupdate=func.now()
+    )
+
+
+class ProductClassificationNode(Base):
+    __tablename__ = "product_classification_nodes"
+
+    id: Mapped[UUID] = mapped_column(primary_key=True, default=uuid4)
+    organization_id: Mapped[UUID] = mapped_column(ForeignKey("organizations.id"), index=True)
+    parent_id: Mapped[UUID | None] = mapped_column(
+        ForeignKey("product_classification_nodes.id", ondelete="CASCADE"), nullable=True, index=True
+    )
+    level: Mapped[int] = mapped_column(Integer, nullable=False)
+    name: Mapped[str] = mapped_column(String(200), nullable=False)
+    description: Mapped[str | None] = mapped_column(Text, nullable=True)
+    sort_order: Mapped[int] = mapped_column(Integer, nullable=False, default=0)
+    created_at: Mapped[datetime] = mapped_column(DateTime(timezone=True), server_default=func.now())
+
+    children: Mapped[list["ProductClassificationNode"]] = relationship(
+        back_populates="parent",
+        cascade="all, delete-orphan",
+    )
+    parent: Mapped["ProductClassificationNode | None"] = relationship(
+        back_populates="children", remote_side="ProductClassificationNode.id"
+    )
 
 
 class ProductMapping(Base):
