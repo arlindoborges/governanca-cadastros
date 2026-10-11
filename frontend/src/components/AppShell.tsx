@@ -16,7 +16,14 @@ const links = [
   { href: "/base-mestre", label: "Base Mestre", shortLabel: "Mestre", icon: "cube" },
 ] as const;
 
-function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
+const accessLinks = [
+  { href: "/login", label: "Entrar", shortLabel: "Entrar", icon: "login" as const },
+  { href: "/cadastro", label: "Cadastro de usuário", shortLabel: "Cadastro", icon: "userPlus" as const },
+] as const;
+
+type NavIconName = (typeof links)[number]["icon"] | (typeof accessLinks)[number]["icon"];
+
+function NavIcon({ name }: { name: NavIconName }) {
   const common = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true as const };
   switch (name) {
     case "grid":
@@ -80,6 +87,21 @@ function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
           <path d="M12 12 20 7.5M12 12 4 7.5M12 12v9" stroke="currentColor" strokeWidth="1.75" />
         </svg>
       );
+    case "login":
+      return (
+        <svg {...common}>
+          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.75" />
+          <path d="M5 20v-1a5 5 0 0 1 10 0v1" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+        </svg>
+      );
+    case "userPlus":
+      return (
+        <svg {...common}>
+          <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.75" />
+          <path d="M3 19v-1a4 4 0 0 1 4-4h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+          <path d="M16 11v6M13 14h6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
+        </svg>
+      );
     default:
       return null;
   }
@@ -121,6 +143,25 @@ export function AppShell({ children }: { children: ReactNode }) {
         </div>
         <nav className="sidebar__nav" aria-label="Principal">
           {links.map((link) => {
+            const active = isActive(pathname, link.href);
+            return (
+              <Link
+                key={link.href}
+                href={link.href}
+                className={`nav-item${active ? " nav-item--active" : ""}`}
+                aria-current={active ? "page" : undefined}
+              >
+                <span className="nav-item__icon">
+                  <NavIcon name={link.icon} />
+                </span>
+                <span className="nav-item__label">{link.label}</span>
+              </Link>
+            );
+          })}
+        </nav>
+        <nav className="sidebar__nav sidebar__nav--access" aria-label="Acesso">
+          <p className="sidebar__section-label">Acesso</p>
+          {accessLinks.map((link) => {
             const active = isActive(pathname, link.href);
             return (
               <Link

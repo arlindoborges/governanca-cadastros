@@ -699,6 +699,12 @@
   color: #ff7b7b;
 }
 
+.jarvis-login__success {
+  margin: 0;
+  font-size: 0.85rem;
+  color: var(--jarvis-green);
+}
+
 .jarvis-login__signup {
   margin: 1rem 0 0;
   font-size: 0.82rem;

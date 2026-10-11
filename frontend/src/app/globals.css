@@ -254,6 +254,22 @@ h3 {
   overflow: auto;
 }
 
+.sidebar__nav--access {
+  flex: 0 0 auto;
+  margin-top: 0.35rem;
+  padding-top: 0.65rem;
+  border-top: 1px solid color-mix(in srgb, var(--text) 10%, transparent);
+}
+
+.sidebar__section-label {
+  margin: 0 0 0.35rem 0.7rem;
+  font-size: 0.68rem;
+  font-weight: 600;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+
 .nav-item {
   display: flex;
   align-items: center;

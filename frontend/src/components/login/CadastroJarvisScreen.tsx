@@ -11,6 +11,7 @@ type Props = {
   password: string;
   confirmPassword: string;
   error: string | null;
+  success: string | null;
   submitting: boolean;
   onFullNameChange: (value: string) => void;
   onEmailChange: (value: string) => void;
@@ -25,6 +26,7 @@ export function CadastroJarvisScreen({
   password,
   confirmPassword,
   error,
+  success,
   submitting,
   onFullNameChange,
   onEmailChange,
@@ -158,6 +160,7 @@ export function CadastroJarvisScreen({
                         placeholder="Repita a senha"
                       />
                     </label>
+                    {success ? <p className="jarvis-login__success" role="status">{success}</p> : null}
                     {error ? <p className="jarvis-login__error" role="alert">{error}</p> : null}
                     <button type="submit" className="jarvis-login__submit" disabled={submitting}>
                       {submitting ? "Cadastrando..." : "Criar usuário"}
