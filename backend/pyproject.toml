@@ -5,10 +5,12 @@ description = "Governança de Cadastros — API"
 requires-python = ">=3.12"
 dependencies = [
   "alembic>=1.14.0",
+  "bcrypt>=4.2.0",
   "fastapi[standard]>=0.115.0",
   "openpyxl>=3.1.5",
   "psycopg[binary]>=3.2.0",
   "pydantic-settings>=2.6.0",
+  "PyJWT>=2.10.0",
   "python-multipart>=0.0.12",
   "sqlalchemy>=2.0.36",
 ]

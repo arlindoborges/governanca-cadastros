@@ -2,7 +2,9 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { ReactNode } from "react";
+import type { CSSProperties, ReactNode } from "react";
+import { useAuth } from "@/contexts/AuthContext";
+import { useLoginReveal } from "@/contexts/LoginRevealContext";
 
 const links = [
   { href: "/", label: "Dashboard", shortLabel: "Início", icon: "grid" },
@@ -90,13 +92,28 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
+  const { user, logout } = useAuth();
+  const { homeRevealActive, revealWipeActive, handoffFlyComplete, revealOrigin } = useLoginReveal();
+
+  const revealStyle: CSSProperties | undefined = revealOrigin
+    ? ({ "--login-reveal-x": `${revealOrigin.x}px` } as CSSProperties)
+    : undefined;
 
   return (
-    <div className="app">
+    <div
+      className={`app${homeRevealActive ? " app--login-reveal" : ""}${revealWipeActive ? " app--login-reveal-wipe" : ""}`}
+      style={revealStyle}
+    >
       <div className="app__backdrop" aria-hidden="true" />
       <aside className="sidebar glass">
         <div className="brand">
-          <span className="brand__mark" aria-hidden="true">GC</span>
+          <span
+            className={`brand__mark${homeRevealActive && !handoffFlyComplete ? " brand__mark--handoff-hidden" : ""}`}
+            data-brand-handoff-target
+            aria-hidden="true"
+          >
+            GC
+          </span>
           <div className="brand__text">
             <span className="brand__title">Governança</span>
             <span className="brand__subtitle">Cadastros</span>
@@ -120,6 +137,18 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
+        <div className="sidebar__footer">
+          {user ? (
+            <>
+              <p className="sidebar__user muted" title={user.email}>
+                {user.full_name ?? user.email}
+              </p>
+              <button type="button" className="secondary sidebar__logout" onClick={() => logout()}>
+                Sair
+              </button>
+            </>
+          ) : null}
+        </div>
       </aside>
 
       <nav className="tab-bar glass" aria-label="Principal (mobile)">

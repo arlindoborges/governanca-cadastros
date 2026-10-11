@@ -3,6 +3,7 @@ from contextlib import asynccontextmanager
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
+from governanca.api.auth_router import router as auth_router
 from governanca.api.router import router
 from governanca.core.config import get_settings
 from governanca.core.db import SessionLocal
@@ -27,9 +28,10 @@ def create_app() -> FastAPI:
         CORSMiddleware,
         allow_origins=settings.cors_origin_list,
         allow_methods=["GET", "POST", "PUT", "PATCH", "DELETE", "OPTIONS"],
-        allow_headers=["Content-Type"],
+        allow_headers=["Content-Type", "Authorization"],
     )
     register_error_handlers(app)
+    app.include_router(auth_router, prefix="/api/v1")
     app.include_router(router, prefix="/api/v1")
     return app
 
