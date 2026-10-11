@@ -4,6 +4,8 @@ from governanca.models.entities import (
     MatchCandidate,
     MatchGroup,
     Organization,
+    ProductClassificationConfig,
+    ProductClassificationNode,
     ProductMapping,
     SanitizationConfigProfile,
     SanitizationDecision,
@@ -23,5 +25,7 @@ __all__ = [
     "MatchCandidate",
     "SanitizationDecision",
     "MasterProduct",
+    "ProductClassificationConfig",
+    "ProductClassificationNode",
     "ProductMapping",
 ]

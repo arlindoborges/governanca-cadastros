@@ -4,6 +4,7 @@ from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
 
 from governanca.api.auth_router import router as auth_router
+from governanca.api.product_classification_router import router as product_classification_router
 from governanca.api.router import router
 from governanca.core.config import get_settings
 from governanca.core.db import SessionLocal
@@ -32,6 +33,7 @@ def create_app() -> FastAPI:
     )
     register_error_handlers(app)
     app.include_router(auth_router, prefix="/api/v1")
+    app.include_router(product_classification_router, prefix="/api/v1")
     app.include_router(router, prefix="/api/v1")
     return app
 
