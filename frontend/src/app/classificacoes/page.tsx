@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useState } from "react";
+import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
 import {
   createProductClassificationNode,
   deleteProductClassificationNode,
@@ -71,7 +71,6 @@ type LevelFlowIndicatorProps = {
   ancestorPath?: ProductClassificationNode[];
   pickLevel?: number | null;
   onSelectTargetLevel?: (level: number) => void;
-  onPickAncestorLevel?: (level: number) => void;
 };
 
 function LevelFlowIndicator({
@@ -81,7 +80,6 @@ function LevelFlowIndicator({
   ancestorPath = [],
   pickLevel = null,
   onSelectTargetLevel,
-  onPickAncestorLevel,
 }: LevelFlowIndicatorProps) {
   return (
     <div
@@ -123,14 +121,7 @@ function LevelFlowIndicator({
               ]
                 .filter(Boolean)
                 .join(" ")}
-              onClick={() => {
-                if (level === targetLevel) return;
-                if (level < targetLevel) {
-                  onPickAncestorLevel?.(level);
-                } else {
-                  onSelectTargetLevel?.(level);
-                }
-              }}
+              onClick={() => onSelectTargetLevel?.(level)}
               aria-pressed={isTarget || isPicking}
             >
               <span className="classification-flow__legend-btn-level">Nível {level}</span>
@@ -272,6 +263,7 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
   const [targetLevel, setTargetLevel] = useState(1);
   const [ancestorPath, setAncestorPath] = useState<ProductClassificationNode[]>([]);
   const [pickLevel, setPickLevel] = useState<number | null>(null);
+  const lastSyncedNodeRef = useRef<string | null>(null);
 
   useEffect(() => {
     if (targetLevel > depthLevels) {
@@ -286,10 +278,15 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
   }, [targetLevel]);
 
   useEffect(() => {
-    if (!syncFromNodeId) return;
+    if (!syncFromNodeId) {
+      lastSyncedNodeRef.current = null;
+      return;
+    }
+    if (lastSyncedNodeRef.current === syncFromNodeId) return;
     const path = pathToNode(tree, syncFromNodeId);
     const node = path[path.length - 1];
     if (!node || node.level >= depthLevels) return;
+    lastSyncedNodeRef.current = syncFromNodeId;
     setTargetLevel(node.level + 1);
     setAncestorPath(path);
     setPickLevel(null);
@@ -317,12 +314,8 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
   }, [activePickLevel, ancestorPath, targetLevel, tree]);
 
   function selectTargetLevel(level: number) {
-    setTargetLevel(level);
-  }
-
-  function startPickAncestor(level: number) {
-    setPickLevel(level);
-    setAncestorPath((path) => path.slice(0, level - 1));
+    const next = Math.min(Math.max(1, level), depthLevels);
+    setTargetLevel(next);
   }
 
   function chooseAncestor(node: ProductClassificationNode) {
@@ -350,7 +343,6 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
         ancestorPath={ancestorPath}
         pickLevel={activePickLevel}
         onSelectTargetLevel={selectTargetLevel}
-        onPickAncestorLevel={startPickAncestor}
       />
 
       {targetLevel > 1 && activePickLevel !== null && activePickLevel < targetLevel ? (
@@ -364,6 +356,7 @@ function CreateClassificationPanel({ tree, depthLevels, onSaved, syncFromNodeId 
       ) : null}
 
       <CreateNodeForm
+        key={`create-${targetLevel}-${parentId ?? "root"}`}
         targetLevel={targetLevel}
         ancestorPath={ancestorPath.slice(0, targetLevel - 1)}
         parentId={parentId}
