@@ -1,7 +1,10 @@
 function resolveApiBase(): string {
-  const fromEnv =
-    process.env.NEXT_PUBLIC_API_URL ??
-    (typeof window === "undefined" ? process.env.API_URL : undefined);
+  // No browser, só a porta 3000 costuma estar encaminhada (Cloud Agent preview).
+  if (typeof window !== "undefined") {
+    return "/api/v1";
+  }
+
+  const fromEnv = process.env.NEXT_PUBLIC_API_URL ?? process.env.API_URL;
 
   if (fromEnv) {
     const trimmed = fromEnv.replace(/\/$/, "");

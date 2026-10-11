@@ -9,7 +9,11 @@ fi
 export PATH="${HOME}/.local/bin:${PATH}"
 
 [[ -f .env ]] || cp .env.example .env
-[[ -f frontend/.env.local ]] || cp frontend/.env.example frontend/.env.local
+if [[ ! -f frontend/.env.local ]]; then
+  cp frontend/.env.example frontend/.env.local
+elif grep -qE 'NEXT_PUBLIC_API_URL=http://127\.0\.0\.1:8000' frontend/.env.local 2>/dev/null; then
+  sed -i 's|^NEXT_PUBLIC_API_URL=.*|NEXT_PUBLIC_API_URL=/api/v1|' frontend/.env.local
+fi
 
 cd "${ROOT}/backend"
 uv sync --extra dev
