@@ -48,6 +48,11 @@ cd frontend && npm install && npm run dev
 
 Ou use `bash scripts/dev.sh` para subir o banco e ver os comandos do backend/frontend.
 
+## Acesso (login e cadastro)
+
+- **Login:** `/login`
+- **Cadastro de usuário e senha:** `/cadastro` (mínimo 8 caracteres na senha; após cadastrar, redireciona ao dashboard)
+
 ## Validação
 
 ```bash

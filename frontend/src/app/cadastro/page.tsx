@@ -1,29 +1,43 @@
 "use client";
 
-import Link from "next/link";
+import "../login/jarvis.css";
+
 import { useRouter } from "next/navigation";
 import { FormEvent, useEffect, useState } from "react";
+import { CadastroJarvisScreen } from "@/components/login/CadastroJarvisScreen";
 import { useAuth } from "@/contexts/AuthContext";
 
 export default function CadastroPage() {
   const router = useRouter();
   const { register, user, loading } = useAuth();
 
-  useEffect(() => {
-    if (!loading && user) router.replace("/");
-  }, [loading, user, router]);
   const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [confirmPassword, setConfirmPassword] = useState("");
   const [error, setError] = useState<string | null>(null);
   const [submitting, setSubmitting] = useState(false);
+
+  useEffect(() => {
+    if (!loading && user) router.replace("/");
+  }, [loading, user, router]);
 
   async function onSubmit(event: FormEvent) {
     event.preventDefault();
     setError(null);
+
+    if (password.length < 8) {
+      setError("A senha deve ter pelo menos 8 caracteres.");
+      return;
+    }
+    if (password !== confirmPassword) {
+      setError("As senhas não coincidem.");
+      return;
+    }
+
     setSubmitting(true);
     try {
-      await register(email, password, fullName || undefined);
+      await register(email, password, fullName.trim() || undefined);
     } catch (err) {
       setError(err instanceof Error ? err.message : "Não foi possível cadastrar");
     } finally {
@@ -31,62 +45,27 @@ export default function CadastroPage() {
     }
   }
 
-  return (
-    <div className="auth-screen">
-      <div className="auth-card glass stack">
-        <div className="auth-card__brand">
-          <span className="brand__mark" aria-hidden="true">GC</span>
-          <div>
-            <h1>Criar conta</h1>
-            <p className="muted">Cadastre usuário e senha para acessar o sistema</p>
-          </div>
-        </div>
-
-        <form className="stack" onSubmit={onSubmit}>
-          <label>
-            Nome (opcional)
-            <input
-              type="text"
-              autoComplete="name"
-              value={fullName}
-              onChange={(e) => setFullName(e.target.value)}
-              disabled={submitting}
-            />
-          </label>
-          <label>
-            E-mail
-            <input
-              type="email"
-              autoComplete="email"
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              required
-              disabled={submitting}
-            />
-          </label>
-          <label>
-            Senha
-            <input
-              type="password"
-              autoComplete="new-password"
-              value={password}
-              onChange={(e) => setPassword(e.target.value)}
-              minLength={8}
-              required
-              disabled={submitting}
-            />
-          </label>
-          <p className="muted auth-hint">Mínimo de 8 caracteres.</p>
-          {error ? <p className="auth-error">{error}</p> : null}
-          <button type="submit" disabled={submitting}>
-            {submitting ? "Cadastrando..." : "Cadastrar"}
-          </button>
-        </form>
-
-        <p className="muted auth-card__footer">
-          Já tem conta? <Link href="/login">Entrar</Link>
-        </p>
+  if (loading) {
+    return (
+      <div className="jarvis-login">
+        <p className="jarvis-login__status" style={{ padding: "2rem" }}>Carregando...</p>
       </div>
-    </div>
+    );
+  }
+
+  return (
+    <CadastroJarvisScreen
+      fullName={fullName}
+      email={email}
+      password={password}
+      confirmPassword={confirmPassword}
+      error={error}
+      submitting={submitting}
+      onFullNameChange={setFullName}
+      onEmailChange={setEmail}
+      onPasswordChange={setPassword}
+      onConfirmPasswordChange={setConfirmPassword}
+      onSubmit={onSubmit}
+    />
   );
 }
