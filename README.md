@@ -19,7 +19,16 @@ Reimplementação do zero do MVP de saneamento e governança cadastral.
 
 ### Cloud Agent (automático)
 
-Com `.cursor/environment.json`, cada boot do agente executa `install` (dependências) e `start` (Postgres, API e Next). A API é acessada via proxy em `/api/v1` — basta encaminhar a porta **3000** no Cursor.
+Com `.cursor/environment.json`, cada boot do agente executa `install` (dependências) e `start` (Postgres, API e Next). A API é acessada via proxy em `/api/v1` — no preview só precisa da porta **3000**.
+
+**Preview no Cursor (evitar erro -102):**
+
+1. Não digite `http://127.0.0.1:3000` na barra do painel **Browser**.
+2. No painel do agente, ícone **tomada (plug)** → **Auto-Forward Ports** ligado.
+3. Na porta **3000**, use **Open in internal browser** (ou a porta local que o Cursor mostrar).
+4. Abra `/login` na URL encaminhada.
+
+Se a 3000 no Mac já estiver em uso, o Cursor pode mapear outra porta local — use sempre o link da linha do plug, não `127.0.0.1:3000` fixo.
 
 ### Local (manual)
 
