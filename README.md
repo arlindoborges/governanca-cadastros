@@ -26,7 +26,7 @@ Com `.cursor/environment.json`, cada boot do agente executa `install` (dependên
 1. Não digite `http://127.0.0.1:3000` na barra do painel **Browser**.
 2. No painel do agente, ícone **tomada (plug)** → **Auto-Forward Ports** ligado.
 3. Na porta **3000**, use **Open in internal browser** (ou a porta local que o Cursor mostrar).
-4. Abra `/login` na URL encaminhada.
+4. A aplicação abre direto no **Dashboard** (`/`).
 
 Se a 3000 no Mac já estiver em uso, o Cursor pode mapear outra porta local — use sempre o link da linha do plug, não `127.0.0.1:3000` fixo.
 
@@ -47,11 +47,6 @@ cd frontend && npm install && npm run dev
 ```
 
 Ou use `bash scripts/dev.sh` para subir o banco e ver os comandos do backend/frontend.
-
-## Acesso (login e cadastro)
-
-- **Login:** `/login`
-- **Cadastro de usuário e senha:** `/cadastro` (mínimo 8 caracteres na senha; após cadastrar, redireciona ao dashboard)
 
 ## Validação
 

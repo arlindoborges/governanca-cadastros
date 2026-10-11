@@ -14,11 +14,6 @@ function resolveApiBase(): string {
     return trimmed.endsWith("/api/v1") ? trimmed : `${trimmed}/api/v1`;
   }
 
-  // Browser (porta 3000 encaminhada): API via proxy do Next.
-  if (typeof window !== "undefined") {
-    return "/api/v1";
-  }
-
   // Server Components: passa pelo Next local para usar o mesmo proxy.
   const port = process.env.PORT ?? "3000";
   return `http://127.0.0.1:${port}/api/v1`;
@@ -26,34 +21,13 @@ function resolveApiBase(): string {
 
 const API_BASE = resolveApiBase();
 
-export type AuthUser = {
-  id: string;
-  email: string;
-  full_name: string | null;
-};
-
-async function buildAuthHeaders(): Promise<Record<string, string>> {
-  if (typeof window !== "undefined") {
-    const { getStoredToken } = await import("@/lib/auth-storage");
-    const token = getStoredToken();
-    return token ? { Authorization: `Bearer ${token}` } : {};
-  }
-  const { cookies } = await import("next/headers");
-  const store = await cookies();
-  const token = store.get("gc_access_token")?.value;
-  return token ? { Authorization: `Bearer ${token}` } : {};
-}
-
 async function request<T>(path: string, init?: RequestInit): Promise<T> {
-  const authHeaders = await buildAuthHeaders();
   let response: Response;
   try {
     response = await fetch(`${API_BASE}${path}`, {
       ...init,
-      credentials: "include",
       headers: {
         ...(init?.body instanceof FormData ? {} : { "Content-Type": "application/json" }),
-        ...authHeaders,
         ...init?.headers,
       },
       cache: "no-store",
@@ -460,38 +434,6 @@ export function listMappings() {
       conversion_factor: number;
     }>;
   }>("/mappings");
-}
-
-type AuthSession = {
-  access_token: string;
-  token_type: string;
-  user: AuthUser;
-};
-
-export function registerUser(email: string, password: string, fullName?: string) {
-  return request<AuthSession>("/auth/register", {
-    method: "POST",
-    body: JSON.stringify({
-      email,
-      password,
-      full_name: fullName ?? null,
-    }),
-  });
-}
-
-export function loginUser(email: string, password: string) {
-  return request<AuthSession>("/auth/login", {
-    method: "POST",
-    body: JSON.stringify({ email, password }),
-  });
-}
-
-export function logoutUser() {
-  return request<{ ok: boolean }>("/auth/logout", { method: "POST" });
-}
-
-export function getCurrentUser() {
-  return request<AuthUser>("/auth/me");
 }
 
 export type ProductClassificationNode = {

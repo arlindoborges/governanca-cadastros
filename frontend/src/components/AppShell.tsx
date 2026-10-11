@@ -2,9 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
-import type { CSSProperties, ReactNode } from "react";
-import { useAuth } from "@/contexts/AuthContext";
-import { useLoginReveal } from "@/contexts/LoginRevealContext";
+import type { ReactNode } from "react";
 
 const links = [
   { href: "/", label: "Dashboard", shortLabel: "Início", icon: "grid" },
@@ -17,14 +15,7 @@ const links = [
   { href: "/classificacoes", label: "Classificações", shortLabel: "Classif.", icon: "layers" },
 ] as const;
 
-const accessLinks = [
-  { href: "/login", label: "Entrar", shortLabel: "Entrar", icon: "login" as const },
-  { href: "/cadastro", label: "Cadastro de usuário", shortLabel: "Cadastro", icon: "userPlus" as const },
-] as const;
-
-type NavIconName = (typeof links)[number]["icon"] | (typeof accessLinks)[number]["icon"];
-
-function NavIcon({ name }: { name: NavIconName }) {
+function NavIcon({ name }: { name: (typeof links)[number]["icon"] }) {
   const common = { width: 20, height: 20, viewBox: "0 0 24 24", fill: "none", "aria-hidden": true as const };
   switch (name) {
     case "grid":
@@ -95,21 +86,6 @@ function NavIcon({ name }: { name: NavIconName }) {
           <path d="M4 13.5 12 18l8-4.5M4 17.5 12 22l8-4.5" stroke="currentColor" strokeWidth="1.75" strokeLinejoin="round" />
         </svg>
       );
-    case "login":
-      return (
-        <svg {...common}>
-          <circle cx="12" cy="8" r="4" stroke="currentColor" strokeWidth="1.75" />
-          <path d="M5 20v-1a5 5 0 0 1 10 0v1" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-        </svg>
-      );
-    case "userPlus":
-      return (
-        <svg {...common}>
-          <circle cx="9" cy="8" r="3.5" stroke="currentColor" strokeWidth="1.75" />
-          <path d="M3 19v-1a4 4 0 0 1 4-4h4" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-          <path d="M16 11v6M13 14h6" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" />
-        </svg>
-      );
     default:
       return null;
   }
@@ -122,28 +98,13 @@ function isActive(pathname: string, href: string) {
 
 export function AppShell({ children }: { children: ReactNode }) {
   const pathname = usePathname();
-  const { user, logout } = useAuth();
-  const { homeRevealActive, revealWipeActive, handoffFlyComplete, revealOrigin } = useLoginReveal();
-
-  const revealStyle: CSSProperties | undefined = revealOrigin
-    ? ({ "--login-reveal-x": `${revealOrigin.x}px` } as CSSProperties)
-    : undefined;
 
   return (
-    <div
-      className={`app${homeRevealActive ? " app--login-reveal" : ""}${revealWipeActive ? " app--login-reveal-wipe" : ""}`}
-      style={revealStyle}
-    >
+    <div className="app">
       <div className="app__backdrop" aria-hidden="true" />
       <aside className="sidebar glass">
         <div className="brand">
-          <span
-            className={`brand__mark${homeRevealActive && !handoffFlyComplete ? " brand__mark--handoff-hidden" : ""}`}
-            data-brand-handoff-target
-            aria-hidden="true"
-          >
-            GC
-          </span>
+          <span className="brand__mark" aria-hidden="true">GC</span>
           <div className="brand__text">
             <span className="brand__title">Governança</span>
             <span className="brand__subtitle">Cadastros</span>
@@ -167,37 +128,6 @@ export function AppShell({ children }: { children: ReactNode }) {
             );
           })}
         </nav>
-        <nav className="sidebar__nav sidebar__nav--access" aria-label="Acesso">
-          <p className="sidebar__section-label">Acesso</p>
-          {accessLinks.map((link) => {
-            const active = isActive(pathname, link.href);
-            return (
-              <Link
-                key={link.href}
-                href={link.href}
-                className={`nav-item${active ? " nav-item--active" : ""}`}
-                aria-current={active ? "page" : undefined}
-              >
-                <span className="nav-item__icon">
-                  <NavIcon name={link.icon} />
-                </span>
-                <span className="nav-item__label">{link.label}</span>
-              </Link>
-            );
-          })}
-        </nav>
-        <div className="sidebar__footer">
-          {user ? (
-            <>
-              <p className="sidebar__user muted" title={user.email}>
-                {user.full_name ?? user.email}
-              </p>
-              <button type="button" className="secondary sidebar__logout" onClick={() => logout()}>
-                Sair
-              </button>
-            </>
-          ) : null}
-        </div>
       </aside>
 
       <nav className="tab-bar glass" aria-label="Principal (mobile)">
